@@ -1,0 +1,48 @@
+services:
+  - type: web
+    name: proptech-laravel
+    env: docker
+    dockerfilePath: Dockerfile
+    plan: free
+    region: frankfurt # Render region close to Stockholm/Stockholm pooler (eu-north-1)
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_URL
+        sync: false # Render will prompt you to enter the final URL or will use the default Render subdomain
+      - key: APP_KEY
+        generateValue: true # Render will automatically generate a secure 32-character key for you!
+      
+      # Database settings (using our high-performance Supabase IPv4 connection pooler)
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        value: aws-1-eu-north-1.pooler.supabase.com
+      - key: DB_PORT
+        value: "5432"
+      - key: DB_DATABASE
+        value: postgres
+      - key: DB_USERNAME
+        value: postgres.krqgzjfbblerreaizsik
+      - key: DB_PASSWORD
+        value: ai123proptech
+      - key: DB_SCHEMA
+        value: public
+
+      # Production Optimizations
+      - key: SESSION_DRIVER
+        value: database
+      - key: CACHE_STORE
+        value: database
+      - key: QUEUE_CONNECTION
+        value: database
+
+      # Branding & UI Configs
+      - key: BRAND_NAME
+        value: "PropTech UZ"
+      - key: BRAND_TAGLINE
+        value: "Real Estate Suite"
+      - key: BRAND_LEGAL_NAME
+        value: "PropTech UZ"
