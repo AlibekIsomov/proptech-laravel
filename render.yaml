@@ -9,7 +9,7 @@ services:
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
-        value: "false"
+        value: "true"
       - key: APP_URL
         sync: false # Render will prompt you to enter the final URL or will use the default Render subdomain
       - key: APP_KEY
