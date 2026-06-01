@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return redirect()->route('login');
+    return redirect()->route('pm.login');
 });
 
 // ── Public routes (autentifikatsiya shart emas) ──────────────────────────────
@@ -24,10 +24,10 @@ Route::post('logout', [AuthController::class, 'logout'])->name('logout')->middle
 // ── Protected routes ──────────────────────────────────────────────────────────
 Route::middleware('auth')->group(function () {
 
-    // Sales Dashboard — disabled for frontend (PM only)
+    // Sales Dashboard
     Route::get('dashboard', [DashboardController::class, 'index'])
         ->name('dashboard')
-        ->middleware('sales.disabled', 'role:super_admin|company_admin|viewer');
+        ->middleware('role:super_admin|company_admin|manager|viewer');
 
     // ── Companies — disabled for frontend (PM only) ────────────────────────
     Route::resource('companies', \App\Http\Controllers\CompanyController::class)

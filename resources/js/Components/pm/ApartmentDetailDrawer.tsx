@@ -147,8 +147,8 @@ export default function ApartmentDetailDrawer({ apartmentId, onClose }: Props) {
         className="fixed top-0 right-0 z-50 h-screen overflow-y-auto"
         style={{
           width:           'min(480px, 95vw)',
-          backgroundColor: '#0d1117',
-          borderLeft:      '1px solid rgba(255,255,255,0.08)',
+          backgroundColor: 'var(--card)',
+          borderLeft:      '1px solid var(--border)',
           boxShadow:       '-12px 0 60px rgba(0,0,0,0.6)',
         }}
       >
@@ -156,19 +156,19 @@ export default function ApartmentDetailDrawer({ apartmentId, onClose }: Props) {
         <div
           className="px-6 py-5 sticky top-0 z-10"
           style={{
-            backgroundColor: '#0d1117',
-            borderBottom:    '1px solid rgba(255,255,255,0.06)',
+            backgroundColor: 'var(--card)',
+            borderBottom:    '1px solid var(--border)',
           }}
         >
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-[10px] uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.4)' }}>
+              <p className="text-[10px] uppercase tracking-widest" style={{ color: 'var(--muted)' }}>
                 Apartment
               </p>
-              <h2 className="text-2xl text-white font-bold" style={{ fontFamily: 'var(--font-display)' }}>
+              <h2 className="text-2xl text-slate-800 font-bold" style={{ fontFamily: 'var(--font-display)' }}>
                 №{apartment?.number ?? '—'}
               </h2>
-              <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.5)' }}>
+              <p className="text-xs mt-1" style={{ color: 'var(--muted)' }}>
                 Floor {apartment?.floor ?? '—'}
                 {apartment?.rooms_count ? ` · ${apartment.rooms_count} rooms` : ''}
                 {apartment?.size_m2 ? ` · ${apartment.size_m2} m²` : ''}
@@ -177,8 +177,8 @@ export default function ApartmentDetailDrawer({ apartmentId, onClose }: Props) {
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-lg transition-colors hover:bg-white/5"
-              style={{ color: 'rgba(255,255,255,0.55)' }}
+              className="p-2 rounded-lg transition-colors hover:bg-slate-100"
+              style={{ color: 'var(--muted)' }}
             >
               <X className="w-5 h-5" />
             </button>
@@ -200,8 +200,8 @@ export default function ApartmentDetailDrawer({ apartmentId, onClose }: Props) {
                   className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all"
                   style={{
                     backgroundColor: active ? 'rgba(16,185,129,0.12)' : 'transparent',
-                    color:           active ? '#6ee7b7' : 'rgba(255,255,255,0.45)',
-                    border:          `1px solid ${active ? 'rgba(16,185,129,0.3)' : 'rgba(255,255,255,0.06)'}`,
+                    color:           active ? '#6ee7b7' : 'var(--muted)',
+                    border:          `1px solid ${active ? 'rgba(16,185,129,0.3)' : 'var(--border)'}`,
                   }}
                 >
                   <Icon className="w-3.5 h-3.5" />
@@ -215,7 +215,7 @@ export default function ApartmentDetailDrawer({ apartmentId, onClose }: Props) {
         {/* Body */}
         <div className="px-6 py-6">
           {loading ? (
-            <div className="flex items-center justify-center py-12" style={{ color: 'rgba(255,255,255,0.4)' }}>
+            <div className="flex items-center justify-center py-12" style={{ color: 'var(--muted)' }}>
               <Loader2 className="w-5 h-5 animate-spin" />
             </div>
           ) : (
@@ -241,7 +241,7 @@ function ResidentTab({ resident }: { resident: ResidentSummary | null }) {
         style={{
           backgroundColor: 'rgba(100,116,139,0.06)',
           border:          '1px dashed rgba(100,116,139,0.25)',
-          color:           'rgba(255,255,255,0.4)',
+          color:           'var(--muted)',
         }}
       >
         No active resident in this apartment.
@@ -269,14 +269,14 @@ function Field({ label, value }: { label: string; value: string }) {
     <div
       className="rounded-xl px-4 py-3"
       style={{
-        backgroundColor: 'rgba(255,255,255,0.03)',
-        border:          '1px solid rgba(255,255,255,0.06)',
+        backgroundColor: 'var(--border)',
+        border:          '1px solid var(--border)',
       }}
     >
-      <p className="text-[10px] uppercase tracking-widest mb-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>
+      <p className="text-[10px] uppercase tracking-widest mb-0.5" style={{ color: 'var(--muted)' }}>
         {label}
       </p>
-      <p className="text-sm text-white">{value}</p>
+      <p className="text-sm text-slate-800">{value}</p>
     </div>
   );
 }
@@ -286,16 +286,16 @@ function FieldIcon({ icon: Icon, label, value }: { icon: React.ElementType; labe
     <div
       className="flex items-center gap-3 rounded-xl px-4 py-3"
       style={{
-        backgroundColor: 'rgba(255,255,255,0.03)',
-        border:          '1px solid rgba(255,255,255,0.06)',
+        backgroundColor: 'var(--border)',
+        border:          '1px solid var(--border)',
       }}
     >
-      <Icon className="w-4 h-4 shrink-0" style={{ color: 'rgba(255,255,255,0.4)' }} />
+      <Icon className="w-4 h-4 shrink-0" style={{ color: 'var(--muted)' }} />
       <div className="flex-1 min-w-0">
-        <p className="text-[10px] uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.4)' }}>
+        <p className="text-[10px] uppercase tracking-widest" style={{ color: 'var(--muted)' }}>
           {label}
         </p>
-        <p className="text-sm text-white truncate">{value}</p>
+        <p className="text-sm text-slate-800 truncate">{value}</p>
       </div>
     </div>
   );
@@ -315,14 +315,14 @@ function RequestsTab({ requests }: { requests: MaintenanceRequestSummary[] }) {
             key={r.id}
             className="w-full text-left rounded-xl p-4"
             style={{
-              backgroundColor: 'rgba(255,255,255,0.03)',
-              border:          '1px solid rgba(255,255,255,0.06)',
+              backgroundColor: 'var(--border)',
+              border:          '1px solid var(--border)',
             }}
           >
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-white">{r.title}</p>
-                <p className="text-xs mt-1 line-clamp-2" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                <p className="text-sm font-semibold text-slate-800">{r.title}</p>
+                <p className="text-xs mt-1 line-clamp-2" style={{ color: 'var(--muted)' }}>
                   {r.description}
                 </p>
               </div>
@@ -334,10 +334,10 @@ function RequestsTab({ requests }: { requests: MaintenanceRequestSummary[] }) {
               </span>
             </div>
             <div className="flex items-center justify-between mt-3 text-[11px]">
-              <span style={{ color: 'rgba(255,255,255,0.4)' }}>
+              <span style={{ color: 'var(--muted)' }}>
                 {new Date(r.created_at).toLocaleDateString()}
               </span>
-              <span style={{ color: 'rgba(255,255,255,0.55)' }}>{STATUS_RU[r.status] || r.status}</span>
+              <span style={{ color: 'var(--muted)' }}>{STATUS_RU[r.status] || r.status}</span>
             </div>
           </div>
         );
@@ -358,19 +358,19 @@ function MetersTab({ meters }: { meters: UtilityMeterSummary[] }) {
           key={m.id}
           className="rounded-xl p-4"
           style={{
-            backgroundColor: 'rgba(255,255,255,0.03)',
-            border:          '1px solid rgba(255,255,255,0.06)',
+            backgroundColor: 'var(--border)',
+            border:          '1px solid var(--border)',
           }}
         >
           <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold text-white">{METER_RU[m.meter_type] ?? m.meter_type}</p>
-            <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)' }}>{m.serial_number}</span>
+            <p className="text-sm font-semibold text-slate-800">{METER_RU[m.meter_type] ?? m.meter_type}</p>
+            <span className="text-[10px]" style={{ color: 'var(--muted)' }}>{m.serial_number}</span>
           </div>
-          <p className="text-2xl mt-2 text-white font-bold">
-            {m.latest_reading?.reading_value ?? m.initial_reading} <span className="text-xs font-normal" style={{ color: 'rgba(255,255,255,0.5)' }}>{m.unit}</span>
+          <p className="text-2xl mt-2 text-slate-800 font-bold">
+            {m.latest_reading?.reading_value ?? m.initial_reading} <span className="text-xs font-normal" style={{ color: 'var(--muted)' }}>{m.unit}</span>
           </p>
           {m.latest_reading?.reading_date && (
-            <p className="text-[11px] mt-1" style={{ color: 'rgba(255,255,255,0.4)' }}>
+            <p className="text-[11px] mt-1" style={{ color: 'var(--muted)' }}>
               Reading from {new Date(m.latest_reading.reading_date).toLocaleDateString()}
             </p>
           )}
@@ -394,14 +394,14 @@ function InvoicesTab({ invoices }: { invoices: PMInvoiceSummary[] }) {
             key={inv.id}
             className="rounded-xl p-4"
             style={{
-              backgroundColor: 'rgba(255,255,255,0.03)',
-              border:          '1px solid rgba(255,255,255,0.06)',
+              backgroundColor: 'var(--border)',
+              border:          '1px solid var(--border)',
             }}
           >
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm font-semibold text-white">№{inv.invoice_number}</p>
-                <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                <p className="text-sm font-semibold text-slate-800">№{inv.invoice_number}</p>
+                <p className="text-[11px] mt-0.5" style={{ color: 'var(--muted)' }}>
                   {new Date(inv.billing_period_start).toLocaleDateString()} —{' '}
                   {new Date(inv.billing_period_end).toLocaleDateString()}
                 </p>
@@ -413,7 +413,7 @@ function InvoicesTab({ invoices }: { invoices: PMInvoiceSummary[] }) {
                 {INVOICE_STATUS_RU[inv.status] || inv.status}
               </span>
             </div>
-            <p className="text-lg mt-2 text-white font-bold">
+            <p className="text-lg mt-2 text-slate-800 font-bold">
               {inv.total_amount.toLocaleString()} {inv.currency}
             </p>
           </div>
@@ -430,7 +430,7 @@ function EmptyHint({ text }: { text: string }) {
       style={{
         backgroundColor: 'rgba(100,116,139,0.06)',
         border:          '1px dashed rgba(100,116,139,0.25)',
-        color:           'rgba(255,255,255,0.4)',
+        color:           'var(--muted)',
       }}
     >
       {text}

@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[ScopedBy([CompanyScope::class])]
 class Resident extends Model
 {
+    use \App\Traits\SyncsToSupabase;
+
     use HasUuids;
     protected $fillable = [
         'apartment_id', 'company_id', 'user_id', 'full_name',

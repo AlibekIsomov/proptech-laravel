@@ -92,30 +92,30 @@ export default function Index({ companies }: Props) {
 
   return (
     <AppShell>
-      <Head title="Companies - PropTech UZ" />
+      <Head title="Companies - 1Mahalla" />
 
       {/* Header bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b" style={{ borderColor: 'var(--border)' }}>
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
             <Building className="w-6 h-6 text-indigo-400" />
             Companies
           </h1>
-          <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.45)' }}>
+          <p className="text-xs mt-1" style={{ color: 'var(--muted)' }}>
             Super Admin View: {filtered.length} registered tenants
           </p>
         </div>
         <div className="flex items-center gap-3">
           {/* Search */}
           <div className="flex items-center gap-2 rounded-xl px-3.5 py-2.5"
-            style={{ backgroundColor: '#0d1117', border: '1px solid rgba(255,255,255,0.08)' }}>
-            <Search className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.3)' }} />
+            style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
+            <Search className="w-4 h-4" style={{ color: 'var(--muted)' }} />
             <input
               type="text"
               placeholder="Search companies..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="bg-transparent text-xs text-white outline-none placeholder:text-slate-500 w-44 md:w-56"
+              className="bg-transparent text-xs text-slate-800 outline-none placeholder:text-slate-400 w-44 md:w-56"
             />
           </div>
           <button
@@ -132,19 +132,19 @@ export default function Index({ companies }: Props) {
       <div className="mt-6 space-y-6">
         {/* Table representation */}
         <div className="rounded-2xl border overflow-hidden"
-          style={{ backgroundColor: '#0d1117', borderColor: 'rgba(255,255,255,0.06)' }}>
+          style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
           {filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 gap-3">
-              <Building className="w-10 h-10" style={{ color: 'rgba(255,255,255,0.1)' }} />
-              <p className="text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>No companies registered yet.</p>
+              <Building className="w-10 h-10" style={{ color: 'var(--border)' }} />
+              <p className="text-sm" style={{ color: 'var(--muted)' }}>No companies registered yet.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                  <tr style={{ borderBottom: '1px solid var(--border)' }}>
                     {['Name', 'Slug', 'Users Count', 'Projects', 'Status', 'Registered At', 'Actions'].map((h) => (
-                      <th key={h} className="px-6 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                      <th key={h} className="px-6 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--muted)' }}>
                         {h}
                       </th>
                     ))}
@@ -153,19 +153,19 @@ export default function Index({ companies }: Props) {
                 <tbody className="divide-y divide-white/[0.04]">
                   {filtered.map((c) => {
                     return (
-                      <tr key={c.id} className="transition-all hover:bg-white/[0.01]">
+                      <tr key={c.id} className="transition-all hover:bg-slate-50">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2.5">
-                            <div className="flex items-center justify-center w-8 h-8 rounded-xl font-bold text-white shrink-0"
+                            <div className="flex items-center justify-center w-8 h-8 rounded-xl font-bold text-slate-800 shrink-0"
                               style={{ background: 'linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)' }}>
                               {c.name.charAt(0).toUpperCase()}
                             </div>
-                            <span className="text-sm font-semibold text-white">{c.name}</span>
+                            <span className="text-sm font-semibold text-slate-800">{c.name}</span>
                           </div>
                         </td>
                         <td className="px-6 py-4 text-xs text-slate-400 font-mono">{c.slug}</td>
-                        <td className="px-6 py-4 text-xs text-white">{c.users_count} users</td>
-                        <td className="px-6 py-4 text-xs text-white">{c.projects_count} projects</td>
+                        <td className="px-6 py-4 text-xs text-slate-800">{c.users_count} users</td>
+                        <td className="px-6 py-4 text-xs text-slate-800">{c.projects_count} projects</td>
                         <td className="px-6 py-4 text-xs">
                           <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold"
                             style={{
@@ -180,13 +180,13 @@ export default function Index({ companies }: Props) {
                           <div className="flex items-center gap-3">
                             <button
                               onClick={() => openEditModal(c)}
-                              className="p-1.5 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-colors"
+                              className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-white transition-colors"
                             >
                               <Edit className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleDelete(c)}
-                              className="p-1.5 rounded-lg hover:bg-white/5 text-slate-400 hover:text-red-400 transition-colors"
+                              className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-red-400 transition-colors"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -207,14 +207,14 @@ export default function Index({ companies }: Props) {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
           style={{ backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(2px)' }}>
           <div className="w-full max-w-md rounded-2xl border p-6"
-            style={{ backgroundColor: '#0d1117', borderColor: 'rgba(255,255,255,0.08)' }}>
+            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-lg font-bold text-white">
+              <h2 className="text-lg font-bold text-slate-800">
                 {editingCompany ? 'Edit Company' : 'New Company'}
               </h2>
               <button
                 onClick={() => setShowModal(false)}
-                className="p-1.5 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white"
+                className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-white"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -230,8 +230,8 @@ export default function Index({ companies }: Props) {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. UzBuilders Corp"
-                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-white outline-none"
-                  style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.08)' }}
+                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
+                  style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
                 />
               </div>
 
@@ -243,8 +243,8 @@ export default function Index({ companies }: Props) {
                   value={slug}
                   onChange={(e) => setSlug(e.target.value)}
                   placeholder="e.g. uzbuilders (auto-generated if empty)"
-                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-white outline-none font-mono"
-                  style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.08)' }}
+                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none font-mono"
+                  style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
                 />
               </div>
 
@@ -254,8 +254,8 @@ export default function Index({ companies }: Props) {
                 <select
                   value={isActive ? '1' : '0'}
                   onChange={(e) => setIsActive(e.target.value === '1')}
-                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-white outline-none"
-                  style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.08)' }}
+                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
+                  style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
                 >
                   <option value="1">Active</option>
                   <option value="0">Inactive</option>
@@ -266,8 +266,8 @@ export default function Index({ companies }: Props) {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="flex-1 py-3 rounded-xl text-xs font-semibold hover:bg-white/5 transition-all text-slate-400"
-                  style={{ border: '1px solid rgba(255,255,255,0.08)' }}
+                  className="flex-1 py-3 rounded-xl text-xs font-semibold hover:bg-slate-100 transition-all text-slate-400"
+                  style={{ border: '1px solid var(--border)' }}
                 >
                   Cancel
                 </button>

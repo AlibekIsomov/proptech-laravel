@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[ScopedBy([CompanyScope::class])]
 class PMInvoice extends Model
 {
+    use \App\Traits\SyncsToSupabase;
+
     use HasUuids;
     protected $table = 'pm_invoices';
 

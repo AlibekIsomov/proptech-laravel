@@ -25,7 +25,7 @@ class InventoryTest extends TestCase
 
         $this->company = Company::firstOrCreate(
             ['slug' => 'proptech-uz'],
-            ['name' => 'PropTech UZ HQ', 'is_active' => true]
+            ['name' => '1Mahalla HQ', 'is_active' => true]
         );
 
         $this->user = User::firstOrCreate(

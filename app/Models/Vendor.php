@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[ScopedBy([CompanyScope::class])]
 class Vendor extends Model
 {
+    use \App\Traits\SyncsToSupabase;
+
     use HasUuids;
     protected $fillable = [
         'company_id', 'user_id', 'name', 'phone', 'email',

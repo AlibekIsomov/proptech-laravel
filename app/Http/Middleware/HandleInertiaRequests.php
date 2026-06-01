@@ -31,9 +31,9 @@ class HandleInertiaRequests extends Middleware
                 ] : null,
             ],
             'brand' => [
-                'name'       => config('app.brand_name', 'PropTech UZ'),
-                'tagline'    => config('app.brand_tagline', 'Real Estate Suite'),
-                'legalName'  => config('app.brand_legal_name', 'PropTech UZ'),
+                'name'       => config('app.brand_name', '1Mahalla'),
+                'tagline'    => config('app.brand_tagline', 'Mahalla · Texnologiya'),
+                'legalName'  => config('app.brand_legal_name', '1Mahalla'),
             ],
             'flash' => [
                 'success' => $request->session()->get('success'),

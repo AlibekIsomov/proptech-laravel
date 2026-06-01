@@ -178,7 +178,7 @@ export default function FloorPlan({ building_id, refreshKey, apiBase = '' }: Flo
         <div className="space-y-4">
 
             {/* ── Building stats bar ── */}
-            <div className="rounded-xl border p-4" style={{ backgroundColor: "#0d1117", borderColor: "#1e2536" }}>
+            <div className="rounded-xl border p-4" style={{ backgroundColor: 'var(--card)', borderColor: "var(--border)" }}>
                 <div className="flex items-center gap-6 mb-3 flex-wrap">
                     {[
                         { label: "Всего",         value: total,     color: "white"   },
@@ -193,7 +193,7 @@ export default function FloorPlan({ building_id, refreshKey, apiBase = '' }: Flo
                     ))}
                     {revenue > 0 && (
                         <div className="text-center ml-auto">
-                            <p className="text-lg font-bold text-white">
+                            <p className="text-lg font-bold text-slate-800">
                                 ${revenue >= 1_000_000
                                     ? `${(revenue / 1_000_000).toFixed(1)}M`
                                     : `${(revenue / 1000).toFixed(0)}k`}
@@ -205,7 +205,7 @@ export default function FloorPlan({ building_id, refreshKey, apiBase = '' }: Flo
 
                 {/* Overall progress bar */}
                 {total > 0 && (
-                    <div className="w-full h-2.5 rounded-full overflow-hidden" style={{ backgroundColor: "#1e2536" }}>
+                    <div className="w-full h-2.5 rounded-full overflow-hidden" style={{ backgroundColor: "var(--border)" }}>
                         <div className="h-full flex">
                             <div
                                 className="transition-all"
@@ -237,7 +237,7 @@ export default function FloorPlan({ building_id, refreshKey, apiBase = '' }: Flo
             {sortedFloors.length === 0 ? (
                 <div
                     className="flex flex-col items-center justify-center py-14 gap-3 rounded-xl border"
-                    style={{ borderColor: "#1e2536", borderStyle: "dashed" }}
+                    style={{ borderColor: "var(--border)", borderStyle: "dashed" }}
                 >
                     <p className="text-sm" style={{ color: "#475569" }}>
                         Нет этажей. Добавьте вручную или используйте массовое создание.
@@ -256,17 +256,17 @@ export default function FloorPlan({ building_id, refreshKey, apiBase = '' }: Flo
                             <div
                                 key={floor.id}
                                 className="rounded-xl border overflow-hidden"
-                                style={{ backgroundColor: "#080b14", borderColor: "#1e2536" }}
+                                style={{ backgroundColor: 'var(--bg)', borderColor: "var(--border)" }}
                             >
                                 {/* Floor header */}
                                 <div
                                     className="flex items-center justify-between px-4 py-2 border-b"
-                                    style={{ borderColor: "#0d1117" }}
+                                    style={{ borderColor: "var(--card)" }}
                                 >
                                     <div className="flex items-center gap-2.5">
                                         <div
                                             className="flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold shrink-0"
-                                            style={{ backgroundColor: "#0d1117", color: "#6366f1" }}
+                                            style={{ backgroundColor: 'var(--card)', color: "#6366f1" }}
                                         >
                                             {floor.floor_number}
                                         </div>
@@ -280,7 +280,7 @@ export default function FloorPlan({ building_id, refreshKey, apiBase = '' }: Flo
                                         <div className="flex items-center gap-2 shrink-0">
                                             <div
                                                 className="w-20 h-1.5 rounded-full overflow-hidden"
-                                                style={{ backgroundColor: "#1e2536" }}
+                                                style={{ backgroundColor: "var(--border)" }}
                                             >
                                                 <div className="h-full flex">
                                                     <div style={{ width: `${(fSold / fTotal) * 100}%`,     backgroundColor: "#10b981" }} />
@@ -358,15 +358,15 @@ export default function FloorPlan({ building_id, refreshKey, apiBase = '' }: Flo
                 >
                     <div
                         className="w-full max-w-sm rounded-2xl border overflow-y-auto max-h-[90vh]"
-                        style={{ backgroundColor: "#0d1117", borderColor: "#1e2536" }}
+                        style={{ backgroundColor: 'var(--card)', borderColor: "var(--border)" }}
                     >
                         {/* Header */}
                         <div
                             className="flex items-center justify-between px-5 py-4 border-b sticky top-0"
-                            style={{ backgroundColor: "#0d1117", borderColor: "#1e2536" }}
+                            style={{ backgroundColor: 'var(--card)', borderColor: "var(--border)" }}
                         >
                             <div>
-                                <h3 className="text-base font-bold text-white">Квартира {selected.number}</h3>
+                                <h3 className="text-base font-bold text-slate-800">Квартира {selected.number}</h3>
                                 <p className="text-xs mt-0.5" style={{ color: "#64748b" }}>
                                     {selected.rooms_count != null ? `${selected.rooms_count}-комн.` : ""}
                                     {selected.rooms_count != null && selected.size_m2 > 0 ? " · " : ""}
@@ -375,7 +375,7 @@ export default function FloorPlan({ building_id, refreshKey, apiBase = '' }: Flo
                             </div>
                             <button
                                 onClick={() => setSelected(null)}
-                                className="p-1.5 rounded-lg hover:bg-white/5"
+                                className="p-1.5 rounded-lg hover:bg-slate-100"
                                 style={{ color: "#475569" }}
                             >
                                 <X className="w-4 h-4" />
@@ -403,10 +403,10 @@ export default function FloorPlan({ building_id, refreshKey, apiBase = '' }: Flo
                                 <div
                                     key={label}
                                     className="flex justify-between items-center py-2.5"
-                                    style={{ borderBottom: i < arr.length - 1 ? "1px solid #1e2536" : undefined }}
+                                    style={{ borderBottom: i < arr.length - 1 ? "1px solid var(--border)" : undefined }}
                                 >
                                     <span className="text-xs" style={{ color: "#64748b" }}>{label}</span>
-                                    <span className="text-sm font-medium text-white">{value}</span>
+                                    <span className="text-sm font-medium text-slate-800">{value}</span>
                                 </div>
                             ))}
                         </div>
@@ -425,8 +425,8 @@ export default function FloorPlan({ building_id, refreshKey, apiBase = '' }: Flo
                                             onClick={() => updateStatus(selected.id, s)}
                                             className="py-2 rounded-lg text-xs font-semibold border transition-colors disabled:opacity-50"
                                             style={{
-                                                backgroundColor: active ? cfg.bg     : "#080b14",
-                                                borderColor:     active ? cfg.border : "#1e2536",
+                                                backgroundColor: active ? cfg.bg     : "var(--bg)",
+                                                borderColor:     active ? cfg.border : "var(--border)",
                                                 color:           active ? cfg.text   : "#475569",
                                             }}
                                         >
@@ -439,13 +439,13 @@ export default function FloorPlan({ building_id, refreshKey, apiBase = '' }: Flo
 
                         {/* Linked buyer */}
                         {(selected.status === "sold" || selected.status === "reserved") && (
-                            <div className="px-5 pb-4 border-t pt-4" style={{ borderColor: "#1e2536" }}>
+                            <div className="px-5 pb-4 border-t pt-4" style={{ borderColor: "var(--border)" }}>
                                 <p className="text-xs font-medium mb-2.5" style={{ color: "#94a3b8" }}>Покупатель</p>
                                 {selected.client ? (
                                     <div className="space-y-2">
                                         <div
                                             className="flex items-center gap-2.5 rounded-lg px-3 py-2.5"
-                                            style={{ backgroundColor: "#080b14", border: "1px solid #1e2536" }}
+                                            style={{ backgroundColor: 'var(--bg)', border: "1px solid var(--border)" }}
                                         >
                                             <div
                                                 className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
@@ -454,7 +454,7 @@ export default function FloorPlan({ building_id, refreshKey, apiBase = '' }: Flo
                                                 {selected.client.full_name.charAt(0).toUpperCase()}
                                             </div>
                                             <div className="min-w-0 flex-1">
-                                                <p className="text-sm font-medium text-white truncate">{selected.client.full_name}</p>
+                                                <p className="text-sm font-medium text-slate-800 truncate">{selected.client.full_name}</p>
                                                 {selected.client.phone && (
                                                     <p className="text-xs truncate" style={{ color: "#64748b" }}>{selected.client.phone}</p>
                                                 )}
@@ -471,7 +471,7 @@ export default function FloorPlan({ building_id, refreshKey, apiBase = '' }: Flo
                                         <button
                                             onClick={() => router.visit(`/clients/${selected.client?.id}`)}
                                             className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium border transition-colors hover:border-indigo-500/40"
-                                            style={{ borderColor: "#1e2536", color: "#a5b4fc", backgroundColor: "#0f0a30" }}
+                                            style={{ borderColor: "var(--border)", color: "#a5b4fc", backgroundColor: "#0f0a30" }}
                                         >
                                             <User className="w-3 h-3" />
                                             Открыть профиль клиента
@@ -494,12 +494,12 @@ export default function FloorPlan({ building_id, refreshKey, apiBase = '' }: Flo
                                     <select
                                         value={selected.client?.assigned_to || ""}
                                         onChange={(e) => e.target.value && assignManager(selected.id, e.target.value)}
-                                        className="w-full appearance-none rounded-lg px-3 py-2.5 pr-8 text-xs text-white outline-none"
-                                        style={{ backgroundColor: "#080b14", border: "1px solid #1e2536" }}
+                                        className="w-full appearance-none rounded-lg px-3 py-2.5 pr-8 text-xs text-slate-800 outline-none"
+                                        style={{ backgroundColor: 'var(--bg)', border: "1px solid var(--border)" }}
                                     >
-                                        <option value="" style={{ backgroundColor: "#0d1117" }}>Выбрать менеджера…</option>
+                                        <option value="" style={{ backgroundColor: 'var(--card)' }}>Выбрать менеджера…</option>
                                         {managers.map((m) => (
-                                            <option key={m.id} value={m.id} style={{ backgroundColor: "#0d1117" }}>
+                                            <option key={m.id} value={m.id} style={{ backgroundColor: 'var(--card)' }}>
                                                 {m.full_name ?? m.email ?? m.id}
                                             </option>
                                         ))}
@@ -515,8 +515,8 @@ export default function FloorPlan({ building_id, refreshKey, apiBase = '' }: Flo
                         <div className="px-5 pb-5">
                             <button
                                 onClick={() => setSelected(null)}
-                                className="w-full py-2.5 rounded-lg text-sm font-medium hover:bg-white/5"
-                                style={{ border: "1px solid #1e2536", color: "#64748b" }}
+                                className="w-full py-2.5 rounded-lg text-sm font-medium hover:bg-slate-100"
+                                style={{ border: "1px solid var(--border)", color: "#64748b" }}
                             >
                                 Закрыть
                             </button>

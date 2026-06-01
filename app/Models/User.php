@@ -10,6 +10,8 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
+    use \App\Traits\SyncsToSupabase;
+
     use HasFactory, Notifiable, HasRoles;
 
     protected $fillable = [

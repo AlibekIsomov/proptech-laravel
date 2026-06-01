@@ -10,6 +10,6 @@ class SalesDisabled
 {
     public function handle(Request $request, Closure $next): Response
     {
-        return redirect()->route('pm.dashboard');
+        return $next($request);
     }
 }

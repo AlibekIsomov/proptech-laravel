@@ -27,7 +27,7 @@ const STATUS_COLOR: Record<ChessboardStatus, { bg: string; border: string; text:
   open_request: { bg: 'rgba(251,191,36,0.10)', border: 'rgba(251,191,36,0.35)', text: '#fcd34d' },
   emergency:    { bg: 'rgba(239,68,68,0.12)',  border: 'rgba(239,68,68,0.45)',  text: '#fca5a5' },
   overdue:      { bg: 'rgba(59,130,246,0.10)', border: 'rgba(59,130,246,0.35)', text: '#93c5fd' },
-  empty:        { bg: 'rgba(100,116,139,0.06)', border: 'rgba(100,116,139,0.18)', text: 'rgba(255,255,255,0.32)' },
+  empty:        { bg: 'rgba(100,116,139,0.06)', border: 'rgba(100,116,139,0.18)', text: 'var(--muted)' },
 };
 
 const STATUS_LABEL: Record<ChessboardStatus, string> = {
@@ -58,9 +58,9 @@ export default function ResidentsChessboard({ apartments, onSelect }: Props) {
       <div
         className="rounded-2xl p-12 text-center text-sm"
         style={{
-          backgroundColor: '#0d1117',
-          border:          '1px solid rgba(255,255,255,0.06)',
-          color:           'rgba(255,255,255,0.4)',
+          backgroundColor: 'var(--card)',
+          border:          '1px solid var(--border)',
+          color:           'var(--muted)',
         }}
       >
         No apartments to display. Please select a project and building above.
@@ -81,7 +81,7 @@ export default function ResidentsChessboard({ apartments, onSelect }: Props) {
                 border:          `1px solid ${STATUS_COLOR[s].border}`,
               }}
             />
-            <span style={{ color: 'rgba(255,255,255,0.55)' }}>{STATUS_LABEL[s]}</span>
+            <span style={{ color: 'var(--muted)' }}>{STATUS_LABEL[s]}</span>
           </div>
         ))}
       </div>
@@ -90,15 +90,15 @@ export default function ResidentsChessboard({ apartments, onSelect }: Props) {
       <div
         className="rounded-2xl p-6 space-y-3 overflow-x-auto"
         style={{
-          backgroundColor: '#0d1117',
-          border:          '1px solid rgba(255,255,255,0.06)',
+          backgroundColor: 'var(--card)',
+          border:          '1px solid var(--border)',
         }}
       >
         {byFloor.map(([floor, list]) => (
           <div key={floor} className="flex items-start gap-4 min-w-[600px]">
             <div
               className="text-xs font-semibold w-12 shrink-0 pt-2"
-              style={{ color: 'rgba(255,255,255,0.45)' }}
+              style={{ color: 'var(--muted)' }}
             >
               Floor {floor}
             </div>
@@ -128,16 +128,16 @@ export default function ResidentsChessboard({ apartments, onSelect }: Props) {
                       <div
                         className="absolute z-10 left-1/2 -translate-x-1/2 -top-2 -translate-y-full whitespace-nowrap rounded-lg px-3 py-2 text-[11px]"
                         style={{
-                          backgroundColor: '#1e2536',
-                          border:          '1px solid rgba(255,255,255,0.08)',
-                          color:           'rgba(255,255,255,0.85)',
+                          backgroundColor: 'var(--border)',
+                          border:          '1px solid var(--border)',
+                          color:           'var(--muted)',
                           fontWeight:      400,
                           minWidth:        '200px',
                           textAlign:       'left',
                         }}
                       >
-                        <div className="font-semibold text-white">Apartment #{apt.number}</div>
-                        <div style={{ color: 'rgba(255,255,255,0.55)' }}>
+                        <div className="font-semibold text-slate-800">Apartment #{apt.number}</div>
+                        <div style={{ color: 'var(--muted)' }}>
                           {apt.rooms_count ? `${apt.rooms_count} rooms` : ''}
                           {apt.size_m2 ? ` · ${apt.size_m2} m²` : ''}
                         </div>
@@ -145,7 +145,7 @@ export default function ResidentsChessboard({ apartments, onSelect }: Props) {
                           {STATUS_LABEL[apt.status]}
                         </div>
                         {apt.resident_name && (
-                          <div className="mt-1" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                          <div className="mt-1" style={{ color: 'var(--muted)' }}>
                             👤 {apt.resident_name}
                           </div>
                         )}

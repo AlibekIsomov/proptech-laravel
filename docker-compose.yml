@@ -1,18 +1,80 @@
 services:
+  # PHP-FPM container — faqat Laravel backend
   app:
     build:
       context: .
       dockerfile: Dockerfile
+    image: proptech-laravel-app:latest
     container_name: proptech_app
-    ports:
-      - "8080:8080"
     restart: unless-stopped
     env_file:
       - .env
     volumes:
-      - .env:/var/www/html/.env
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+      - .:/var/www/html
+      - vendor_data:/var/www/html/vendor
+      - build_data:/var/www/html/public/build
+      - storage_data:/var/www/html/storage
+    networks:
+      - proptech-network
+    depends_on: []
+
+  # Nginx container — faqat web server (PHP so'rovlarini app:9000 ga yo'naltiradi)
+  web:
+    image: nginx:alpine
+    container_name: proptech_web
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html
+      - build_data:/var/www/html/public/build
+      - ./docker/nginx.dev.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - app
+    networks:
+      - proptech-network
+
+  # Node/Vite container — frontend dev server (HMR)
+  node:
+    image: node:20-alpine
+    container_name: proptech_node
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    working_dir: /app
+    environment:
+      - NODE_OPTIONS=--max-old-space-size=1536
+    command: sh -c "npm install --legacy-peer-deps && npm run build && cp -r /app/public/build /var/www/html/public/"
+    mem_limit: 2g
+    volumes:
+      - .:/app
+      - build_data:/var/www/html/public/build
+    networks:
+      - proptech-network
+
+  # Local PostgreSQL container
+  db:
+    image: postgres:15-alpine
+    container_name: proptech_db
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-proptech}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - proptech-network
+
+networks:
+  proptech-network:
+    driver: bridge
+
+volumes:
+  vendor_data:
+  build_data:
+  storage_data:
+  db_data:
+

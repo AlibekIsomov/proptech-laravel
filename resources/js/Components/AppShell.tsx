@@ -10,7 +10,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     }, []);
 
     return (
-        <div className="flex min-h-screen" style={{ backgroundColor: isPm ? '#06080e' : '#080b14' }}>
+        <div className="flex min-h-screen" style={{ backgroundColor: 'var(--bg)' }}>
             {isPm ? <PMSidebar /> : <Sidebar />}
             <div className="flex flex-col flex-1" style={{ marginLeft: '14rem' }}>
                 <main className="p-6 md:p-8 flex-1">

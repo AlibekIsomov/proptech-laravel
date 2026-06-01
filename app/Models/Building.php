@@ -2,16 +2,15 @@
 
 namespace App\Models;
 
-use App\Models\Scopes\CompanyScope;
-use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[ScopedBy([CompanyScope::class])]
 class Building extends Model
 {
+    use \App\Traits\SyncsToSupabase;
+
     use HasUuids;
     protected $fillable = [
         'project_id', 'name', 'floors', 'apartments_per_floor', 'status',

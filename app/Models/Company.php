@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Company extends Model
 {
+    use \App\Traits\SyncsToSupabase;
+
     protected $fillable = [
         'name',
         'slug',

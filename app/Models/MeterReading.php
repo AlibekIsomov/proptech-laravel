@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MeterReading extends Model
 {
+    use \App\Traits\SyncsToSupabase;
+
     use HasUuids;
     protected $fillable = [
         'meter_id', 'apartment_id', 'reading_value', 'reading_date',

@@ -185,27 +185,27 @@ export default function Index({ apartments, projects, buildings }: Props) {
 
   return (
     <AppShell>
-      <Head title="Apartments - PropTech UZ" />
+      <Head title="Apartments - 1Mahalla" />
 
       {/* Header bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b" style={{ borderColor: 'var(--border)' }}>
         <div>
-          <h1 className="text-2xl font-bold text-white">Apartments</h1>
-          <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.45)' }}>
+          <h1 className="text-2xl font-bold text-slate-800">Apartments</h1>
+          <p className="text-xs mt-1" style={{ color: 'var(--muted)' }}>
             Showing {filtered.length} of {apartments.length} total units
           </p>
         </div>
         <div className="flex items-center gap-3">
           {/* Search */}
           <div className="flex items-center gap-2 rounded-xl px-3.5 py-2.5"
-            style={{ backgroundColor: '#0d1117', border: '1px solid rgba(255,255,255,0.08)' }}>
-            <Search className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.3)' }} />
+            style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
+            <Search className="w-4 h-4" style={{ color: 'var(--muted)' }} />
             <input
               type="text"
               placeholder="Search apartment, building..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="bg-transparent text-xs text-white outline-none placeholder:text-slate-500 w-44 md:w-56"
+              className="bg-transparent text-xs text-slate-800 outline-none placeholder:text-slate-400 w-44 md:w-56"
             />
           </div>
           <button
@@ -232,13 +232,13 @@ export default function Index({ apartments, projects, buildings }: Props) {
                 className="flex items-center gap-2 text-xs px-4 py-2 rounded-full border transition-all"
                 style={{
                   backgroundColor: active ? 'rgba(99,102,241,0.12)' : 'transparent',
-                  borderColor:     active ? '#6366f1' : 'rgba(255,255,255,0.06)',
-                  color:           active ? '#a5b4fc' : 'rgba(255,255,255,0.45)',
+                  borderColor:     active ? '#6366f1' : 'var(--border)',
+                  color:           active ? '#a5b4fc' : 'var(--muted)',
                 }}
               >
                 <span className="capitalize">{s}</span>
                 <span className="inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold"
-                  style={{ backgroundColor: active ? '#6366f1' : 'rgba(255,255,255,0.08)', color: 'white' }}>
+                  style={{ backgroundColor: active ? '#6366f1' : 'var(--border)', color: 'white' }}>
                   {count}
                 </span>
               </button>
@@ -248,19 +248,19 @@ export default function Index({ apartments, projects, buildings }: Props) {
 
         {/* Table representation */}
         <div className="rounded-2xl border overflow-hidden"
-          style={{ backgroundColor: '#0d1117', borderColor: 'rgba(255,255,255,0.06)' }}>
+          style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
           {filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 gap-3">
-              <Home className="w-10 h-10" style={{ color: 'rgba(255,255,255,0.1)' }} />
-              <p className="text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>No apartments found matching your filters.</p>
+              <Home className="w-10 h-10" style={{ color: 'var(--border)' }} />
+              <p className="text-sm" style={{ color: 'var(--muted)' }}>No apartments found matching your filters.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                  <tr style={{ borderBottom: '1px solid var(--border)' }}>
                     {['Number', 'Building/Project', 'Floor', 'Rooms', 'Size (m²)', 'Price', '$/m²', 'Status', 'Actions'].map((h) => (
-                      <th key={h} className="px-6 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                      <th key={h} className="px-6 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--muted)' }}>
                         {h}
                       </th>
                     ))}
@@ -273,19 +273,19 @@ export default function Index({ apartments, projects, buildings }: Props) {
                       ? Math.round(Number(apt.price) / Number(apt.size_m2)).toLocaleString()
                       : '—';
                     return (
-                      <tr key={apt.id} className="transition-all hover:bg-white/[0.01]">
-                        <td className="px-6 py-4 text-sm font-semibold text-white font-mono">#{apt.number}</td>
+                      <tr key={apt.id} className="transition-all hover:bg-slate-50">
+                        <td className="px-6 py-4 text-sm font-semibold text-slate-800 font-mono">#{apt.number}</td>
                         <td className="px-6 py-4 text-xs">
-                          <p className="text-white font-medium">{apt.building}</p>
-                          <p style={{ color: 'rgba(255,255,255,0.35)' }}>{apt.project}</p>
+                          <p className="text-slate-800 font-medium">{apt.building}</p>
+                          <p style={{ color: 'var(--muted)' }}>{apt.project}</p>
                         </td>
-                        <td className="px-6 py-4 text-xs text-white">Floor {apt.floor}</td>
-                        <td className="px-6 py-4 text-xs text-white">{apt.rooms} rooms</td>
-                        <td className="px-6 py-4 text-xs text-white">{apt.area || '—'} m²</td>
-                        <td className="px-6 py-4 text-xs font-semibold text-white">
+                        <td className="px-6 py-4 text-xs text-slate-800">Floor {apt.floor}</td>
+                        <td className="px-6 py-4 text-xs text-slate-800">{apt.rooms} rooms</td>
+                        <td className="px-6 py-4 text-xs text-slate-800">{apt.area || '—'} m²</td>
+                        <td className="px-6 py-4 text-xs font-semibold text-slate-800">
                           {apt.price ? `$${Number(apt.price).toLocaleString()}` : '—'}
                         </td>
-                        <td className="px-6 py-4 text-xs font-mono" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                        <td className="px-6 py-4 text-xs font-mono" style={{ color: 'var(--muted)' }}>
                           {ppm2 !== '—' ? `$${ppm2}` : ppm2}
                         </td>
                         <td className="px-6 py-4 text-xs">
@@ -298,13 +298,13 @@ export default function Index({ apartments, projects, buildings }: Props) {
                           <div className="flex items-center gap-3">
                             <button
                               onClick={() => openEditModal(apt)}
-                              className="p-1.5 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-colors"
+                              className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-white transition-colors"
                             >
                               <Edit className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleDelete(apt.id)}
-                              className="p-1.5 rounded-lg hover:bg-white/5 text-slate-400 hover:text-red-400 transition-colors"
+                              className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-red-400 transition-colors"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -325,14 +325,14 @@ export default function Index({ apartments, projects, buildings }: Props) {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
           style={{ backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(2px)' }}>
           <div className="w-full max-w-lg rounded-2xl border p-6 max-h-[90vh] overflow-y-auto"
-            style={{ backgroundColor: '#0d1117', borderColor: 'rgba(255,255,255,0.08)' }}>
+            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-lg font-bold text-white">
+              <h2 className="text-lg font-bold text-slate-800">
                 {editingApt ? 'Edit Apartment' : 'New Apartment'}
               </h2>
               <button
                 onClick={() => setShowModal(false)}
-                className="p-1.5 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white"
+                className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-white"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -350,8 +350,8 @@ export default function Index({ apartments, projects, buildings }: Props) {
                       setBuildingId('');
                     }}
                     required
-                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-white outline-none"
-                    style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.08)' }}
+                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
+                    style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
                   >
                     <option value="">Select project...</option>
                     {projects.map((p) => (
@@ -370,8 +370,8 @@ export default function Index({ apartments, projects, buildings }: Props) {
                     onChange={(e) => setBuildingId(e.target.value)}
                     required
                     disabled={!projectId}
-                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-white outline-none disabled:opacity-50"
-                    style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.08)' }}
+                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none disabled:opacity-50"
+                    style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
                   >
                     <option value="">Select building...</option>
                     {filteredBuildings.map((b) => (
@@ -392,8 +392,8 @@ export default function Index({ apartments, projects, buildings }: Props) {
                     value={floor}
                     onChange={(e) => setFloor(e.target.value)}
                     placeholder="e.g. 5"
-                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-white outline-none"
-                    style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.08)' }}
+                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
+                    style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
                   />
                 </div>
 
@@ -406,8 +406,8 @@ export default function Index({ apartments, projects, buildings }: Props) {
                     value={number}
                     onChange={(e) => setNumber(e.target.value)}
                     placeholder="e.g. 154"
-                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-white outline-none"
-                    style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.08)' }}
+                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
+                    style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
                   />
                 </div>
               </div>
@@ -422,8 +422,8 @@ export default function Index({ apartments, projects, buildings }: Props) {
                     min={0}
                     value={rooms}
                     onChange={(e) => setRooms(e.target.value)}
-                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-white outline-none"
-                    style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.08)' }}
+                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
+                    style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
                   />
                 </div>
 
@@ -433,8 +433,8 @@ export default function Index({ apartments, projects, buildings }: Props) {
                   <select
                     value={status}
                     onChange={(e) => setStatus(e.target.value as any)}
-                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-white outline-none"
-                    style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.08)' }}
+                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
+                    style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
                   >
                     {ALL_STATUSES.map((s) => (
                       <option key={s} value={s}>{STATUS_CONFIG[s].label}</option>
@@ -453,8 +453,8 @@ export default function Index({ apartments, projects, buildings }: Props) {
                     value={area}
                     onChange={(e) => setArea(e.target.value)}
                     placeholder="e.g. 74.20"
-                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-white outline-none"
-                    style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.08)' }}
+                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
+                    style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
                   />
                 </div>
 
@@ -466,8 +466,8 @@ export default function Index({ apartments, projects, buildings }: Props) {
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
                     placeholder="e.g. 85000"
-                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-white outline-none"
-                    style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.08)' }}
+                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
+                    style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
                   />
                 </div>
               </div>
@@ -475,12 +475,12 @@ export default function Index({ apartments, projects, buildings }: Props) {
               {/* Price per m2 calculator */}
               <div
                 className="flex items-center gap-2.5 rounded-xl px-4 py-3"
-                style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.06)' }}
+                style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
               >
                 <Calculator className="w-4 h-4 shrink-0 text-slate-400" />
                 <span className="text-xs text-slate-400">Calculated price per m²:</span>
                 {pricePerM2 ? (
-                  <span className="text-xs font-bold text-white ml-auto">${pricePerM2.toLocaleString()} / m²</span>
+                  <span className="text-xs font-bold text-slate-800 ml-auto">${pricePerM2.toLocaleString()} / m²</span>
                 ) : (
                   <span className="text-xs text-slate-600 ml-auto">Fill size & price</span>
                 )}
@@ -494,8 +494,8 @@ export default function Index({ apartments, projects, buildings }: Props) {
                   value={type}
                   onChange={(e) => setType(e.target.value)}
                   placeholder="e.g. Studio, Penthouse"
-                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-white outline-none"
-                  style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.08)' }}
+                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
+                  style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
                 />
               </div>
 
@@ -503,8 +503,8 @@ export default function Index({ apartments, projects, buildings }: Props) {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="flex-1 py-3 rounded-xl text-xs font-semibold hover:bg-white/5 transition-all text-slate-400"
-                  style={{ border: '1px solid rgba(255,255,255,0.08)' }}
+                  className="flex-1 py-3 rounded-xl text-xs font-semibold hover:bg-slate-100 transition-all text-slate-400"
+                  style={{ border: '1px solid var(--border)' }}
                 >
                   Cancel
                 </button>

@@ -43,7 +43,7 @@ interface Props {
 
 const STATUS_META: Record<PollStatus, { label: string; bg: string; fg: string; border: string }> = {
     open:      { label: "Идёт",     bg: "rgba(16,185,129,0.12)", fg: "#34d399", border: "rgba(16,185,129,0.35)" },
-    closed:    { label: "Завершён", bg: "rgba(255,255,255,0.05)", fg: "rgba(255,255,255,0.6)", border: "rgba(255,255,255,0.10)" },
+    closed:    { label: "Завершён", bg: "var(--border)", fg: "var(--muted)", border: "var(--border)" },
     cancelled: { label: "Отменён",  bg: "rgba(239,68,68,0.10)",  fg: "#f87171", border: "rgba(239,68,68,0.30)" },
 };
 
@@ -141,13 +141,13 @@ export default function PollsIndex({ projects }: Props) {
         <AppShell>
             <Head title="Голосования ОСС - PM Portal" />
 
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b" style={{ borderColor: 'var(--border)' }}>
                 <div>
                     <p className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: "#34d399" }}>
                         Property Management
                     </p>
-                    <h1 className="text-2xl font-bold text-white mt-1">Голосования ОСС</h1>
-                    <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.45)" }}>
+                    <h1 className="text-2xl font-bold text-slate-800 mt-1">Голосования ОСС</h1>
+                    <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>
                         Общие собрания собственников, опросы и сбор голосов
                     </p>
                 </div>
@@ -157,7 +157,7 @@ export default function PollsIndex({ projects }: Props) {
                     className="rounded-xl px-4 py-2.5 text-xs font-bold text-white flex items-center gap-2 disabled:opacity-50 transition-all hover:opacity-90"
                     style={{
                         background: creating
-                            ? "rgba(255,255,255,0.05)"
+                            ? "var(--border)"
                             : "linear-gradient(135deg, #10b981 0%, #14b8a6 100%)",
                     }}
                 >
@@ -168,14 +168,14 @@ export default function PollsIndex({ projects }: Props) {
 
             <div className="mt-6 space-y-6">
                 {/* Selectors */}
-                <div className="flex flex-wrap items-center gap-4 p-4 rounded-2xl" style={{ backgroundColor: "#0d1117", border: "1px solid rgba(255,255,255,0.06)" }}>
+                <div className="flex flex-wrap items-center gap-4 p-4 rounded-2xl" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
                     <div className="flex flex-col gap-1 min-w-[200px]">
                         <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">Проект</span>
                         <select
                             value={selectedProj}
                             onChange={(e) => setSelectedProj(e.target.value)}
-                            className="rounded-xl px-3 py-2.5 text-xs text-white outline-none cursor-pointer"
-                            style={{ backgroundColor: "#161b22", border: "1px solid rgba(255,255,255,0.08)" }}
+                            className="rounded-xl px-3 py-2.5 text-xs text-slate-800 outline-none cursor-pointer"
+                            style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
                         >
                             {projects.map((p) => (
                                 <option key={p.id} value={p.id}>{p.name}</option>
@@ -189,8 +189,8 @@ export default function PollsIndex({ projects }: Props) {
                             value={selectedBldg}
                             onChange={(e) => setSelectedBldg(e.target.value)}
                             disabled={buildings.length === 0}
-                            className="rounded-xl px-3 py-2.5 text-xs text-white outline-none cursor-pointer disabled:opacity-50"
-                            style={{ backgroundColor: "#161b22", border: "1px solid rgba(255,255,255,0.08)" }}
+                            className="rounded-xl px-3 py-2.5 text-xs text-slate-800 outline-none cursor-pointer disabled:opacity-50"
+                            style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
                         >
                             {buildings.length === 0 && <option value="">Нет корпусов</option>}
                             {buildings.map((b) => (
@@ -209,14 +209,14 @@ export default function PollsIndex({ projects }: Props) {
                 )}
 
                 {loading ? (
-                    <div className="rounded-2xl p-12 flex items-center justify-center" style={{ backgroundColor: "#0d1117", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)" }}>
+                    <div className="rounded-2xl p-12 flex items-center justify-center" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)', color: "var(--muted)" }}>
                         <Loader2 className="w-5 h-5 animate-spin" style={{ color: "#34d399" }} />
                     </div>
                 ) : polls.length === 0 ? (
-                    <div className="rounded-2xl p-16 text-center border border-dashed" style={{ backgroundColor: "rgba(255,255,255,0.02)", borderColor: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.45)" }}>
-                        <Vote className="w-10 h-10 mx-auto mb-3" style={{ color: "rgba(255,255,255,0.2)" }} />
-                        <p className="text-sm font-medium text-white">Голосований не найдено</p>
-                        <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>Создайте первое собрание или опрос для этого здания</p>
+                    <div className="rounded-2xl p-16 text-center border border-dashed" style={{ backgroundColor: "var(--border)", borderColor: 'var(--border)', color: "var(--muted)" }}>
+                        <Vote className="w-10 h-10 mx-auto mb-3" style={{ color: "var(--border)" }} />
+                        <p className="text-sm font-medium text-slate-800">Голосований не найдено</p>
+                        <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>Создайте первое собрание или опрос для этого здания</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 gap-4">
@@ -304,24 +304,24 @@ function CreatePollCard({ buildingId, onCreated, onCancel }: CreateProps) {
     }
 
     return (
-        <div className="rounded-2xl p-6 space-y-4" style={{ backgroundColor: "#0d1117", border: "1px solid rgba(16,185,129,0.25)" }}>
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider">Новое голосование ОСС</h3>
+        <div className="rounded-2xl p-6 space-y-4" style={{ backgroundColor: 'var(--card)', border: "1px solid rgba(16,185,129,0.25)" }}>
+            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Новое голосование ОСС</h3>
 
             <div className="space-y-3">
                 <input
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Тема голосования (например: Установка видеонаблюдения)"
-                    className="w-full rounded-xl px-4 py-2.5 text-xs text-white outline-none placeholder:text-slate-500"
-                    style={{ backgroundColor: "#161b22", border: "1px solid rgba(255,255,255,0.08)" }}
+                    className="w-full rounded-xl px-4 py-2.5 text-xs text-slate-800 outline-none placeholder:text-slate-400"
+                    style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
                 />
                 <textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Подробное описание вопроса для собственников..."
                     rows={3}
-                    className="w-full rounded-xl px-4 py-2.5 text-xs text-white outline-none resize-none placeholder:text-slate-500"
-                    style={{ backgroundColor: "#161b22", border: "1px solid rgba(255,255,255,0.08)" }}
+                    className="w-full rounded-xl px-4 py-2.5 text-xs text-slate-800 outline-none resize-none placeholder:text-slate-400"
+                    style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
                 />
             </div>
 
@@ -334,8 +334,8 @@ function CreatePollCard({ buildingId, onCreated, onCancel }: CreateProps) {
                                 value={o}
                                 onChange={(e) => setOpt(i, e.target.value)}
                                 placeholder={`Вариант ${i + 1}`}
-                                className="flex-1 rounded-xl px-3 py-2 text-xs text-white outline-none"
-                                style={{ backgroundColor: "#161b22", border: "1px solid rgba(255,255,255,0.08)" }}
+                                className="flex-1 rounded-xl px-3 py-2 text-xs text-slate-800 outline-none"
+                                style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
                             />
                             <button
                                 type="button"
@@ -361,8 +361,8 @@ function CreatePollCard({ buildingId, onCreated, onCancel }: CreateProps) {
                         min={0} max={100}
                         value={quorum}
                         onChange={(e) => setQuorum(Math.max(0, Math.min(100, Number(e.target.value))))}
-                        className="w-full rounded-xl px-3.5 py-2 text-xs text-white outline-none"
-                        style={{ backgroundColor: "#161b22", border: "1px solid rgba(255,255,255,0.08)" }}
+                        className="w-full rounded-xl px-3.5 py-2 text-xs text-slate-800 outline-none"
+                        style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
                     />
                 </div>
                 <div>
@@ -371,8 +371,8 @@ function CreatePollCard({ buildingId, onCreated, onCancel }: CreateProps) {
                         type="datetime-local"
                         value={closesAt}
                         onChange={(e) => setClosesAt(e.target.value)}
-                        className="w-full rounded-xl px-3.5 py-2 text-xs text-white outline-none cursor-pointer"
-                        style={{ backgroundColor: "#161b22", border: "1px solid rgba(255,255,255,0.08)", colorScheme: "dark" }}
+                        className="w-full rounded-xl px-3.5 py-2 text-xs text-slate-800 outline-none cursor-pointer"
+                        style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
                     />
                 </div>
             </div>
@@ -383,7 +383,7 @@ function CreatePollCard({ buildingId, onCreated, onCancel }: CreateProps) {
                 <button
                     type="button"
                     onClick={onCancel}
-                    className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 border border-slate-700 hover:bg-white/5 transition-all"
+                    className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 border border-slate-700 hover:bg-slate-100 transition-all"
                 >
                     Отмена
                 </button>
@@ -418,15 +418,15 @@ function PollCard({ poll, aptCount, onStatusChange, onDelete }: PollCardProps) {
     const quorumMet = poll.total_votes >= quorumThreshold && quorumThreshold > 0;
 
     return (
-        <div className="rounded-2xl p-5 relative overflow-hidden" style={{ backgroundColor: "#0d1117", border: "1px solid rgba(255,255,255,0.06)" }}>
+        <div className="rounded-2xl p-5 relative overflow-hidden" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
             <div className="flex items-start justify-between gap-3 mb-4">
                 <div className="min-w-0 flex-1">
-                    <h3 className="text-sm font-bold text-white">{poll.title}</h3>
+                    <h3 className="text-sm font-bold text-slate-800">{poll.title}</h3>
                     {poll.description && (
-                        <p className="text-xs mt-1.5 leading-relaxed" style={{ color: "rgba(255,255,255,0.5)" }}>{poll.description}</p>
+                        <p className="text-xs mt-1.5 leading-relaxed" style={{ color: "var(--muted)" }}>{poll.description}</p>
                     )}
                     {poll.closes_at && (
-                        <div className="flex items-center gap-1 mt-2.5 text-[10px]" style={{ color: "rgba(255,255,255,0.4)" }}>
+                        <div className="flex items-center gap-1 mt-2.5 text-[10px]" style={{ color: "var(--muted)" }}>
                             <CalendarClock className="w-3.5 h-3.5 text-slate-500" />
                             <span>Активно до: {new Date(poll.closes_at).toLocaleString("ru-RU", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</span>
                         </div>
@@ -447,8 +447,8 @@ function PollCard({ poll, aptCount, onStatusChange, onDelete }: PollCardProps) {
             </div>
 
             {/* Quorum bar */}
-            <div className="mb-5 p-3.5 rounded-xl" style={{ backgroundColor: "#080b14", border: "1px solid rgba(255,255,255,0.03)" }}>
-                <div className="flex items-center justify-between text-[11px] font-semibold mb-2" style={{ color: "rgba(255,255,255,0.45)" }}>
+            <div className="mb-5 p-3.5 rounded-xl" style={{ backgroundColor: 'var(--bg)', border: "1px solid var(--border)" }}>
+                <div className="flex items-center justify-between text-[11px] font-semibold mb-2" style={{ color: "var(--muted)" }}>
                     <span>Кворум {poll.quorum_pct}%</span>
                     <span>
                         {poll.total_votes} из {aptCount} квартир
@@ -459,7 +459,7 @@ function PollCard({ poll, aptCount, onStatusChange, onDelete }: PollCardProps) {
                         )}
                     </span>
                 </div>
-                <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: "rgba(255,255,255,0.05)" }}>
+                <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: "var(--border)" }}>
                     <div
                         className="h-full transition-all duration-500"
                         style={{
@@ -478,7 +478,7 @@ function PollCard({ poll, aptCount, onStatusChange, onDelete }: PollCardProps) {
                     const count = poll.vote_counts[o.id] ?? 0;
                     const pct   = poll.total_votes > 0 ? (count / poll.total_votes) * 100 : 0;
                     return (
-                        <div key={o.id} className="rounded-xl p-3 relative overflow-hidden transition-all" style={{ backgroundColor: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.03)" }}>
+                        <div key={o.id} className="rounded-xl p-3 relative overflow-hidden transition-all" style={{ backgroundColor: "var(--border)", border: "1px solid var(--border)" }}>
                             <div
                                 className="absolute inset-y-0 left-0 transition-all duration-500"
                                 style={{
@@ -487,8 +487,8 @@ function PollCard({ poll, aptCount, onStatusChange, onDelete }: PollCardProps) {
                                 }}
                             />
                             <div className="relative flex items-center justify-between">
-                                <span className="text-xs font-semibold text-white">{o.label}</span>
-                                <span className="text-[11px] font-mono" style={{ color: "rgba(255,255,255,0.5)" }}>
+                                <span className="text-xs font-semibold text-slate-800">{o.label}</span>
+                                <span className="text-[11px] font-mono" style={{ color: "var(--muted)" }}>
                                     {count} ({pct.toFixed(0)}%)
                                 </span>
                             </div>
@@ -509,10 +509,10 @@ function PollCard({ poll, aptCount, onStatusChange, onDelete }: PollCardProps) {
             )}
 
             {poll.status === "open" && (
-                <div className="flex justify-end gap-2 mt-4 pt-3 border-t" style={{ borderColor: "rgba(255,255,255,0.04)" }}>
+                <div className="flex justify-end gap-2 mt-4 pt-3 border-t" style={{ borderColor: "var(--border)" }}>
                     <button
                         onClick={() => onStatusChange(poll.id, "closed")}
-                        className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 text-slate-300 border border-slate-700 hover:bg-white/5 transition-all"
+                        className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 text-slate-300 border border-slate-700 hover:bg-slate-100 transition-all"
                     >
                         <Lock className="w-3.5 h-3.5" /> Завершить
                     </button>

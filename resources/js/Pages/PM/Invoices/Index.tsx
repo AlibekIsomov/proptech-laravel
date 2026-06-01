@@ -36,11 +36,11 @@ interface Props {
 }
 
 const STATUS_META: Record<InvoiceStatus, { label: string; bg: string; fg: string; border: string }> = {
-  draft:     { label: 'Черновик',  bg: 'rgba(255,255,255,0.05)', fg: 'rgba(255,255,255,0.65)', border: 'rgba(255,255,255,0.10)' },
+  draft:     { label: 'Черновик',  bg: 'var(--border)', fg: 'var(--muted)', border: 'var(--border)' },
   sent:      { label: 'Отправлен', bg: 'rgba(59,130,246,0.12)',  fg: '#60a5fa',                border: 'rgba(59,130,246,0.35)' },
   paid:      { label: 'Оплачен',   bg: 'rgba(16,185,129,0.12)', fg: '#34d399',                border: 'rgba(16,185,129,0.35)' },
   overdue:   { label: 'Просрочен', bg: 'rgba(239,68,68,0.12)',  fg: '#f87171',                border: 'rgba(239,68,68,0.35)' },
-  cancelled: { label: 'Отменён',   bg: 'rgba(255,255,255,0.04)', fg: 'rgba(255,255,255,0.4)', border: 'rgba(255,255,255,0.08)' },
+  cancelled: { label: 'Отменён',   bg: 'var(--border)', fg: 'var(--muted)', border: 'var(--border)' },
 };
 
 function firstOfMonth() { const d = new Date(); d.setDate(1); return d.toISOString().slice(0, 10); }
@@ -76,13 +76,13 @@ export default function InvoicesIndex({ invoices, apartments }: Props) {
 
   return (
     <AppShell>
-      <Head title="Счета — PropTech UZ" />
+      <Head title="Счета — 1Mahalla" />
       <div className="space-y-6">
         <header className="flex items-start justify-between gap-4">
           <div>
             <p className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: '#34d399' }}>Property Management</p>
-            <h1 className="text-3xl font-bold text-white mt-1" style={{ fontFamily: 'var(--font-display)' }}>Счета</h1>
-            <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.55)' }}>Генерация и контроль ежемесячных счетов жильцам</p>
+            <h1 className="text-3xl font-bold text-slate-800 mt-1" style={{ fontFamily: 'var(--font-display)' }}>Счета</h1>
+            <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>Генерация и контроль ежемесячных счетов жильцам</p>
           </div>
           <button onClick={() => setShowCreate(true)}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white"
@@ -102,28 +102,28 @@ export default function InvoicesIndex({ invoices, apartments }: Props) {
             <button key={s} onClick={() => setFilterStatus(s)}
               className="px-3 py-1.5 rounded-xl text-xs font-medium transition-colors"
               style={{
-                backgroundColor: filterStatus === s ? (s === 'all' ? 'rgba(16,185,129,0.15)' : STATUS_META[s as InvoiceStatus]?.bg ?? 'rgba(16,185,129,0.15)') : 'rgba(255,255,255,0.04)',
-                color: filterStatus === s ? (s === 'all' ? '#34d399' : STATUS_META[s as InvoiceStatus]?.fg ?? '#34d399') : 'rgba(255,255,255,0.55)',
-                border: filterStatus === s ? '1px solid rgba(16,185,129,0.35)' : '1px solid rgba(255,255,255,0.08)',
+                backgroundColor: filterStatus === s ? (s === 'all' ? 'rgba(16,185,129,0.15)' : STATUS_META[s as InvoiceStatus]?.bg ?? 'rgba(16,185,129,0.15)') : 'var(--border)',
+                color: filterStatus === s ? (s === 'all' ? '#34d399' : STATUS_META[s as InvoiceStatus]?.fg ?? '#34d399') : 'var(--muted)',
+                border: filterStatus === s ? '1px solid rgba(16,185,129,0.35)' : '1px solid var(--border)',
               }}>
               {s === 'all' ? 'Все' : STATUS_META[s as InvoiceStatus].label}
             </button>
           ))}
         </div>
 
-        <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#0d1117', border: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
           {filtered.length === 0 ? (
-            <div className="p-12 text-center" style={{ color: 'rgba(255,255,255,0.4)' }}>
-              <FileText className="w-8 h-8 mx-auto mb-3" style={{ color: 'rgba(255,255,255,0.25)' }} />
+            <div className="p-12 text-center" style={{ color: 'var(--muted)' }}>
+              <FileText className="w-8 h-8 mx-auto mb-3" style={{ color: 'var(--border)' }} />
               <p className="text-sm">Счетов нет.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                  <tr style={{ borderBottom: '1px solid var(--border)' }}>
                     {['№', 'Кв.', 'Жилец', 'Период', 'Сумма', 'Срок', 'Статус', ''].map((h) => (
-                      <th key={h} className="text-left px-4 py-3 text-[10px] uppercase tracking-widest font-semibold" style={{ color: 'rgba(255,255,255,0.4)' }}>{h}</th>
+                      <th key={h} className="text-left px-4 py-3 text-[10px] uppercase tracking-widest font-semibold" style={{ color: 'var(--muted)' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -131,19 +131,19 @@ export default function InvoicesIndex({ invoices, apartments }: Props) {
                   {filtered.map((inv) => {
                     const meta = STATUS_META[inv.status];
                     return (
-                      <tr key={inv.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                        <td className="px-4 py-3"><span className="text-white/80 text-xs font-mono">{inv.invoice_number}</span></td>
+                      <tr key={inv.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                        <td className="px-4 py-3"><span className="text-slate-800/80 text-xs font-mono">{inv.invoice_number}</span></td>
                         <td className="px-4 py-3">
-                          <span className="text-white">№{inv.apartment ?? '—'}</span>
-                          {inv.building && <div className="text-[11px]" style={{ color: 'rgba(255,255,255,0.4)' }}>{inv.building}</div>}
+                          <span className="text-slate-800">№{inv.apartment ?? '—'}</span>
+                          {inv.building && <div className="text-[11px]" style={{ color: 'var(--muted)' }}>{inv.building}</div>}
                         </td>
-                        <td className="px-4 py-3 text-sm" style={{ color: 'rgba(255,255,255,0.65)' }}>{inv.resident ?? '—'}</td>
-                        <td className="px-4 py-3 text-xs" style={{ color: 'rgba(255,255,255,0.6)' }}>{fmtPeriod(inv.billing_period_start, inv.billing_period_end)}</td>
+                        <td className="px-4 py-3 text-sm" style={{ color: 'var(--muted)' }}>{inv.resident ?? '—'}</td>
+                        <td className="px-4 py-3 text-xs" style={{ color: 'var(--muted)' }}>{fmtPeriod(inv.billing_period_start, inv.billing_period_end)}</td>
                         <td className="px-4 py-3 text-right">
-                          <span className="text-white font-medium">{Number(inv.total_amount).toLocaleString('ru-RU')}</span>
-                          <span className="text-[11px] ml-1" style={{ color: 'rgba(255,255,255,0.4)' }}>{inv.currency}</span>
+                          <span className="text-slate-800 font-medium">{Number(inv.total_amount).toLocaleString('ru-RU')}</span>
+                          <span className="text-[11px] ml-1" style={{ color: 'var(--muted)' }}>{inv.currency}</span>
                         </td>
-                        <td className="px-4 py-3 text-xs" style={{ color: 'rgba(255,255,255,0.6)' }}>{inv.due_date ? new Date(inv.due_date).toLocaleDateString('ru-RU') : '—'}</td>
+                        <td className="px-4 py-3 text-xs" style={{ color: 'var(--muted)' }}>{inv.due_date ? new Date(inv.due_date).toLocaleDateString('ru-RU') : '—'}</td>
                         <td className="px-4 py-3">
                           <span className="text-[11px] px-2 py-0.5 rounded-md inline-block"
                             style={{ backgroundColor: meta.bg, color: meta.fg, border: `1px solid ${meta.border}` }}>{meta.label}</span>
@@ -153,7 +153,7 @@ export default function InvoicesIndex({ invoices, apartments }: Props) {
                             {inv.status === 'draft' && (
                               <button onClick={() => updateStatus(inv.id, 'sent')}
                                 className="text-[11px] px-2.5 py-1 rounded-md hover:bg-white/[0.05]"
-                                style={{ color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.10)' }}>Отправить</button>
+                                style={{ color: 'var(--muted)', border: '1px solid var(--border)' }}>Отправить</button>
                             )}
                             {(inv.status === 'sent' || inv.status === 'overdue') && (
                               <button onClick={() => updateStatus(inv.id, 'paid')}
@@ -161,7 +161,7 @@ export default function InvoicesIndex({ invoices, apartments }: Props) {
                                 style={{ color: '#34d399', border: '1px solid rgba(16,185,129,0.25)' }}>Оплачен</button>
                             )}
                             <a href={`/pm/invoices/${inv.id}/pdf`} target="_blank" rel="noopener noreferrer"
-                              className="p-1 rounded-lg hover:bg-white/[0.05]" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                              className="p-1 rounded-lg hover:bg-white/[0.05]" style={{ color: 'var(--muted)' }}>
                               <Download className="w-3.5 h-3.5" />
                             </a>
                           </div>
@@ -203,66 +203,66 @@ function CreateInvoiceModal({ apartments, onClose }: { apartments: ApartmentOpti
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}>
-      <div className="rounded-2xl p-6 w-full max-w-md space-y-4 max-h-[90vh] overflow-y-auto" style={{ backgroundColor: '#0d1117', border: '1px solid rgba(255,255,255,0.10)' }}>
+      <div className="rounded-2xl p-6 w-full max-w-md space-y-4 max-h-[90vh] overflow-y-auto" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-white">Создать счёт</h2>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/5" style={{ color: 'rgba(255,255,255,0.5)' }}><X className="w-4 h-4" /></button>
+          <h2 className="text-lg font-semibold text-slate-800">Создать счёт</h2>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100" style={{ color: 'var(--muted)' }}><X className="w-4 h-4" /></button>
         </div>
         <form onSubmit={submit} className="space-y-3">
           <Field label="Квартира" error={errors.apartment_id}>
             <select value={data.apartment_id} onChange={(e) => setData('apartment_id', e.target.value)}
-              className="w-full rounded-xl px-3 py-2.5 text-sm text-white outline-none"
-              style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              className="w-full rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none"
+              style={{ backgroundColor: 'var(--border)', border: '1px solid var(--border)' }}>
               <option value="">— Выбрать —</option>
-              {apartments.map((a) => <option key={a.id} value={a.id} style={{ backgroundColor: '#0d1117' }}>{a.label}</option>)}
+              {apartments.map((a) => <option key={a.id} value={a.id} style={{ backgroundColor: 'var(--card)' }}>{a.label}</option>)}
             </select>
           </Field>
           {selectedApt && selectedApt.residents.length > 0 && (
             <Field label="Жилец" error={errors.resident_id}>
               <select value={data.resident_id} onChange={(e) => setData('resident_id', e.target.value)}
-                className="w-full rounded-xl px-3 py-2.5 text-sm text-white outline-none"
-                style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                className="w-full rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none"
+                style={{ backgroundColor: 'var(--border)', border: '1px solid var(--border)' }}>
                 <option value="">— Не указан —</option>
-                {selectedApt.residents.map((r) => <option key={r.id} value={r.id} style={{ backgroundColor: '#0d1117' }}>{r.name}</option>)}
+                {selectedApt.residents.map((r) => <option key={r.id} value={r.id} style={{ backgroundColor: 'var(--card)' }}>{r.name}</option>)}
               </select>
             </Field>
           )}
           <div className="grid grid-cols-2 gap-3">
             <Field label="Период с" error={errors.billing_period_start}>
               <input type="date" value={data.billing_period_start} onChange={(e) => setData('billing_period_start', e.target.value)}
-                className="w-full rounded-xl px-3 py-2.5 text-sm text-white outline-none"
-                style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', colorScheme: 'dark' }} />
+                className="w-full rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none"
+                style={{ backgroundColor: 'var(--border)', border: '1px solid var(--border)' }} />
             </Field>
             <Field label="Период по" error={errors.billing_period_end}>
               <input type="date" value={data.billing_period_end} onChange={(e) => setData('billing_period_end', e.target.value)}
-                className="w-full rounded-xl px-3 py-2.5 text-sm text-white outline-none"
-                style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', colorScheme: 'dark' }} />
+                className="w-full rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none"
+                style={{ backgroundColor: 'var(--border)', border: '1px solid var(--border)' }} />
             </Field>
           </div>
           <div className="grid grid-cols-3 gap-3">
             <Field label="Управление" error={errors.pm_fee}>
               <input type="number" value={data.pm_fee} onChange={(e) => setData('pm_fee', e.target.value)}
-                className="w-full rounded-xl px-3 py-2 text-sm text-white outline-none"
-                style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }} />
+                className="w-full rounded-xl px-3 py-2 text-sm text-slate-800 outline-none"
+                style={{ backgroundColor: 'var(--border)', border: '1px solid var(--border)' }} />
             </Field>
             <Field label="Коммунальные" error={errors.utilities_amount}>
               <input type="number" value={data.utilities_amount} onChange={(e) => setData('utilities_amount', e.target.value)}
-                className="w-full rounded-xl px-3 py-2 text-sm text-white outline-none"
-                style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }} />
+                className="w-full rounded-xl px-3 py-2 text-sm text-slate-800 outline-none"
+                style={{ backgroundColor: 'var(--border)', border: '1px solid var(--border)' }} />
             </Field>
             <Field label="Ремонт" error={errors.maintenance_amount}>
               <input type="number" value={data.maintenance_amount} onChange={(e) => setData('maintenance_amount', e.target.value)}
-                className="w-full rounded-xl px-3 py-2 text-sm text-white outline-none"
-                style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }} />
+                className="w-full rounded-xl px-3 py-2 text-sm text-slate-800 outline-none"
+                style={{ backgroundColor: 'var(--border)', border: '1px solid var(--border)' }} />
             </Field>
           </div>
           <Field label="Срок оплаты" error={errors.due_date}>
             <input type="date" value={data.due_date} onChange={(e) => setData('due_date', e.target.value)}
-              className="w-full rounded-xl px-3 py-2.5 text-sm text-white outline-none"
-              style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', colorScheme: 'dark' }} />
+              className="w-full rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none"
+              style={{ backgroundColor: 'var(--border)', border: '1px solid var(--border)' }} />
           </Field>
           <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 rounded-xl text-sm" style={{ color: 'rgba(255,255,255,0.65)', border: '1px solid rgba(255,255,255,0.08)' }}>Отмена</button>
+            <button type="button" onClick={onClose} className="px-4 py-2 rounded-xl text-sm" style={{ color: 'var(--muted)', border: '1px solid var(--border)' }}>Отмена</button>
             <button type="submit" disabled={processing}
               className="px-4 py-2 rounded-xl text-sm font-semibold text-white flex items-center gap-2 disabled:opacity-50"
               style={{ background: 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)' }}>
@@ -277,10 +277,10 @@ function CreateInvoiceModal({ apartments, onClose }: { apartments: ApartmentOpti
 
 function SummaryCard({ label, value, accent }: { label: string; value: number; accent: string }) {
   return (
-    <div className="rounded-2xl p-5" style={{ backgroundColor: '#0d1117', border: '1px solid rgba(255,255,255,0.06)' }}>
+    <div className="rounded-2xl p-5" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
       <p className="text-[10px] uppercase tracking-widest" style={{ color: accent }}>{label}</p>
-      <p className="text-2xl text-white mt-2" style={{ fontFamily: 'var(--font-display)', fontWeight: 700 }}>
-        {value.toLocaleString('ru-RU')} <span className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>UZS</span>
+      <p className="text-2xl text-slate-800 mt-2" style={{ fontFamily: 'var(--font-display)', fontWeight: 700 }}>
+        {value.toLocaleString('ru-RU')} <span className="text-sm" style={{ color: 'var(--muted)' }}>UZS</span>
       </p>
     </div>
   );
@@ -289,7 +289,7 @@ function SummaryCard({ label, value, accent }: { label: string; value: number; a
 function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="text-[10px] uppercase tracking-widest mb-1.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{label}</p>
+      <p className="text-[10px] uppercase tracking-widest mb-1.5" style={{ color: 'var(--muted)' }}>{label}</p>
       {children}
       {error && <p className="text-xs mt-1" style={{ color: '#f87171' }}>{error}</p>}
     </div>

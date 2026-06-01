@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[ScopedBy([CompanyScope::class])]
 class CommunalAsset extends Model
 {
+    use \App\Traits\SyncsToSupabase;
+
     use HasUuids;
     protected $fillable = [
         'building_id', 'company_id', 'asset_type', 'name',

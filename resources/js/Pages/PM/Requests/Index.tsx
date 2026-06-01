@@ -256,16 +256,16 @@ export default function Index({ requests, vendors, projects, apartments, residen
 
   return (
     <AppShell>
-      <Head title="Maintenance Requests - PM PropTech UZ" />
+      <Head title="Maintenance Requests - PM 1Mahalla" />
 
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b" style={{ borderColor: 'var(--border)' }}>
         <div>
           <p className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: '#34d399' }}>
             Property Management
           </p>
-          <h1 className="text-2xl font-bold text-white mt-1">Maintenance Requests</h1>
-          <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.45)' }}>
+          <h1 className="text-2xl font-bold text-slate-800 mt-1">Maintenance Requests</h1>
+          <p className="text-xs mt-1" style={{ color: 'var(--muted)' }}>
             Service tickets, SLA tracking, and vendor assignments
           </p>
         </div>
@@ -291,23 +291,23 @@ export default function Index({ requests, vendors, projects, apartments, residen
         </div>
 
         {/* Filters and search */}
-        <div className="flex flex-wrap items-center gap-3 p-4 rounded-2xl" style={{ backgroundColor: '#0d1117', border: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="flex flex-wrap items-center gap-3 p-4 rounded-2xl" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
           <div className="relative flex-1 min-w-[200px] max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search request title or description..."
-              className="w-full rounded-xl pl-9 pr-3 py-2.5 text-xs text-white outline-none placeholder:text-slate-500"
-              style={{ backgroundColor: '#161b22', border: '1px solid rgba(255,255,255,0.08)' }}
+              className="w-full rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-800 outline-none placeholder:text-slate-400"
+              style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
             />
           </div>
 
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as any)}
-            className="rounded-xl px-3 py-2.5 text-xs text-white outline-none cursor-pointer"
-            style={{ backgroundColor: '#161b22', border: '1px solid rgba(255,255,255,0.08)' }}
+            className="rounded-xl px-3 py-2.5 text-xs text-slate-800 outline-none cursor-pointer"
+            style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
           >
             <option value="all">All Statuses</option>
             <option value="open">Open</option>
@@ -320,8 +320,8 @@ export default function Index({ requests, vendors, projects, apartments, residen
           <select
             value={priorityFilter}
             onChange={(e) => setPriorityFilter(e.target.value as any)}
-            className="rounded-xl px-3 py-2.5 text-xs text-white outline-none cursor-pointer"
-            style={{ backgroundColor: '#161b22', border: '1px solid rgba(255,255,255,0.08)' }}
+            className="rounded-xl px-3 py-2.5 text-xs text-slate-800 outline-none cursor-pointer"
+            style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
           >
             <option value="all">All Priorities</option>
             <option value="emergency">Emergency</option>
@@ -333,18 +333,18 @@ export default function Index({ requests, vendors, projects, apartments, residen
 
         {/* Requests Table */}
         <div className="rounded-2xl border overflow-hidden"
-          style={{ backgroundColor: '#0d1117', borderColor: 'rgba(255,255,255,0.06)' }}>
+          style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
           {filtered.length === 0 ? (
-            <div className="py-20 text-center text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>
+            <div className="py-20 text-center text-sm" style={{ color: 'var(--muted)' }}>
               No maintenance requests matching filters.
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                  <tr style={{ borderBottom: '1px solid var(--border)' }}>
                     {['Priority', 'Ticket Details', 'Apartment', 'Resident', 'Category', 'Status', 'Contractor', 'SLA', 'Actions'].map((h) => (
-                      <th key={h} className="px-6 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                      <th key={h} className="px-6 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--muted)' }}>
                         {h}
                       </th>
                     ))}
@@ -372,7 +372,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
                     return (
                       <tr
                         key={r.id}
-                        className="transition-all hover:bg-white/[0.01] cursor-pointer"
+                        className="transition-all hover:bg-slate-50 cursor-pointer"
                         onClick={() => setSelectedReq(r)}
                       >
                         <td className="px-6 py-4">
@@ -381,15 +381,15 @@ export default function Index({ requests, vendors, projects, apartments, residen
                           </span>
                         </td>
                         <td className="px-6 py-4 max-w-xs">
-                          <p className="text-sm font-semibold text-white truncate">{r.title}</p>
-                          <p className="text-[11px] mt-0.5 truncate" style={{ color: 'rgba(255,255,255,0.45)' }}>{r.description}</p>
+                          <p className="text-sm font-semibold text-slate-800 truncate">{r.title}</p>
+                          <p className="text-[11px] mt-0.5 truncate" style={{ color: 'var(--muted)' }}>{r.description}</p>
                         </td>
-                        <td className="px-6 py-4 text-xs text-white">
+                        <td className="px-6 py-4 text-xs text-slate-800">
                           <span className="font-semibold font-mono">№{r.apartment}</span>
                           <span className="text-[10px] block text-slate-500">Floor {r.building}</span>
                         </td>
-                        <td className="px-6 py-4 text-xs text-white">{r.resident || '—'}</td>
-                        <td className="px-6 py-4 text-xs text-white capitalize">{r.category || '—'}</td>
+                        <td className="px-6 py-4 text-xs text-slate-800">{r.resident || '—'}</td>
+                        <td className="px-6 py-4 text-xs text-slate-800 capitalize">{r.category || '—'}</td>
                         <td className="px-6 py-4">
                           <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: s.bg, color: s.text }}>
                             {s.label}
@@ -397,7 +397,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
                         </td>
                         <td className="px-6 py-4 text-xs" onClick={(e) => e.stopPropagation()}>
                           {r.vendor ? (
-                            <span className="text-white">{r.vendor}</span>
+                            <span className="text-slate-800">{r.vendor}</span>
                           ) : r.status === 'completed' || r.status === 'cancelled' ? (
                             <span className="text-slate-500">—</span>
                           ) : (
@@ -432,10 +432,10 @@ export default function Index({ requests, vendors, projects, apartments, residen
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
           style={{ backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(2px)' }}>
           <div className="w-full max-w-sm rounded-2xl border p-6"
-            style={{ backgroundColor: '#0d1117', borderColor: 'rgba(255,255,255,0.08)' }}>
+            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-base font-bold text-white">Assign Contractor</h2>
-              <button onClick={() => setAssignReq(null)} className="p-1 rounded hover:bg-white/5 text-slate-400 hover:text-white">
+              <h2 className="text-base font-bold text-slate-800">Assign Contractor</h2>
+              <button onClick={() => setAssignReq(null)} className="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-white">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -446,8 +446,8 @@ export default function Index({ requests, vendors, projects, apartments, residen
                   value={selectedVendorId}
                   onChange={(e) => setSelectedVendorId(e.target.value)}
                   required
-                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-white outline-none cursor-pointer"
-                  style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.08)' }}
+                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none cursor-pointer"
+                  style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
                 >
                   <option value="">Choose a contractor...</option>
                   {vendors.map((v) => (
@@ -459,7 +459,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
                 <button
                   type="button"
                   onClick={() => setAssignReq(null)}
-                  className="flex-1 py-2.5 rounded-xl text-xs font-semibold text-slate-400 border border-slate-700 hover:bg-white/5"
+                  className="flex-1 py-2.5 rounded-xl text-xs font-semibold text-slate-400 border border-slate-700 hover:bg-slate-100"
                 >
                   Cancel
                 </button>
@@ -484,29 +484,29 @@ export default function Index({ requests, vendors, projects, apartments, residen
             className="fixed top-0 right-0 z-50 h-screen overflow-y-auto p-6"
             style={{
               width:           'min(500px, 95vw)',
-              backgroundColor: '#0d1117',
-              borderLeft:      '1px solid rgba(255,255,255,0.08)',
+              backgroundColor: 'var(--card)',
+              borderLeft:      '1px solid var(--border)',
               boxShadow:       '-12px 0 60px rgba(0,0,0,0.6)',
             }}
           >
-            <div className="flex items-center justify-between pb-4 border-b border-white/[0.06] mb-5">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-200 mb-5">
               <div>
                 <p className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">Maintenance Ticket</p>
-                <h2 className="text-lg font-bold text-white mt-0.5">#{selectedReq.title}</h2>
+                <h2 className="text-lg font-bold text-slate-800 mt-0.5">#{selectedReq.title}</h2>
               </div>
-              <button onClick={() => setSelectedReq(null)} className="p-1 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white">
+              <button onClick={() => setSelectedReq(null)} className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-white">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="space-y-6">
               {/* SLA status details */}
-              <div className="rounded-xl p-4 flex items-center justify-between" style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div className="rounded-xl p-4 flex items-center justify-between" style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}>
                 <div>
                   <p className="text-[9px] uppercase tracking-widest text-slate-500 font-semibold">Current Status</p>
                   <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold mt-1"
                     style={{
-                      backgroundColor: STATUS_COLOR[selectedReq.status]?.bg || 'rgba(255,255,255,0.08)',
+                      backgroundColor: STATUS_COLOR[selectedReq.status]?.bg || 'var(--border)',
                       color:           STATUS_COLOR[selectedReq.status]?.text || 'white',
                     }}>
                     {STATUS_COLOR[selectedReq.status]?.label || selectedReq.status}
@@ -516,7 +516,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
                   <p className="text-[9px] uppercase tracking-widest text-slate-500 font-semibold">Priority</p>
                   <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold mt-1"
                     style={{
-                      backgroundColor: PRIORITY_COLOR[selectedReq.priority]?.bg || 'rgba(255,255,255,0.08)',
+                      backgroundColor: PRIORITY_COLOR[selectedReq.priority]?.bg || 'var(--border)',
                       color:           PRIORITY_COLOR[selectedReq.priority]?.text || 'white',
                     }}>
                     {PRIORITY_COLOR[selectedReq.priority]?.label || selectedReq.priority}
@@ -528,7 +528,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
               <div className="rounded-2xl p-4 bg-gradient-to-br from-purple-500/10 to-indigo-500/5 border border-purple-500/20">
                 <div className="flex items-center gap-2 mb-2">
                   <Sparkles className="w-4 h-4 text-purple-400" />
-                  <h4 className="text-xs font-bold text-white">AI Assistant Insights</h4>
+                  <h4 className="text-xs font-bold text-slate-800">AI Assistant Insights</h4>
                 </div>
                 {selectedReq.ai_summary ? (
                   <div className="space-y-2">
@@ -569,7 +569,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
 
               {/* Actions workflow */}
               {selectedReq.status !== 'completed' && selectedReq.status !== 'cancelled' && (
-                <div className="space-y-3 pt-4 border-t border-white/[0.06]">
+                <div className="space-y-3 pt-4 border-t border-slate-200">
                   <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">Actions Workflow</h3>
                   <div className="flex gap-3">
                     {selectedReq.status === 'open' && (
@@ -598,7 +598,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
                     )}
                     <button
                       onClick={() => handleUpdateStatus(selectedReq, 'cancelled')}
-                      className="flex-1 py-2.5 rounded-xl text-xs font-semibold text-slate-400 border border-slate-700 hover:bg-white/5"
+                      className="flex-1 py-2.5 rounded-xl text-xs font-semibold text-slate-400 border border-slate-700 hover:bg-slate-100"
                     >
                       Cancel Request
                     </button>
@@ -614,12 +614,12 @@ export default function Index({ requests, vendors, projects, apartments, residen
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
           style={{ backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(2px)' }}>
           <div className="w-full max-w-md rounded-2xl border p-6 max-h-[90vh] overflow-y-auto animate-fade-in"
-            style={{ backgroundColor: '#0d1117', borderColor: 'rgba(255,255,255,0.08)' }}>
+            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-lg font-bold text-white">New Maintenance Ticket</h2>
+              <h2 className="text-lg font-bold text-slate-800">New Maintenance Ticket</h2>
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="p-1.5 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white"
+                className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-white"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -635,8 +635,8 @@ export default function Index({ requests, vendors, projects, apartments, residen
                   value={createTitle}
                   onChange={(e) => setCreateTitle(e.target.value)}
                   placeholder="e.g. Faucet leaking in kitchen"
-                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-white outline-none"
-                  style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.08)' }}
+                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
+                  style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
                 />
               </div>
 
@@ -649,8 +649,8 @@ export default function Index({ requests, vendors, projects, apartments, residen
                   onChange={(e) => setCreateDesc(e.target.value)}
                   placeholder="Describe the issue in detail..."
                   rows={3}
-                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-white outline-none resize-none"
-                  style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.08)' }}
+                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none resize-none"
+                  style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
                 />
               </div>
 
@@ -667,12 +667,12 @@ export default function Index({ requests, vendors, projects, apartments, residen
                       setCreateAptId('');
                       setCreateResidentId('');
                     }}
-                    className="w-full rounded-xl px-2 py-2.5 text-xs text-white outline-none"
-                    style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.08)' }}
+                    className="w-full rounded-xl px-2 py-2.5 text-xs text-slate-800 outline-none"
+                    style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
                   >
-                    <option value="" style={{ backgroundColor: '#0d1117' }}>Select...</option>
+                    <option value="" style={{ backgroundColor: 'var(--card)' }}>Select...</option>
                     {projects.map((p) => (
-                      <option key={p.id} value={p.id} style={{ backgroundColor: '#0d1117' }}>{p.name}</option>
+                      <option key={p.id} value={p.id} style={{ backgroundColor: 'var(--card)' }}>{p.name}</option>
                     ))}
                   </select>
                 </div>
@@ -688,12 +688,12 @@ export default function Index({ requests, vendors, projects, apartments, residen
                       setCreateResidentId('');
                     }}
                     disabled={!createProjId}
-                    className="w-full rounded-xl px-2 py-2.5 text-xs text-white outline-none disabled:opacity-50"
-                    style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.08)' }}
+                    className="w-full rounded-xl px-2 py-2.5 text-xs text-slate-800 outline-none disabled:opacity-50"
+                    style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
                   >
-                    <option value="" style={{ backgroundColor: '#0d1117' }}>Select...</option>
+                    <option value="" style={{ backgroundColor: 'var(--card)' }}>Select...</option>
                     {buildingsForSelectedCreateProj.map((b) => (
-                      <option key={b.id} value={b.id} style={{ backgroundColor: '#0d1117' }}>{b.name}</option>
+                      <option key={b.id} value={b.id} style={{ backgroundColor: 'var(--card)' }}>{b.name}</option>
                     ))}
                   </select>
                 </div>
@@ -708,12 +708,12 @@ export default function Index({ requests, vendors, projects, apartments, residen
                       setCreateResidentId('');
                     }}
                     disabled={!createBldgId}
-                    className="w-full rounded-xl px-2 py-2.5 text-xs text-white outline-none disabled:opacity-50"
-                    style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.08)' }}
+                    className="w-full rounded-xl px-2 py-2.5 text-xs text-slate-800 outline-none disabled:opacity-50"
+                    style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
                   >
-                    <option value="" style={{ backgroundColor: '#0d1117' }}>Select...</option>
+                    <option value="" style={{ backgroundColor: 'var(--card)' }}>Select...</option>
                     {apartmentsForSelectedCreateBldg.map((a) => (
-                      <option key={a.id} value={a.id} style={{ backgroundColor: '#0d1117' }}>№{a.number}</option>
+                      <option key={a.id} value={a.id} style={{ backgroundColor: 'var(--card)' }}>№{a.number}</option>
                     ))}
                   </select>
                 </div>
@@ -726,10 +726,10 @@ export default function Index({ requests, vendors, projects, apartments, residen
                   value={createResidentId}
                   onChange={(e) => setCreateResidentId(e.target.value)}
                   disabled={!createAptId || filteredResidentsForCreate.length === 0}
-                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-white outline-none disabled:opacity-50"
-                  style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.08)' }}
+                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none disabled:opacity-50"
+                  style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
                 >
-                  <option value="" style={{ backgroundColor: '#0d1117' }}>
+                  <option value="" style={{ backgroundColor: 'var(--card)' }}>
                     {!createAptId 
                       ? 'Select apartment first...' 
                       : (filteredResidentsForCreate.length === 0 
@@ -737,7 +737,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
                         : 'Select resident...')}
                   </option>
                   {filteredResidentsForCreate.map((r) => (
-                    <option key={r.id} value={r.id} style={{ backgroundColor: '#0d1117' }}>{r.full_name}</option>
+                    <option key={r.id} value={r.id} style={{ backgroundColor: 'var(--card)' }}>{r.full_name}</option>
                   ))}
                 </select>
               </div>
@@ -749,12 +749,12 @@ export default function Index({ requests, vendors, projects, apartments, residen
                   <select
                     value={createCategory}
                     onChange={(e) => setCreateCategory(e.target.value)}
-                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-white outline-none"
-                    style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.08)' }}
+                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
+                    style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
                   >
-                    <option value="" style={{ backgroundColor: '#0d1117' }}>Choose...</option>
+                    <option value="" style={{ backgroundColor: 'var(--card)' }}>Choose...</option>
                     {Object.entries(CATEGORY_RU).map(([k, v]) => (
-                      <option key={k} value={k} style={{ backgroundColor: '#0d1117' }}>{v}</option>
+                      <option key={k} value={k} style={{ backgroundColor: 'var(--card)' }}>{v}</option>
                     ))}
                   </select>
                 </div>
@@ -766,13 +766,13 @@ export default function Index({ requests, vendors, projects, apartments, residen
                     required
                     value={createPriority}
                     onChange={(e) => setCreatePriority(e.target.value as any)}
-                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-white outline-none"
-                    style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.08)' }}
+                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
+                    style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
                   >
-                    <option value="low" style={{ backgroundColor: '#0d1117' }}>Low</option>
-                    <option value="medium" style={{ backgroundColor: '#0d1117' }}>Medium</option>
-                    <option value="high" style={{ backgroundColor: '#0d1117' }}>High</option>
-                    <option value="emergency" style={{ backgroundColor: '#0d1117' }}>Emergency</option>
+                    <option value="low" style={{ backgroundColor: 'var(--card)' }}>Low</option>
+                    <option value="medium" style={{ backgroundColor: 'var(--card)' }}>Medium</option>
+                    <option value="high" style={{ backgroundColor: 'var(--card)' }}>High</option>
+                    <option value="emergency" style={{ backgroundColor: 'var(--card)' }}>Emergency</option>
                   </select>
                 </div>
               </div>
@@ -783,12 +783,12 @@ export default function Index({ requests, vendors, projects, apartments, residen
                 <select
                   value={createVendorId}
                   onChange={(e) => setCreateVendorId(e.target.value)}
-                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-white outline-none"
-                  style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.08)' }}
+                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
+                  style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
                 >
-                  <option value="" style={{ backgroundColor: '#0d1117' }}>Assign contractor later...</option>
+                  <option value="" style={{ backgroundColor: 'var(--card)' }}>Assign contractor later...</option>
                   {vendors.map((v) => (
-                    <option key={v.id} value={v.id} style={{ backgroundColor: '#0d1117' }}>{v.name} ({v.specializations.join(', ') || 'General'})</option>
+                    <option key={v.id} value={v.id} style={{ backgroundColor: 'var(--card)' }}>{v.name} ({v.specializations.join(', ') || 'General'})</option>
                   ))}
                 </select>
               </div>
@@ -797,8 +797,8 @@ export default function Index({ requests, vendors, projects, apartments, residen
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="flex-1 py-3 rounded-xl text-xs font-semibold hover:bg-white/5 transition-all text-slate-400"
-                  style={{ border: '1px solid rgba(255,255,255,0.08)' }}
+                  className="flex-1 py-3 rounded-xl text-xs font-semibold hover:bg-slate-100 transition-all text-slate-400"
+                  style={{ border: '1px solid var(--border)' }}
                 >
                   Cancel
                 </button>
@@ -824,14 +824,14 @@ export default function Index({ requests, vendors, projects, apartments, residen
 
 function MetricCard({ icon: Icon, label, value, accent }: { icon: any; label: string; value: number; accent: string }) {
   return (
-    <div className="rounded-2xl p-5" style={{ backgroundColor: '#0d1117', border: '1px solid rgba(255,255,255,0.06)' }}>
+    <div className="rounded-2xl p-5" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
       <div className="flex items-center justify-between">
-        <p className="text-xs uppercase tracking-wider font-semibold" style={{ color: 'rgba(255,255,255,0.5)' }}>{label}</p>
+        <p className="text-xs uppercase tracking-wider font-semibold" style={{ color: 'var(--muted)' }}>{label}</p>
         <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${accent}1F`, border: `1px solid ${accent}3A` }}>
           <Icon className="w-4 h-4" style={{ color: accent }} />
         </div>
       </div>
-      <p className="text-3xl text-white mt-3 font-bold font-mono" style={{ fontFamily: 'var(--font-display)' }}>
+      <p className="text-3xl text-slate-800 mt-3 font-bold font-mono" style={{ fontFamily: 'var(--font-display)' }}>
         {value}
       </p>
     </div>
@@ -840,9 +840,9 @@ function MetricCard({ icon: Icon, label, value, accent }: { icon: any; label: st
 
 function DetailField({ label, value, isWide = false }: { label: string; value: string; isWide?: boolean }) {
   return (
-    <div className={`rounded-xl p-3 ${isWide ? 'col-span-2' : ''}`} style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.05)' }}>
+    <div className={`rounded-xl p-3 ${isWide ? 'col-span-2' : ''}`} style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}>
       <p className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold mb-1">{label}</p>
-      <p className="text-xs text-white leading-relaxed whitespace-pre-wrap">{value}</p>
+      <p className="text-xs text-slate-800 leading-relaxed whitespace-pre-wrap">{value}</p>
     </div>
   );
 }

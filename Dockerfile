@@ -6,14 +6,12 @@ RUN npm ci --legacy-peer-deps
 COPY . .
 RUN npm run build
 
-# --- Stage 2: Production PHP-FPM + Nginx Stack ---
+# --- Stage 2: PHP-FPM Application Server ---
 FROM php:8.2-fpm-alpine
 WORKDIR /var/www/html
 
 # Install system dependencies
 RUN apk add --no-cache \
-    nginx \
-    supervisor \
     postgresql-dev \
     libzip-dev \
     zip \
@@ -22,7 +20,8 @@ RUN apk add --no-cache \
     curl \
     libpng-dev \
     libjpeg-turbo-dev \
-    freetype-dev
+    freetype-dev \
+    shadow
 
 # Configure PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
@@ -43,20 +42,18 @@ COPY . .
 # Copy built frontend assets from Stage 1
 COPY --from=frontend-builder /app/public/build ./public/build
 
-# Install composer dependencies
+# Install composer dependencies (no dev, optimized)
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
 # Configure permissions
-RUN chown -R www-data:www-data storage bootstrap/cache
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Copy configuration files
-COPY docker/nginx.conf /etc/nginx/nginx.conf
-COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+# Copy config files
 COPY docker/php.ini /usr/local/etc/php/conf.d/custom.ini
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
-
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-EXPOSE 8080
+EXPOSE 9000
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

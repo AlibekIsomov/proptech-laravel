@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[ScopedBy([CompanyScope::class])]
 class Client extends Model
 {
+    use \App\Traits\SyncsToSupabase;
+
     use HasUuids;
     protected $fillable = [
         'company_id', 'assigned_to', 'full_name', 'phone', 'email',

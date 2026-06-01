@@ -232,39 +232,39 @@ export default function Index({ residents, projects, apartments }: Props) {
 
   return (
     <AppShell>
-      <Head title="Residents - PM PropTech UZ" />
+      <Head title="Aholilar — Mulk boshqaruvi" />
 
       {/* Header bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b" style={{ borderColor: 'rgba(16,185,129,0.12)' }}>
         <div>
-          <p className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: '#34d399' }}>
-            Property Management
+          <p className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: '#10b981' }}>
+            Mulk boshqaruvi
           </p>
-          <h1 className="text-2xl font-bold text-white mt-1">Residents</h1>
-          <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.45)' }}>
-            Showing {filtered.length} of {residents.length} active residents
+          <h1 className="text-2xl font-bold text-slate-800 mt-1">Aholilar</h1>
+          <p className="text-xs mt-1 text-slate-500">
+            Faol aholining {filtered.length} tasi ko'rsatilmoqda (jami {residents.length} tadan)
           </p>
         </div>
         <div className="flex items-center gap-3">
           {/* Search */}
-          <div className="flex items-center gap-2 rounded-xl px-3.5 py-2.5"
-            style={{ backgroundColor: '#0d1117', border: '1px solid rgba(255,255,255,0.08)' }}>
-            <Search className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.3)' }} />
+          <div className="flex items-center gap-2 rounded-xl px-3.5 py-2 bg-white"
+            style={{ border: '1px solid rgba(16,185,129,0.15)' }}>
+            <Search className="w-4 h-4 text-slate-400" />
             <input
               type="text"
-              placeholder="Search residents..."
+              placeholder="Qidirish..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="bg-transparent text-xs text-white outline-none placeholder:text-slate-500 w-44 md:w-56"
+              className="bg-transparent text-xs text-slate-800 outline-none placeholder:text-slate-400 w-44 md:w-56 border-none p-0 focus:ring-0 focus:outline-none"
             />
           </div>
           <button
             onClick={openCreateModal}
-            className="flex items-center gap-1.5 text-xs font-semibold text-white px-4 py-3 rounded-xl transition-all"
+            className="flex items-center gap-1.5 text-xs font-semibold text-white px-4 py-3 rounded-xl transition-all cursor-pointer"
             style={{ background: 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)' }}
           >
             <Plus className="w-4 h-4" />
-            Add Resident
+            Aholi qo'shish
           </button>
         </div>
       </div>
@@ -272,91 +272,97 @@ export default function Index({ residents, projects, apartments }: Props) {
       <div className="mt-6 space-y-6">
         {/* Filters Select */}
         <div className="flex items-center gap-3">
-          <label className="flex items-center gap-2 text-xs text-slate-400">
-            <span>Filter Type:</span>
+          <label className="flex items-center gap-2 text-xs text-slate-500">
+            <span>Turi bo'yicha:</span>
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="rounded-xl px-3 py-2 text-xs text-white outline-none cursor-pointer"
-              style={{ backgroundColor: '#0d1117', border: '1px solid rgba(255,255,255,0.06)' }}
+              className="rounded-xl px-3 py-2 text-xs text-slate-800 outline-none cursor-pointer bg-white"
+              style={{ border: '1px solid rgba(16,185,129,0.15)' }}
             >
-              <option value="">All Types</option>
-              <option value="owner">Owner</option>
-              <option value="tenant">Tenant</option>
-              <option value="family">Family Member</option>
+              <option value="">Barchasi</option>
+              <option value="owner">Mulkdor</option>
+              <option value="tenant">Ijarachi</option>
+              <option value="family">Oila a'zosi</option>
             </select>
           </label>
         </div>
 
         {/* Table representation */}
-        <div className="rounded-2xl border overflow-hidden"
-          style={{ backgroundColor: '#0d1117', borderColor: 'rgba(255,255,255,0.06)' }}>
+        <div className="rounded-2xl border overflow-hidden bg-white"
+          style={{ borderColor: 'rgba(16,185,129,0.12)' }}>
           {filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 gap-3">
-              <Home className="w-10 h-10" style={{ color: 'rgba(255,255,255,0.1)' }} />
-              <p className="text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>No residents found.</p>
+              <Home className="w-10 h-10 text-slate-300" />
+              <p className="text-sm text-slate-400">Aholilar topilmadi.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                    {['Name', 'Contact Details', 'Type', 'Apartment', 'Building/Project', 'Actions'].map((h) => (
-                      <th key={h} className="px-6 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                  <tr style={{ borderBottom: '1px solid rgba(16,185,129,0.12)' }}>
+                    {['Foydalanuvchi', 'Kontaktlar', 'Turi', 'Xonadon', 'Bino / Loyiha', 'Harakatlar'].map((h) => (
+                      <th key={h} className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500">
                         {h}
                       </th>
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/[0.04]">
+                <tbody className="divide-y divide-slate-100">
                   {filtered.map((r) => {
                     const c = TYPE_COLOR[r.resident_type] || TYPE_COLOR.owner;
+                    const typeLabel = r.resident_type === 'owner' ? 'Mulkdor' : r.resident_type === 'tenant' ? 'Ijarachi' : 'Oila a\'zosi';
+                    const typeTextColors: Record<string, string> = {
+                      owner: '#047857',
+                      tenant: '#1d4ed8',
+                      family: '#7c3aed'
+                    };
                     return (
-                      <tr key={r.id} className="transition-all hover:bg-white/[0.01]">
+                      <tr key={r.id} className="transition-all hover:bg-slate-50">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2.5">
-                            <div className="flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold shrink-0 text-white"
+                            <div className="flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold shrink-0 text-slate-800"
                               style={{ background: 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)' }}>
                               {r.full_name.charAt(0).toUpperCase()}
                             </div>
-                            <span className="text-sm font-semibold text-white">{r.full_name}</span>
+                            <span className="text-sm font-semibold text-slate-800">{r.full_name}</span>
                           </div>
                         </td>
                         <td className="px-6 py-4 text-xs">
-                          {r.phone && <p className="text-white flex items-center gap-1.5"><Phone className="w-3 h-3 text-slate-400" />{r.phone}</p>}
-                          {r.email && <p className="text-slate-400 flex items-center gap-1.5 mt-0.5"><Mail className="w-3 h-3 text-slate-400" />{r.email}</p>}
-                          {r.telegram_username && <p className="text-indigo-400 flex items-center gap-1.5 mt-0.5"><Send className="w-3 h-3 text-indigo-400" />@{r.telegram_username}</p>}
+                          {r.phone && <p className="text-slate-700 flex items-center gap-1.5"><Phone className="w-3 h-3 text-slate-400" />{r.phone}</p>}
+                          {r.email && <p className="text-slate-500 flex items-center gap-1.5 mt-0.5"><Mail className="w-3 h-3 text-slate-400" />{r.email}</p>}
+                          {r.telegram_username && <p className="text-emerald-700 flex items-center gap-1.5 mt-0.5"><Send className="w-3 h-3 text-emerald-400" />@{r.telegram_username}</p>}
                         </td>
                         <td className="px-6 py-4 text-xs">
                           <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold"
-                            style={{ backgroundColor: c.bg, color: c.text }}>
-                            {TYPE_RU[r.resident_type]}
+                            style={{ backgroundColor: c.bg, color: typeTextColors[r.resident_type] || c.text }}>
+                            {typeLabel}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-xs text-white">
+                        <td className="px-6 py-4 text-xs text-slate-800">
                           <span className="font-mono font-semibold">№{r.apartment}</span>
                         </td>
                         <td className="px-6 py-4 text-xs">
-                          <p className="text-white font-medium">{r.building}</p>
-                          <p style={{ color: 'rgba(255,255,255,0.35)' }}>{r.project}</p>
+                          <p className="text-slate-800 font-medium">{r.building}</p>
+                          <p className="text-slate-400">{r.project}</p>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2.5">
                             <button
                               onClick={() => setDrawerId(r.apartment_id)}
-                              className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-emerald-500/20 text-emerald-400 hover:text-white bg-emerald-500/5 hover:bg-emerald-500/10 transition-all"
+                              className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-emerald-500/20 text-emerald-600 hover:text-slate-800 bg-emerald-500/5 hover:bg-emerald-500/10 transition-all cursor-pointer"
                             >
-                              View Unit
+                              Xonadonni ko'rish
                             </button>
                             <button
                               onClick={() => openEditModal(r)}
-                              className="p-1.5 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-colors"
+                              className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
                             >
                               <Edit className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleDelete(r.id)}
-                              className="p-1.5 rounded-lg hover:bg-white/5 text-slate-400 hover:text-red-400 transition-colors"
+                              className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-red-600 transition-colors cursor-pointer"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -375,16 +381,16 @@ export default function Index({ residents, projects, apartments }: Props) {
       {/* Add / Edit Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(2px)' }}>
-          <div className="w-full max-w-md rounded-2xl border p-6 max-h-[90vh] overflow-y-auto"
-            style={{ backgroundColor: '#0d1117', borderColor: 'rgba(255,255,255,0.08)' }}>
+          style={{ backgroundColor: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(2px)' }}>
+          <div className="w-full max-w-md rounded-2xl border p-6 max-h-[90vh] overflow-y-auto bg-white shadow-2xl"
+            style={{ borderColor: 'rgba(16,185,129,0.15)' }}>
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-lg font-bold text-white">
-                {editingResident ? 'Edit Resident' : 'New Resident'}
+              <h2 className="text-lg font-bold text-slate-800">
+                {editingResident ? 'Aholini tahrirlash' : 'Yangi aholi'}
               </h2>
               <button
                 onClick={() => setShowModal(false)}
-                className="p-1.5 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white"
+                className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -393,19 +399,21 @@ export default function Index({ residents, projects, apartments }: Props) {
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Full Name */}
               <div>
-                <label className="block text-xs font-semibold mb-1.5 text-slate-400">Full Name *</label>
+                <label className="block text-xs font-semibold mb-1.5 text-slate-500">F.I.SH. *</label>
                 <input
                   type="text"
                   required
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  placeholder="e.g. Vladimir Putin"
-                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-white outline-none"
-                  style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.08)' }}
+                  placeholder="Masalan: Alibek Isomov"
+                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none bg-white border-slate-200 focus:border-emerald-500"
+                  style={{ border: '1px solid rgba(16,185,129,0.15)' }}
                 />
-              </div>              {/* Smart Apartment Autocomplete Selector */}
+              </div>
+
+              {/* Smart Apartment Autocomplete Selector */}
               <div className="relative">
-                <label className="block text-xs font-semibold mb-1.5 text-slate-400">Apartment Unit *</label>
+                <label className="block text-xs font-semibold mb-1.5 text-slate-500">Xonadon *</label>
                 <div className="relative">
                   <input
                     type="text"
@@ -425,13 +433,12 @@ export default function Index({ residents, projects, apartments }: Props) {
                       setIsAptDropdownOpen(true);
                       setSearchAptQuery('');
                     }}
-                    placeholder="Search apartment by number, building, or project..."
-                    className="w-full rounded-xl pl-3.5 pr-10 py-2.5 text-sm text-white outline-none transition-all"
+                    placeholder="Xonadon raqami, bino yoki loyiha..."
+                    className="w-full rounded-xl pl-3.5 pr-10 py-2.5 text-sm text-slate-800 outline-none transition-all bg-white"
                     style={{ 
-                      backgroundColor: '#080b14', 
-                      border: '1px solid rgba(255,255,255,0.08)',
-                      borderColor: isAptDropdownOpen ? '#10b981' : 'rgba(255,255,255,0.08)',
-                      boxShadow: isAptDropdownOpen ? '0 0 12px rgba(16,185,129,0.15)' : 'none'
+                      border: '1px solid rgba(16,185,129,0.15)',
+                      borderColor: isAptDropdownOpen ? '#10b981' : 'rgba(16,185,129,0.15)',
+                      boxShadow: isAptDropdownOpen ? '0 0 12px rgba(16,185,129,0.08)' : 'none'
                     }}
                   />
                   <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
@@ -444,12 +451,12 @@ export default function Index({ residents, projects, apartments }: Props) {
                           setBldgId('');
                           setSearchAptQuery('');
                         }}
-                        className="text-slate-400 hover:text-white p-0.5 rounded transition-colors"
+                        className="text-slate-400 hover:text-slate-600 p-0.5 rounded transition-colors"
                       >
                         <X className="w-3.5 h-3.5" />
                       </button>
                     )}
-                    <span className="text-slate-500 text-[10px] select-none">▼</span>
+                    <span className="text-slate-400 text-[10px] select-none">▼</span>
                   </div>
                 </div>
 
@@ -459,17 +466,16 @@ export default function Index({ residents, projects, apartments }: Props) {
                     <div className="fixed inset-0 z-10" onClick={() => setIsAptDropdownOpen(false)} />
                     
                     <div 
-                      className="absolute left-0 right-0 mt-1.5 rounded-xl border p-2.5 max-h-[250px] overflow-y-auto z-20 shadow-2xl transition-all"
+                      className="absolute left-0 right-0 mt-1.5 rounded-xl border p-2.5 max-h-[250px] overflow-y-auto z-20 shadow-2xl transition-all bg-white"
                       style={{ 
-                        backgroundColor: '#0d1117', 
-                        borderColor: 'rgba(255,255,255,0.08)',
+                        borderColor: 'rgba(16,185,129,0.15)',
                         backdropFilter: 'blur(10px)',
-                        boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
+                        boxShadow: '0 10px 30px rgba(0,0,0,0.08)'
                       }}
                     >
                       {/* Optional structural step-by-step browsing inside dropdown */}
-                      <div className="flex items-center gap-1.5 pb-2 mb-2 border-b border-white/[0.04] text-[10px]">
-                        <span className="text-slate-500 font-semibold select-none">Pill Filters:</span>
+                      <div className="flex items-center gap-1.5 pb-2 mb-2 border-b border-slate-100 text-[10px]">
+                        <span className="text-slate-400 font-semibold select-none font-sans">Süzgich:</span>
                         
                         <select
                           value={projId}
@@ -478,14 +484,14 @@ export default function Index({ residents, projects, apartments }: Props) {
                             setBldgId('');
                             setApartmentId('');
                           }}
-                          className="bg-[#161b22] text-[10px] text-white px-2 py-1 rounded border border-white/[0.06] outline-none cursor-pointer"
+                          className="bg-slate-50 text-[10px] text-slate-700 px-2 py-1 rounded border border-slate-200 outline-none cursor-pointer"
                         >
-                          <option value="">All Projects</option>
+                          <option value="">Barcha loyihalar</option>
                           {projects.map((p) => (
                             <option key={p.id} value={p.id}>{p.name}</option>
                           ))}
                         </select>
-
+ 
                         <select
                           value={bldgId}
                           onChange={(e) => {
@@ -493,9 +499,9 @@ export default function Index({ residents, projects, apartments }: Props) {
                             setApartmentId('');
                           }}
                           disabled={!projId}
-                          className="bg-[#161b22] text-[10px] text-white px-2 py-1 rounded border border-white/[0.06] outline-none disabled:opacity-50 cursor-pointer"
+                          className="bg-slate-50 text-[10px] text-slate-700 px-2 py-1 rounded border border-slate-200 outline-none disabled:opacity-50 cursor-pointer"
                         >
-                          <option value="">All Buildings</option>
+                          <option value="">Barcha binolar</option>
                           {buildingsForSelectedProj.map((b) => (
                             <option key={b.id} value={b.id}>{b.name}</option>
                           ))}
@@ -505,7 +511,7 @@ export default function Index({ residents, projects, apartments }: Props) {
                       {/* Filtered list of apartments with full context subtitle */}
                       {filteredApartmentsForSelector.length === 0 ? (
                         <div className="text-center text-xs text-slate-400 py-6 select-none">
-                          No matching units found.
+                          Mos keladigan xonadonlar topilmadi.
                         </div>
                       ) : (
                         <div className="space-y-1">
@@ -530,7 +536,7 @@ export default function Index({ residents, projects, apartments }: Props) {
                                   setBldgId(a.building_id);
                                   setIsAptDropdownOpen(false);
                                 }}
-                                className="w-full text-left rounded-lg px-3 py-2 text-xs transition-all flex items-center justify-between hover:bg-white/[0.04]"
+                                className="w-full text-left rounded-lg px-3 py-2 text-xs transition-all flex items-center justify-between hover:bg-slate-50 cursor-pointer"
                                 style={{
                                   backgroundColor: isSelected ? 'rgba(16,185,129,0.08)' : 'transparent',
                                   border: isSelected ? '1px solid rgba(16,185,129,0.2)' : '1px solid transparent'
@@ -538,17 +544,17 @@ export default function Index({ residents, projects, apartments }: Props) {
                               >
                                 <div className="min-w-0">
                                   <div className="flex items-center gap-2">
-                                    <span className="font-mono font-bold text-white text-sm">№{a.number}</span>
-                                    <span className="inline-block px-1.5 py-0.5 rounded bg-white/[0.04] text-[9px] text-slate-400">
-                                      Floor {a.floor}
+                                    <span className="font-mono font-bold text-slate-800 text-sm">№{a.number}</span>
+                                    <span className="inline-block px-1.5 py-0.5 rounded bg-slate-100 text-[9px] text-slate-500">
+                                      {a.floor}-qavat
                                     </span>
                                   </div>
                                   <p className="text-[10px] text-slate-400 mt-0.5 truncate">
-                                    {a.buildingName} <span className="text-slate-500 select-none">·</span> {a.projectName}
+                                    {a.buildingName} <span className="text-slate-300 select-none">·</span> {a.projectName}
                                   </p>
                                 </div>
                                 {isSelected && (
-                                  <span className="text-emerald-400 font-bold shrink-0 text-sm pl-2">✓</span>
+                                  <span className="text-emerald-500 font-bold shrink-0 text-sm pl-2">✓</span>
                                 )}
                               </button>
                             );
@@ -563,27 +569,27 @@ export default function Index({ residents, projects, apartments }: Props) {
               <div className="grid grid-cols-2 gap-4">
                 {/* Phone */}
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">Phone</label>
+                  <label className="block text-xs font-semibold mb-1.5 text-slate-500">Telefon</label>
                   <input
                     type="text"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="+998 90..."
-                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-white outline-none"
-                    style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.08)' }}
+                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none bg-white"
+                    style={{ border: '1px solid rgba(16,185,129,0.15)' }}
                   />
                 </div>
 
                 {/* Email */}
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">Email</label>
+                  <label className="block text-xs font-semibold mb-1.5 text-slate-500">Email</label>
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="email@example.com"
-                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-white outline-none"
-                    style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.08)' }}
+                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none bg-white"
+                    style={{ border: '1px solid rgba(16,185,129,0.15)' }}
                   />
                 </div>
               </div>
@@ -591,42 +597,42 @@ export default function Index({ residents, projects, apartments }: Props) {
               <div className="grid grid-cols-2 gap-4">
                 {/* Telegram Username */}
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">Telegram Username</label>
+                  <label className="block text-xs font-semibold mb-1.5 text-slate-500">Telegram</label>
                   <input
                     type="text"
                     value={telegramUsername}
                     onChange={(e) => setTelegramUsername(e.target.value)}
-                    placeholder="e.g. username"
-                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-white outline-none"
-                    style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.08)' }}
+                    placeholder="Masalan: alibek"
+                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none bg-white"
+                    style={{ border: '1px solid rgba(16,185,129,0.15)' }}
                   />
                 </div>
 
                 {/* Resident Type */}
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">Resident Type *</label>
+                  <label className="block text-xs font-semibold mb-1.5 text-slate-500">Turi *</label>
                   <select
                     value={residentType}
                     onChange={(e) => setResidentType(e.target.value as any)}
-                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-white outline-none"
-                    style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.08)' }}
+                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none bg-white"
+                    style={{ border: '1px solid rgba(16,185,129,0.15)' }}
                   >
-                    <option value="owner">Owner</option>
-                    <option value="tenant">Tenant</option>
-                    <option value="family">Family Member</option>
+                    <option value="owner">Mulkdor</option>
+                    <option value="tenant">Ijarachi</option>
+                    <option value="family">Oila a'zosi</option>
                   </select>
                 </div>
               </div>
 
               {/* Move-in Date */}
               <div>
-                <label className="block text-xs font-semibold mb-1.5 text-slate-400">Move-in Date</label>
+                <label className="block text-xs font-semibold mb-1.5 text-slate-500">Ko'chib kelgan sana</label>
                 <input
                   type="date"
                   value={moveInDate}
                   onChange={(e) => setMoveInDate(e.target.value)}
-                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-white outline-none"
-                  style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.08)' }}
+                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none bg-white"
+                  style={{ border: '1px solid rgba(16,185,129,0.15)' }}
                 />
               </div>
 
@@ -634,19 +640,18 @@ export default function Index({ residents, projects, apartments }: Props) {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="flex-1 py-3 rounded-xl text-xs font-semibold hover:bg-white/5 transition-all text-slate-400"
-                  style={{ border: '1px solid rgba(255,255,255,0.08)' }}
+                  className="flex-1 py-3 rounded-xl text-xs font-semibold hover:bg-slate-50 transition-all text-slate-400 border border-slate-200 cursor-pointer"
                 >
-                  Cancel
+                  Bekor qilish
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold text-white disabled:opacity-50 transition-all"
+                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold text-white disabled:opacity-50 transition-all cursor-pointer"
                   style={{ background: 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)' }}
                 >
                   {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                  {editingResident ? 'Save Changes' : 'Add Resident'}
+                  {editingResident ? 'Saqlash' : 'Qo\'shish'}
                 </button>
               </div>
             </form>

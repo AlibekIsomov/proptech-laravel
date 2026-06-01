@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[ScopedBy([CompanyScope::class])]
 class InventoryItem extends Model
 {
+    use \App\Traits\SyncsToSupabase;
+
     use HasUuids;
     protected $fillable = [
         'company_id', 'building_id', 'name', 'category',

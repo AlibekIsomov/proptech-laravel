@@ -170,28 +170,28 @@ export default function PMProjectShow({ project, buildings, aptStats }: Props) {
         <AppShell>
             {/* Top bar */}
             <header className="sticky top-0 z-20 flex items-center gap-3 px-6 h-14 border-b shrink-0"
-                style={{ backgroundColor: '#0a0f0d', borderColor: 'rgba(16,185,129,0.10)' }}>
+                style={{ backgroundColor: 'var(--card)', borderColor: 'rgba(16,185,129,0.10)' }}>
                 <button onClick={() => router.visit('/pm/projects')}
-                    className="p-1.5 rounded-lg transition-colors hover:bg-white/5" style={{ color: '#64748b' }}>
+                    className="p-1.5 rounded-lg transition-colors hover:bg-slate-100" style={{ color: '#64748b' }}>
                     <ArrowLeft className="w-4 h-4" />
                 </button>
                 <div className="flex items-center gap-2 min-w-0">
                     <span className="text-xs" style={{ color: '#475569' }}>Loyihalar</span>
                     <ChevronRight className="w-3 h-3 shrink-0" style={{ color: '#334155' }} />
-                    <span className="text-sm font-semibold text-white truncate">{project.name}</span>
+                    <span className="text-sm font-semibold text-slate-800 truncate">{project.name}</span>
                 </div>
             </header>
 
             <main className="px-6 py-6 space-y-6">
                 {/* Project info */}
                 <div className="rounded-2xl border p-5 flex items-center gap-4"
-                    style={{ backgroundColor: '#0a0f0d', borderColor: 'rgba(16,185,129,0.10)' }}>
+                    style={{ backgroundColor: 'var(--card)', borderColor: 'rgba(16,185,129,0.10)' }}>
                     <div className="flex items-center justify-center w-12 h-12 rounded-xl shrink-0"
                         style={{ backgroundColor: 'rgba(16,185,129,0.12)' }}>
                         <Building2 className="w-6 h-6" style={{ color: '#10b981' }} />
                     </div>
                     <div className="min-w-0 flex-1">
-                        <h1 className="text-lg font-bold text-white">{project.name}</h1>
+                        <h1 className="text-lg font-bold text-slate-800">{project.name}</h1>
                         {project.location && (
                             <div className="flex items-center gap-1.5 mt-0.5">
                                 <MapPin className="w-3 h-3 shrink-0" style={{ color: '#475569' }} />
@@ -201,11 +201,11 @@ export default function PMProjectShow({ project, buildings, aptStats }: Props) {
                     </div>
                     <div className="flex gap-6 text-center shrink-0">
                         <div>
-                            <p className="text-xl font-bold text-white">{buildings.length}</p>
+                            <p className="text-xl font-bold text-slate-800">{buildings.length}</p>
                             <p className="text-xs mt-0.5" style={{ color: '#475569' }}>Binolar</p>
                         </div>
                         <div>
-                            <p className="text-xl font-bold text-white">
+                            <p className="text-xl font-bold text-slate-800">
                                 {Object.values(aptStats).reduce((s, v) => s + v.total, 0)}
                             </p>
                             <p className="text-xs mt-0.5" style={{ color: '#475569' }}>Kvartiralar</p>
@@ -216,7 +216,7 @@ export default function PMProjectShow({ project, buildings, aptStats }: Props) {
                 {/* Buildings section */}
                 <div>
                     <div className="flex items-center justify-between mb-3">
-                        <h2 className="text-sm font-semibold text-white">Binolar</h2>
+                        <h2 className="text-sm font-semibold text-slate-800">Binolar</h2>
                         {canEdit && (
                             <button onClick={() => { setBuildingName(''); setShowAddBuilding(true); }}
                                 className="flex items-center gap-1.5 text-xs font-semibold text-white px-3.5 py-2 rounded-xl transition-all hover:opacity-90"
@@ -229,7 +229,7 @@ export default function PMProjectShow({ project, buildings, aptStats }: Props) {
                     {buildings.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-14 gap-3 rounded-2xl border border-dashed"
                             style={{ borderColor: 'rgba(16,185,129,0.15)', backgroundColor: 'rgba(16,185,129,0.02)' }}>
-                            <Building2 className="w-8 h-8" style={{ color: 'rgba(255,255,255,0.12)' }} />
+                            <Building2 className="w-8 h-8" style={{ color: 'var(--border)' }} />
                             <p className="text-xs" style={{ color: '#475569' }}>Hech qanday bino yo'q. Birinchi binoni qo'shing.</p>
                         </div>
                     ) : (
@@ -243,18 +243,18 @@ export default function PMProjectShow({ project, buildings, aptStats }: Props) {
                                     <div key={b.id} className="rounded-2xl border overflow-hidden transition-all duration-200"
                                         style={{
                                             borderColor:     active ? '#10b981' : 'rgba(16,185,129,0.08)',
-                                            backgroundColor: active ? 'rgba(16,185,129,0.04)' : '#0a0f0d',
+                                            backgroundColor: active ? 'rgba(16,185,129,0.04)' : 'var(--card)',
                                         }}>
                                         {/* Building header — click to toggle */}
                                         <button onClick={() => setSelectedBuilding(active ? null : b)}
-                                            className="w-full p-4 text-left flex items-center justify-between gap-2 hover:bg-white/[0.01] transition-colors">
+                                            className="w-full p-4 text-left flex items-center justify-between gap-2 hover:bg-slate-50 transition-colors">
                                             <div className="flex items-center gap-2.5 min-w-0">
                                                 <div className="flex items-center justify-center w-8 h-8 rounded-lg shrink-0"
                                                     style={{ backgroundColor: active ? '#10b981' : 'rgba(16,185,129,0.12)' }}>
-                                                    <Building2 className="w-4 h-4 text-white" />
+                                                    <Building2 className="w-4 h-4 text-slate-800" />
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <p className="text-xs font-bold text-white truncate">{b.name}</p>
+                                                    <p className="text-xs font-bold text-slate-800 truncate">{b.name}</p>
                                                     <p className="text-[10px] mt-0.5 font-semibold" style={{ color: '#475569' }}>
                                                         {stats.total} kvartira
                                                     </p>
@@ -262,14 +262,14 @@ export default function PMProjectShow({ project, buildings, aptStats }: Props) {
                                             </div>
                                             {active
                                                 ? <ChevronUp   className="w-4 h-4 shrink-0" style={{ color: '#10b981' }} />
-                                                : <ChevronDown className="w-4 h-4 shrink-0" style={{ color: 'rgba(255,255,255,0.2)' }} />}
+                                                : <ChevronDown className="w-4 h-4 shrink-0" style={{ color: 'var(--border)' }} />}
                                         </button>
 
                                         {/* Stats mini-bar */}
                                         {stats.total > 0 && (
                                             <div className="px-4 pb-3 -mt-1">
                                                 <div className="w-full h-1.5 rounded-full overflow-hidden mb-2"
-                                                    style={{ backgroundColor: 'rgba(255,255,255,0.06)' }}>
+                                                    style={{ backgroundColor: 'var(--border)' }}>
                                                     <div className="h-full flex">
                                                         <div style={{ width: `${(stats.sold      / stats.total) * 100}%`, backgroundColor: '#2dd4bf' }} />
                                                         <div style={{ width: `${(stats.reserved  / stats.total) * 100}%`, backgroundColor: '#f59e0b' }} />
@@ -315,7 +315,7 @@ export default function PMProjectShow({ project, buildings, aptStats }: Props) {
                     <div>
                         <div className="flex items-center gap-2 mb-4">
                             <div className="w-1 h-4 rounded-full" style={{ backgroundColor: '#10b981' }} />
-                            <h2 className="text-sm font-semibold text-white">
+                            <h2 className="text-sm font-semibold text-slate-800">
                                 Shaxmatka — {selectedBuilding.name}
                             </h2>
                         </div>
@@ -334,9 +334,9 @@ export default function PMProjectShow({ project, buildings, aptStats }: Props) {
                     style={{ backgroundColor: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}
                     onClick={e => e.target === e.currentTarget && setShowAddBuilding(false)}>
                     <div className="w-full max-w-sm rounded-2xl p-6"
-                        style={{ backgroundColor: '#0a0f0d', border: '1px solid rgba(16,185,129,0.15)' }}>
+                        style={{ backgroundColor: 'var(--card)', border: '1px solid rgba(16,185,129,0.15)' }}>
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-base font-semibold text-white">Bino qo'shish</h2>
+                            <h2 className="text-base font-semibold text-slate-800">Bino qo'shish</h2>
                             <button onClick={() => setShowAddBuilding(false)} style={{ color: '#475569' }}
                                 className="hover:text-white transition-colors">
                                 <X className="w-5 h-5" />
@@ -344,11 +344,11 @@ export default function PMProjectShow({ project, buildings, aptStats }: Props) {
                         </div>
                         <form onSubmit={handleAddBuilding} className="space-y-4">
                             <div>
-                                <label className="block text-xs font-semibold mb-1.5" style={{ color: 'rgba(255,255,255,0.5)' }}>Bino nomi</label>
+                                <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--muted)' }}>Bino nomi</label>
                                 <input type="text" required placeholder="masalan: A korpus" value={buildingName}
                                     onChange={e => setBuildingName(e.target.value)}
-                                    className="w-full rounded-xl px-4 py-2.5 text-sm text-white outline-none"
-                                    style={{ backgroundColor: '#060a07', border: '1px solid rgba(16,185,129,0.15)' }} />
+                                    className="w-full rounded-xl px-4 py-2.5 text-sm text-slate-800 outline-none"
+                                    style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.15)' }} />
                             </div>
                             <button type="submit" disabled={addingBuilding}
                                 className="w-full py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50 flex items-center justify-center gap-2"
@@ -367,11 +367,11 @@ export default function PMProjectShow({ project, buildings, aptStats }: Props) {
                     style={{ backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)' }}
                     onClick={e => e.target === e.currentTarget && setShowBulkGen(false)}>
                     <div className="w-full max-w-sm rounded-2xl p-6"
-                        style={{ backgroundColor: '#0a0f0d', border: '1px solid rgba(16,185,129,0.15)' }}>
+                        style={{ backgroundColor: 'var(--card)', border: '1px solid rgba(16,185,129,0.15)' }}>
                         <div className="flex items-center justify-between mb-5">
                             <div className="flex items-center gap-2">
                                 <Zap className="w-4 h-4" style={{ color: '#10b981' }} />
-                                <h2 className="text-sm font-bold text-white uppercase tracking-wider">Bulk yaratish</h2>
+                                <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Bulk yaratish</h2>
                             </div>
                             <button onClick={() => setShowBulkGen(false)} style={{ color: '#475569' }}
                                 className="hover:text-white transition-colors">
@@ -386,10 +386,10 @@ export default function PMProjectShow({ project, buildings, aptStats }: Props) {
                                     { label: 'Har qavatda',        val: bulkAptsPerFloor, set: setBulkAptsPerFloor },
                                 ].map(({ label, val, set }) => (
                                     <div key={label}>
-                                        <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{label}</label>
+                                        <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--muted)' }}>{label}</label>
                                         <input type="number" min={1} required value={val} onChange={e => set(e.target.value)}
-                                            className="w-full rounded-xl px-3 py-2 text-xs text-white outline-none"
-                                            style={{ backgroundColor: '#060a07', border: '1px solid rgba(16,185,129,0.12)' }} />
+                                            className="w-full rounded-xl px-3 py-2 text-xs text-slate-800 outline-none"
+                                            style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.12)' }} />
                                     </div>
                                 ))}
                             </div>
@@ -399,25 +399,25 @@ export default function PMProjectShow({ project, buildings, aptStats }: Props) {
                                     { label: 'Maydon, m²',       val: bulkArea,  set: setBulkArea  },
                                 ].map(({ label, val, set }) => (
                                     <div key={label}>
-                                        <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{label}</label>
+                                        <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--muted)' }}>{label}</label>
                                         <input type="number" min={1} required value={val} onChange={e => set(e.target.value)}
-                                            className="w-full rounded-xl px-3 py-2 text-xs text-white outline-none"
-                                            style={{ backgroundColor: '#060a07', border: '1px solid rgba(16,185,129,0.12)' }} />
+                                            className="w-full rounded-xl px-3 py-2 text-xs text-slate-800 outline-none"
+                                            style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.12)' }} />
                                     </div>
                                 ))}
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'rgba(255,255,255,0.4)' }}>Boshlang'ich narx, $</label>
+                                    <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--muted)' }}>Boshlang'ich narx, $</label>
                                     <input type="number" min={0} required value={bulkBasePrice} onChange={e => setBulkBasePrice(e.target.value)}
-                                        className="w-full rounded-xl px-3 py-2 text-xs text-white outline-none"
-                                        style={{ backgroundColor: '#060a07', border: '1px solid rgba(16,185,129,0.12)' }} />
+                                        className="w-full rounded-xl px-3 py-2 text-xs text-slate-800 outline-none"
+                                        style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.12)' }} />
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'rgba(255,255,255,0.4)' }}>Qavat uchun qo'shimcha $</label>
+                                    <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--muted)' }}>Qavat uchun qo'shimcha $</label>
                                     <input type="number" min={0} value={bulkPricePerFloor} onChange={e => setBulkPricePerFloor(e.target.value)}
-                                        className="w-full rounded-xl px-3 py-2 text-xs text-white outline-none"
-                                        style={{ backgroundColor: '#060a07', border: '1px solid rgba(16,185,129,0.12)' }} />
+                                        className="w-full rounded-xl px-3 py-2 text-xs text-slate-800 outline-none"
+                                        style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.12)' }} />
                                 </div>
                             </div>
                             {genError && <p className="text-xs font-semibold" style={{ color: '#f87171' }}>{genError}</p>}
@@ -438,11 +438,11 @@ export default function PMProjectShow({ project, buildings, aptStats }: Props) {
                     style={{ backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)' }}
                     onClick={e => e.target === e.currentTarget && setShowAptModal(false)}>
                     <div className="w-full max-w-md rounded-2xl p-6 max-h-[90vh] overflow-y-auto"
-                        style={{ backgroundColor: '#0a0f0d', border: '1px solid rgba(16,185,129,0.15)' }}>
+                        style={{ backgroundColor: 'var(--card)', border: '1px solid rgba(16,185,129,0.15)' }}>
                         <div className="flex items-center justify-between mb-5">
                             <div className="flex items-center gap-2">
                                 <Home className="w-4 h-4" style={{ color: '#10b981' }} />
-                                <h2 className="text-sm font-bold text-white">Yangi kvartira</h2>
+                                <h2 className="text-sm font-bold text-slate-800">Yangi kvartira</h2>
                             </div>
                             <button onClick={() => setShowAptModal(false)} style={{ color: '#475569' }}
                                 className="hover:text-white transition-colors">
@@ -453,36 +453,36 @@ export default function PMProjectShow({ project, buildings, aptStats }: Props) {
                         <form onSubmit={handleAptSubmit} className="space-y-4">
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="block text-xs font-semibold mb-1.5" style={{ color: 'rgba(255,255,255,0.5)' }}>Qavat *</label>
+                                    <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--muted)' }}>Qavat *</label>
                                     <input type="number" min={1} required value={aptForm.floor}
                                         onChange={e => setAptForm(f => ({ ...f, floor: e.target.value }))}
                                         placeholder="masalan: 5"
-                                        className="w-full rounded-xl px-3.5 py-2.5 text-sm text-white outline-none"
-                                        style={{ backgroundColor: '#060a07', border: '1px solid rgba(16,185,129,0.12)' }} />
+                                        className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
+                                        style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.12)' }} />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-semibold mb-1.5" style={{ color: 'rgba(255,255,255,0.5)' }}>Kvartira raqami *</label>
+                                    <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--muted)' }}>Kvartira raqami *</label>
                                     <input type="text" required value={aptForm.number}
                                         onChange={e => setAptForm(f => ({ ...f, number: e.target.value }))}
                                         placeholder="masalan: 501"
-                                        className="w-full rounded-xl px-3.5 py-2.5 text-sm text-white outline-none"
-                                        style={{ backgroundColor: '#060a07', border: '1px solid rgba(16,185,129,0.12)' }} />
+                                        className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
+                                        style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.12)' }} />
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="block text-xs font-semibold mb-1.5" style={{ color: 'rgba(255,255,255,0.5)' }}>Xonalar *</label>
+                                    <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--muted)' }}>Xonalar *</label>
                                     <input type="number" min={0} required value={aptForm.rooms}
                                         onChange={e => setAptForm(f => ({ ...f, rooms: e.target.value }))}
-                                        className="w-full rounded-xl px-3.5 py-2.5 text-sm text-white outline-none"
-                                        style={{ backgroundColor: '#060a07', border: '1px solid rgba(16,185,129,0.12)' }} />
+                                        className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
+                                        style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.12)' }} />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-semibold mb-1.5" style={{ color: 'rgba(255,255,255,0.5)' }}>Holat</label>
+                                    <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--muted)' }}>Holat</label>
                                     <select value={aptForm.status} onChange={e => setAptForm(f => ({ ...f, status: e.target.value as any }))}
-                                        className="w-full rounded-xl px-3.5 py-2.5 text-sm text-white outline-none"
-                                        style={{ backgroundColor: '#060a07', border: '1px solid rgba(16,185,129,0.12)' }}>
+                                        className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
+                                        style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.12)' }}>
                                         <option value="available">Mavjud</option>
                                         <option value="reserved">Bron</option>
                                         <option value="sold">Sotilgan</option>
@@ -492,47 +492,47 @@ export default function PMProjectShow({ project, buildings, aptStats }: Props) {
 
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="block text-xs font-semibold mb-1.5" style={{ color: 'rgba(255,255,255,0.5)' }}>Maydon, m²</label>
+                                    <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--muted)' }}>Maydon, m²</label>
                                     <input type="number" step="0.01" value={aptForm.area}
                                         onChange={e => setAptForm(f => ({ ...f, area: e.target.value }))}
                                         placeholder="masalan: 65.50"
-                                        className="w-full rounded-xl px-3.5 py-2.5 text-sm text-white outline-none"
-                                        style={{ backgroundColor: '#060a07', border: '1px solid rgba(16,185,129,0.12)' }} />
+                                        className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
+                                        style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.12)' }} />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-semibold mb-1.5" style={{ color: 'rgba(255,255,255,0.5)' }}>Narx, $</label>
+                                    <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--muted)' }}>Narx, $</label>
                                     <input type="number" value={aptForm.price}
                                         onChange={e => setAptForm(f => ({ ...f, price: e.target.value }))}
                                         placeholder="masalan: 85000"
-                                        className="w-full rounded-xl px-3.5 py-2.5 text-sm text-white outline-none"
-                                        style={{ backgroundColor: '#060a07', border: '1px solid rgba(16,185,129,0.12)' }} />
+                                        className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
+                                        style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.12)' }} />
                                 </div>
                             </div>
 
                             {/* Price per m² calculator */}
                             <div className="flex items-center gap-2 rounded-xl px-4 py-2.5"
-                                style={{ backgroundColor: '#060a07', border: '1px solid rgba(16,185,129,0.08)' }}>
+                                style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.08)' }}>
                                 <Calculator className="w-3.5 h-3.5 shrink-0" style={{ color: '#475569' }} />
                                 <span className="text-xs" style={{ color: '#475569' }}>Hisoblangan narx m² uchun:</span>
                                 {pricePerM2 ? (
-                                    <span className="text-xs font-bold text-white ml-auto">${pricePerM2.toLocaleString()} / m²</span>
+                                    <span className="text-xs font-bold text-slate-800 ml-auto">${pricePerM2.toLocaleString()} / m²</span>
                                 ) : (
                                     <span className="text-xs ml-auto" style={{ color: '#334155' }}>maydon va narxni kiriting</span>
                                 )}
                             </div>
 
                             <div>
-                                <label className="block text-xs font-semibold mb-1.5" style={{ color: 'rgba(255,255,255,0.5)' }}>Turi</label>
+                                <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--muted)' }}>Turi</label>
                                 <input type="text" value={aptForm.type}
                                     onChange={e => setAptForm(f => ({ ...f, type: e.target.value }))}
                                     placeholder="masalan: Studio, Penthouse"
-                                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-white outline-none"
-                                    style={{ backgroundColor: '#060a07', border: '1px solid rgba(16,185,129,0.12)' }} />
+                                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
+                                    style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.12)' }} />
                             </div>
 
                             <div className="flex gap-3 pt-2">
                                 <button type="button" onClick={() => setShowAptModal(false)}
-                                    className="flex-1 py-2.5 rounded-xl text-xs font-semibold hover:bg-white/5 transition-all"
+                                    className="flex-1 py-2.5 rounded-xl text-xs font-semibold hover:bg-slate-100 transition-all"
                                     style={{ border: '1px solid rgba(16,185,129,0.12)', color: '#64748b' }}>
                                     Bekor qilish
                                 </button>

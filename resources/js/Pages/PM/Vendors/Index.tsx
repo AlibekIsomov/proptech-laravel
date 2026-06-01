@@ -152,16 +152,16 @@ export default function Index({ vendors }: Props) {
 
   return (
     <AppShell>
-      <Head title="Vendors - PM PropTech UZ" />
+      <Head title="Vendors - PM 1Mahalla" />
 
       {/* Header bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b" style={{ borderColor: 'var(--border)' }}>
         <div>
           <p className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: '#34d399' }}>
             Property Management
           </p>
-          <h1 className="text-2xl font-bold text-white mt-1">Vendors</h1>
-          <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.45)' }}>
+          <h1 className="text-2xl font-bold text-slate-800 mt-1">Vendors</h1>
+          <p className="text-xs mt-1" style={{ color: 'var(--muted)' }}>
             Service contractors, plumbers, and technicians
           </p>
         </div>
@@ -179,20 +179,20 @@ export default function Index({ vendors }: Props) {
         {/* Summary Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <SummaryCard label="Active"         value={String(stats.active)}    accent="#34d399" />
-          <SummaryCard label="Archived"       value={String(stats.archived)}  accent="rgba(255,255,255,0.4)" />
+          <SummaryCard label="Archived"       value={String(stats.archived)}  accent="var(--muted)" />
           <SummaryCard label="Avg Rating"     value={stats.avgRating.toFixed(1)} accent="#fbbf24" />
           <SummaryCard label="Total Jobs Done" value={String(stats.totalJobs)} accent="#60a5fa" />
         </div>
 
         {/* Tab Filters and Search */}
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
+          <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
             <button
               onClick={() => setShowActive(true)}
               className="px-4 py-2 text-xs font-semibold transition-all"
               style={{
                 backgroundColor: showActive ? 'rgba(16,185,129,0.10)' : 'transparent',
-                color:           showActive ? '#6ee7b7' : 'rgba(255,255,255,0.55)',
+                color:           showActive ? '#6ee7b7' : 'var(--muted)',
               }}
             >
               Active
@@ -202,7 +202,7 @@ export default function Index({ vendors }: Props) {
               className="px-4 py-2 text-xs font-semibold transition-all"
               style={{
                 backgroundColor: !showActive ? 'rgba(16,185,129,0.10)' : 'transparent',
-                color:           !showActive ? '#6ee7b7' : 'rgba(255,255,255,0.55)',
+                color:           !showActive ? '#6ee7b7' : 'var(--muted)',
               }}
             >
               Archive
@@ -215,16 +215,16 @@ export default function Index({ vendors }: Props) {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search vendor name or phone..."
-              className="w-full rounded-xl pl-9 pr-3 py-2.5 text-xs text-white outline-none placeholder:text-slate-500"
-              style={{ backgroundColor: '#0d1117', border: '1px solid rgba(255,255,255,0.08)' }}
+              className="w-full rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-800 outline-none placeholder:text-slate-400"
+              style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
             />
           </div>
 
           <select
             value={specFilter}
             onChange={(e) => setSpecFilter(e.target.value)}
-            className="rounded-xl px-3 py-2.5 text-xs text-white outline-none cursor-pointer"
-            style={{ backgroundColor: '#0d1117', border: '1px solid rgba(255,255,255,0.08)' }}
+            className="rounded-xl px-3 py-2.5 text-xs text-slate-800 outline-none cursor-pointer"
+            style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
           >
             <option value="all">All Specializations</option>
             {ALL_SPECS.map((s) => (
@@ -235,7 +235,7 @@ export default function Index({ vendors }: Props) {
 
         {/* Vendors Grid */}
         {filtered.length === 0 ? (
-          <div className="rounded-2xl p-12 text-center" style={{ border: '1px dashed rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.45)' }}>
+          <div className="rounded-2xl p-12 text-center" style={{ border: '1px dashed var(--border)', color: 'var(--muted)' }}>
             <HardHat className="w-8 h-8 mx-auto mb-3 text-slate-500" />
             <p className="text-xs">No contractors found matching filters.</p>
           </div>
@@ -246,15 +246,15 @@ export default function Index({ vendors }: Props) {
                 key={v.id}
                 className="rounded-2xl p-5"
                 style={{
-                  backgroundColor: '#0d1117',
-                  border:          '1px solid rgba(255,255,255,0.06)',
+                  backgroundColor: 'var(--card)',
+                  border:          '1px solid var(--border)',
                   opacity:         v.is_active ? 1 : 0.55,
                 }}
               >
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div className="min-w-0 flex-1">
-                    <h3 className="text-base text-white font-semibold truncate">{v.name}</h3>
-                    <div className="flex flex-wrap items-center gap-3 mt-1.5 text-[11px]" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                    <h3 className="text-base text-slate-800 font-semibold truncate">{v.name}</h3>
+                    <div className="flex flex-wrap items-center gap-3 mt-1.5 text-[11px]" style={{ color: 'var(--muted)' }}>
                       <span className="flex items-center gap-1"><Phone className="w-3.5 h-3.5" />{v.phone}</span>
                       {v.email && <span className="flex items-center gap-1"><Mail className="w-3.5 h-3.5" />{v.email}</span>}
                       {v.telegram_username && (
@@ -265,14 +265,14 @@ export default function Index({ vendors }: Props) {
                   <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={() => openEditModal(v)}
-                      className="p-1.5 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-colors"
+                      className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-white transition-colors"
                       title="Edit Vendor"
                     >
                       <Edit2 className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => handleToggleActive(v)}
-                      className="p-1.5 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-colors"
+                      className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-white transition-colors"
                       title={v.is_active ? 'Archive Vendor' : 'Restore Vendor'}
                     >
                       <ToggleRight className="w-4 h-4" />
@@ -300,7 +300,7 @@ export default function Index({ vendors }: Props) {
 
                 <div
                   className="flex items-center justify-between pt-3"
-                  style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}
+                  style={{ borderTop: '1px solid var(--border)' }}
                 >
                   <div className="flex items-center gap-1">
                     {[1, 2, 3, 4, 5].map((r) => (
@@ -308,16 +308,16 @@ export default function Index({ vendors }: Props) {
                         key={r}
                         className="w-3.5 h-3.5"
                         style={{
-                          color: r <= Math.round(Number(v.rating)) ? '#fbbf24' : 'rgba(255,255,255,0.15)',
+                          color: r <= Math.round(Number(v.rating)) ? '#fbbf24' : 'var(--border)',
                           fill:  r <= Math.round(Number(v.rating)) ? '#fbbf24' : 'transparent',
                         }}
                       />
                     ))}
-                    <span className="text-xs ml-1" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                    <span className="text-xs ml-1" style={{ color: 'var(--muted)' }}>
                       {Number(v.rating).toFixed(1)}
                     </span>
                   </div>
-                  <div className="text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                  <div className="text-xs" style={{ color: 'var(--muted)' }}>
                     {v.completed_jobs} / {v.total_jobs || v.completed_jobs} jobs done
                   </div>
                 </div>
@@ -332,14 +332,14 @@ export default function Index({ vendors }: Props) {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
           style={{ backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(2px)' }}>
           <div className="w-full max-w-md rounded-2xl border p-6 max-h-[90vh] overflow-y-auto"
-            style={{ backgroundColor: '#0d1117', borderColor: 'rgba(255,255,255,0.08)' }}>
+            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-lg font-bold text-white">
+              <h2 className="text-lg font-bold text-slate-800">
                 {editingVendor ? 'Edit Vendor' : 'New Vendor'}
               </h2>
               <button
                 onClick={() => setShowModal(false)}
-                className="p-1.5 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white"
+                className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-white"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -355,8 +355,8 @@ export default function Index({ vendors }: Props) {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Alisher Plumbing Service"
-                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-white outline-none"
-                  style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.08)' }}
+                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
+                  style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
                 />
               </div>
 
@@ -369,8 +369,8 @@ export default function Index({ vendors }: Props) {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+998 90..."
-                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-white outline-none"
-                  style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.08)' }}
+                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
+                  style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
                 />
               </div>
 
@@ -383,8 +383,8 @@ export default function Index({ vendors }: Props) {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="email@example.com"
-                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-white outline-none"
-                    style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.08)' }}
+                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
+                    style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
                   />
                 </div>
 
@@ -396,8 +396,8 @@ export default function Index({ vendors }: Props) {
                     value={telegramUsername}
                     onChange={(e) => setTelegramUsername(e.target.value)}
                     placeholder="e.g. user_tg"
-                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-white outline-none"
-                    style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.08)' }}
+                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
+                    style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
                   />
                 </div>
               </div>
@@ -405,14 +405,14 @@ export default function Index({ vendors }: Props) {
               {/* Specializations checkboxes */}
               <div>
                 <label className="block text-xs font-semibold mb-2 text-slate-400">Specializations</label>
-                <div className="grid grid-cols-2 gap-2 p-3 rounded-xl" style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <div className="grid grid-cols-2 gap-2 p-3 rounded-xl" style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}>
                   {ALL_SPECS.map((s) => (
-                    <label key={s} className="flex items-center gap-2 text-xs text-white cursor-pointer select-none">
+                    <label key={s} className="flex items-center gap-2 text-xs text-slate-800 cursor-pointer select-none">
                       <input
                         type="checkbox"
                         checked={specializations.includes(s)}
                         onChange={(e) => handleSpecCheckboxChange(s, e.target.checked)}
-                        className="rounded bg-[#0d1117] border-slate-600 text-emerald-500 focus:ring-emerald-500"
+                        className="rounded bg-white border-slate-200 text-emerald-500 focus:ring-emerald-500"
                       />
                       <span>{SPEC_RU[s]}</span>
                     </label>
@@ -428,8 +428,8 @@ export default function Index({ vendors }: Props) {
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Reliable team of 3 plumbers, available for night emergencies..."
-                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-white outline-none resize-none"
-                  style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.08)' }}
+                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none resize-none"
+                  style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
                 />
               </div>
 
@@ -437,8 +437,8 @@ export default function Index({ vendors }: Props) {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="flex-1 py-3 rounded-xl text-xs font-semibold hover:bg-white/5 transition-all text-slate-400"
-                  style={{ border: '1px solid rgba(255,255,255,0.08)' }}
+                  className="flex-1 py-3 rounded-xl text-xs font-semibold hover:bg-slate-100 transition-all text-slate-400"
+                  style={{ border: '1px solid var(--border)' }}
                 >
                   Cancel
                 </button>
@@ -464,10 +464,10 @@ function SummaryCard({ label, value, accent }: { label: string; value: string; a
   return (
     <div
       className="rounded-2xl p-4"
-      style={{ backgroundColor: '#0d1117', border: '1px solid rgba(255,255,255,0.06)' }}
+      style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
     >
       <p className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: accent }}>{label}</p>
-      <p className="text-2xl text-white mt-1.5 font-bold" style={{ fontFamily: 'var(--font-display)' }}>
+      <p className="text-2xl text-slate-800 mt-1.5 font-bold" style={{ fontFamily: 'var(--font-display)' }}>
         {value}
       </p>
     </div>

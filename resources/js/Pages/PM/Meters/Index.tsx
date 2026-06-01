@@ -64,13 +64,13 @@ export default function MetersIndex({ meters, apartments }: Props) {
 
   return (
     <AppShell>
-      <Head title="Счётчики — PropTech UZ" />
+      <Head title="Счётчики — 1Mahalla" />
       <div className="space-y-6">
         <header className="flex items-start justify-between gap-4">
           <div>
             <p className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: '#34d399' }}>Property Management</p>
-            <h1 className="text-3xl font-bold text-white mt-1" style={{ fontFamily: 'var(--font-display)' }}>Счётчики</h1>
-            <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.55)' }}>Показания по всем счётчикам</p>
+            <h1 className="text-3xl font-bold text-slate-800 mt-1" style={{ fontFamily: 'var(--font-display)' }}>Счётчики</h1>
+            <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>Показания по всем счётчикам</p>
           </div>
           <button onClick={() => setShowAdd(true)}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white"
@@ -87,35 +87,35 @@ export default function MetersIndex({ meters, apartments }: Props) {
 
         <div className="flex flex-wrap gap-3">
           <div className="flex flex-col gap-1.5 flex-1 min-w-[200px]">
-            <span className="text-[10px] uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.4)' }}>Поиск</span>
+            <span className="text-[10px] uppercase tracking-widest" style={{ color: 'var(--muted)' }}>Поиск</span>
             <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Квартира, здание, серийный №"
-              className="rounded-xl px-3 py-2.5 text-sm text-white outline-none"
-              style={{ backgroundColor: '#0d1117', border: '1px solid rgba(255,255,255,0.08)' }} />
+              className="rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none"
+              style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }} />
           </div>
           <label className="flex flex-col gap-1.5 min-w-[180px]">
-            <span className="text-[10px] uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.4)' }}>Тип</span>
+            <span className="text-[10px] uppercase tracking-widest" style={{ color: 'var(--muted)' }}>Тип</span>
             <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value as MeterType | 'all')}
-              className="rounded-xl px-3 py-2.5 text-sm text-white outline-none"
-              style={{ backgroundColor: '#0d1117', border: '1px solid rgba(255,255,255,0.08)' }}>
-              <option value="all" style={{ backgroundColor: '#0d1117' }}>Все типы</option>
-              {Object.entries(METER_META).map(([k, v]) => <option key={k} value={k} style={{ backgroundColor: '#0d1117' }}>{v.label}</option>)}
+              className="rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none"
+              style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
+              <option value="all" style={{ backgroundColor: 'var(--card)' }}>Все типы</option>
+              {Object.entries(METER_META).map(([k, v]) => <option key={k} value={k} style={{ backgroundColor: 'var(--card)' }}>{v.label}</option>)}
             </select>
           </label>
         </div>
 
-        <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#0d1117', border: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
           {filtered.length === 0 ? (
-            <div className="p-12 text-center" style={{ color: 'rgba(255,255,255,0.4)' }}>
-              <Gauge className="w-8 h-8 mx-auto mb-3" style={{ color: 'rgba(255,255,255,0.25)' }} />
+            <div className="p-12 text-center" style={{ color: 'var(--muted)' }}>
+              <Gauge className="w-8 h-8 mx-auto mb-3" style={{ color: 'var(--border)' }} />
               <p className="text-sm">Счётчиков нет</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                  <tr style={{ borderBottom: '1px solid var(--border)' }}>
                     {['Квартира', 'Здание', 'Тип', 'Серийный №', 'Посл. показание', 'Дата', 'Ед.', ''].map((h) => (
-                      <th key={h} className="text-left px-4 py-3 text-[10px] uppercase tracking-widest font-semibold" style={{ color: 'rgba(255,255,255,0.4)' }}>{h}</th>
+                      <th key={h} className="text-left px-4 py-3 text-[10px] uppercase tracking-widest font-semibold" style={{ color: 'var(--muted)' }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -125,26 +125,26 @@ export default function MetersIndex({ meters, apartments }: Props) {
                     const cutoff = Date.now() - STALE_DAYS * 24 * 3600 * 1000;
                     const isStale = m.last_date ? new Date(m.last_date).getTime() < cutoff : true;
                     return (
-                      <tr key={m.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                        <td className="px-4 py-3 text-white font-medium">№{m.apartment}</td>
-                        <td className="px-4 py-3 text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>{m.building ?? '—'}</td>
+                      <tr key={m.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                        <td className="px-4 py-3 text-slate-800 font-medium">№{m.apartment}</td>
+                        <td className="px-4 py-3 text-sm" style={{ color: 'var(--muted)' }}>{m.building ?? '—'}</td>
                         <td className="px-4 py-3">
                           <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full"
                             style={{ backgroundColor: `${meta.accent}1A`, color: meta.accent }}>{meta.label}</span>
                         </td>
-                        <td className="px-4 py-3 text-xs font-mono" style={{ color: 'rgba(255,255,255,0.5)' }}>{m.serial_number ?? '—'}</td>
+                        <td className="px-4 py-3 text-xs font-mono" style={{ color: 'var(--muted)' }}>{m.serial_number ?? '—'}</td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-1">
-                            <span className="text-white font-medium">
+                            <span className="text-slate-800 font-medium">
                               {m.last_reading != null ? m.last_reading.toLocaleString('ru-RU') : '—'}
                             </span>
                             {isStale && m.last_date && <AlertTriangle className="w-3.5 h-3.5" style={{ color: '#fbbf24' }} />}
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-xs" style={{ color: isStale ? '#fbbf24' : 'rgba(255,255,255,0.5)' }}>
+                        <td className="px-4 py-3 text-xs" style={{ color: isStale ? '#fbbf24' : 'var(--muted)' }}>
                           {m.last_date ? new Date(m.last_date).toLocaleDateString('ru-RU') : '—'}
                         </td>
-                        <td className="px-4 py-3 text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>{m.unit ?? meta.unit}</td>
+                        <td className="px-4 py-3 text-xs" style={{ color: 'var(--muted)' }}>{m.unit ?? meta.unit}</td>
                         <td className="px-4 py-3">
                           <button onClick={() => setReadingFor(m)}
                             className="text-xs font-medium px-3 py-1.5 rounded-lg"
@@ -193,39 +193,39 @@ function AddMeterModal({ apartments, onClose }: { apartments: ApartmentOption[];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}>
-      <div className="rounded-2xl p-6 w-full max-w-md space-y-4" style={{ backgroundColor: '#0d1117', border: '1px solid rgba(255,255,255,0.10)' }}>
+      <div className="rounded-2xl p-6 w-full max-w-md space-y-4" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-white">Добавить счётчик</h2>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/5" style={{ color: 'rgba(255,255,255,0.5)' }}><X className="w-4 h-4" /></button>
+          <h2 className="text-lg font-semibold text-slate-800">Добавить счётчик</h2>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100" style={{ color: 'var(--muted)' }}><X className="w-4 h-4" /></button>
         </div>
         <form onSubmit={submit} className="space-y-3">
           <Field label="Квартира" error={errors.apartment_id}>
             <select value={data.apartment_id} onChange={(e) => setData('apartment_id', e.target.value)}
-              className="w-full rounded-xl px-3 py-2.5 text-sm text-white outline-none"
-              style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              className="w-full rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none"
+              style={{ backgroundColor: 'var(--border)', border: '1px solid var(--border)' }}>
               <option value="">— Выбрать —</option>
-              {apartments.map((a) => <option key={a.id} value={a.id} style={{ backgroundColor: '#0d1117' }}>{a.label}</option>)}
+              {apartments.map((a) => <option key={a.id} value={a.id} style={{ backgroundColor: 'var(--card)' }}>{a.label}</option>)}
             </select>
           </Field>
           <Field label="Тип счётчика" error={errors.meter_type}>
             <select value={data.meter_type} onChange={(e) => onTypeChange(e.target.value as MeterType)}
-              className="w-full rounded-xl px-3 py-2.5 text-sm text-white outline-none"
-              style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-              {Object.entries(METER_META).map(([k, v]) => <option key={k} value={k} style={{ backgroundColor: '#0d1117' }}>{v.label}</option>)}
+              className="w-full rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none"
+              style={{ backgroundColor: 'var(--border)', border: '1px solid var(--border)' }}>
+              {Object.entries(METER_META).map(([k, v]) => <option key={k} value={k} style={{ backgroundColor: 'var(--card)' }}>{v.label}</option>)}
             </select>
           </Field>
           <Field label="Серийный номер" error={errors.serial_number}>
             <input value={data.serial_number} onChange={(e) => setData('serial_number', e.target.value)}
-              className="w-full rounded-xl px-3 py-2.5 text-sm text-white outline-none"
-              style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }} />
+              className="w-full rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none"
+              style={{ backgroundColor: 'var(--border)', border: '1px solid var(--border)' }} />
           </Field>
           <Field label="Начальное показание" error={errors.initial_reading}>
             <input type="number" value={data.initial_reading} onChange={(e) => setData('initial_reading', e.target.value)}
-              className="w-full rounded-xl px-3 py-2.5 text-sm text-white outline-none"
-              style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }} />
+              className="w-full rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none"
+              style={{ backgroundColor: 'var(--border)', border: '1px solid var(--border)' }} />
           </Field>
           <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 rounded-xl text-sm" style={{ color: 'rgba(255,255,255,0.65)', border: '1px solid rgba(255,255,255,0.08)' }}>Отмена</button>
+            <button type="button" onClick={onClose} className="px-4 py-2 rounded-xl text-sm" style={{ color: 'var(--muted)', border: '1px solid var(--border)' }}>Отмена</button>
             <button type="submit" disabled={processing}
               className="px-4 py-2 rounded-xl text-sm font-semibold text-white flex items-center gap-2 disabled:opacity-50"
               style={{ background: 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)' }}>
@@ -254,12 +254,12 @@ function AddReadingModal({ meter, onClose }: { meter: Meter; onClose: () => void
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}>
-      <div className="rounded-2xl p-6 w-full max-w-sm space-y-4" style={{ backgroundColor: '#0d1117', border: '1px solid rgba(255,255,255,0.10)' }}>
+      <div className="rounded-2xl p-6 w-full max-w-sm space-y-4" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-white">Внести показание</h2>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/5" style={{ color: 'rgba(255,255,255,0.5)' }}><X className="w-4 h-4" /></button>
+          <h2 className="text-lg font-semibold text-slate-800">Внести показание</h2>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100" style={{ color: 'var(--muted)' }}><X className="w-4 h-4" /></button>
         </div>
-        <p className="text-sm" style={{ color: 'rgba(255,255,255,0.55)' }}>
+        <p className="text-sm" style={{ color: 'var(--muted)' }}>
           Кв. №{meter.apartment} · <span style={{ color: meta.accent }}>{meta.label}</span>
           {meter.last_reading != null && <> · Последнее: {meter.last_reading.toLocaleString('ru-RU')} {meta.unit}</>}
         </p>
@@ -267,16 +267,16 @@ function AddReadingModal({ meter, onClose }: { meter: Meter; onClose: () => void
           <Field label={`Показание (${meta.unit})`} error={errors.reading_value}>
             <input type="number" step="0.01" value={data.reading_value} onChange={(e) => setData('reading_value', e.target.value)}
               placeholder="12345.67"
-              className="w-full rounded-xl px-3 py-2.5 text-sm text-white outline-none"
-              style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }} />
+              className="w-full rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none"
+              style={{ backgroundColor: 'var(--border)', border: '1px solid var(--border)' }} />
           </Field>
           <Field label="Дата" error={errors.reading_date}>
             <input type="date" value={data.reading_date} onChange={(e) => setData('reading_date', e.target.value)}
-              className="w-full rounded-xl px-3 py-2.5 text-sm text-white outline-none"
-              style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', colorScheme: 'dark' }} />
+              className="w-full rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none"
+              style={{ backgroundColor: 'var(--border)', border: '1px solid var(--border)' }} />
           </Field>
           <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 rounded-xl text-sm" style={{ color: 'rgba(255,255,255,0.65)', border: '1px solid rgba(255,255,255,0.08)' }}>Отмена</button>
+            <button type="button" onClick={onClose} className="px-4 py-2 rounded-xl text-sm" style={{ color: 'var(--muted)', border: '1px solid var(--border)' }}>Отмена</button>
             <button type="submit" disabled={processing}
               className="px-4 py-2 rounded-xl text-sm font-semibold text-white flex items-center gap-2 disabled:opacity-50"
               style={{ background: 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)' }}>
@@ -291,9 +291,9 @@ function AddReadingModal({ meter, onClose }: { meter: Meter; onClose: () => void
 
 function StatCard({ label, value, accent }: { label: string; value: number; accent: string }) {
   return (
-    <div className="rounded-2xl p-5" style={{ backgroundColor: '#0d1117', border: '1px solid rgba(255,255,255,0.06)' }}>
+    <div className="rounded-2xl p-5" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
       <p className="text-[10px] uppercase tracking-widest" style={{ color: accent }}>{label}</p>
-      <p className="text-2xl text-white mt-2" style={{ fontFamily: 'var(--font-display)', fontWeight: 700 }}>{value}</p>
+      <p className="text-2xl text-slate-800 mt-2" style={{ fontFamily: 'var(--font-display)', fontWeight: 700 }}>{value}</p>
     </div>
   );
 }
@@ -301,7 +301,7 @@ function StatCard({ label, value, accent }: { label: string; value: number; acce
 function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="text-[10px] uppercase tracking-widest mb-1.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{label}</p>
+      <p className="text-[10px] uppercase tracking-widest mb-1.5" style={{ color: 'var(--muted)' }}>{label}</p>
       {children}
       {error && <p className="text-xs mt-1" style={{ color: '#f87171' }}>{error}</p>}
     </div>

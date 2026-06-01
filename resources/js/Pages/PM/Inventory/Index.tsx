@@ -68,7 +68,7 @@ const STATUS_META: Record<AssetStatus, { label: string; bg: string; fg: string; 
     broken:        { label: "Сломан",    bg: "rgba(239,68,68,0.10)",  fg: "#f87171", border: "rgba(239,68,68,0.30)", rank: 0 },
     needs_service: { label: "ТО",        bg: "rgba(251,191,36,0.10)", fg: "#fbbf24", border: "rgba(251,191,36,0.30)", rank: 1 },
     operational:   { label: "В строю",   bg: "rgba(16,185,129,0.10)", fg: "#34d399", border: "rgba(16,185,129,0.30)", rank: 2 },
-    retired:       { label: "Списан",    bg: "rgba(255,255,255,0.05)", fg: "rgba(255,255,255,0.5)", border: "rgba(255,255,255,0.10)", rank: 3 },
+    retired:       { label: "Списан",    bg: "var(--border)", fg: "var(--muted)", border: "var(--border)", rank: 3 },
 };
 
 export default function InventoryIndex({ projects }: Props) {
@@ -255,13 +255,13 @@ export default function InventoryIndex({ projects }: Props) {
         <AppShell>
             <Head title="Инвентарь & Оборудование - PM Portal" />
 
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b" style={{ borderColor: 'var(--border)' }}>
                 <div>
                     <p className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: "#34d399" }}>
                         Property Management
                     </p>
-                    <h1 className="text-2xl font-bold text-white mt-1">Инвентарь</h1>
-                    <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.45)" }}>
+                    <h1 className="text-2xl font-bold text-slate-800 mt-1">Инвентарь</h1>
+                    <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>
                         Реестр оборудования, инженерных систем и расходных материалов здания
                     </p>
                 </div>
@@ -289,13 +289,13 @@ export default function InventoryIndex({ projects }: Props) {
             </div>
 
             {/* Custom Tab Selector */}
-            <div className="flex gap-2 mt-4 border-b border-white/[0.04] pb-px">
+            <div className="flex gap-2 mt-4 border-b border-slate-100 pb-px">
                 <button
                     onClick={() => setActiveTab('equipment')}
                     className="flex items-center gap-2 px-4 py-3 text-xs font-semibold tracking-wide border-b-2 transition-all"
                     style={{
                         borderColor: activeTab === 'equipment' ? '#10b981' : 'transparent',
-                        color: activeTab === 'equipment' ? '#6ee7b7' : 'rgba(255,255,255,0.4)'
+                        color: activeTab === 'equipment' ? '#6ee7b7' : 'var(--muted)'
                     }}
                 >
                     <LayoutGrid className="w-4 h-4" />
@@ -306,7 +306,7 @@ export default function InventoryIndex({ projects }: Props) {
                     className="flex items-center gap-2 px-4 py-3 text-xs font-semibold tracking-wide border-b-2 transition-all"
                     style={{
                         borderColor: activeTab === 'supplies' ? '#10b981' : 'transparent',
-                        color: activeTab === 'supplies' ? '#6ee7b7' : 'rgba(255,255,255,0.4)'
+                        color: activeTab === 'supplies' ? '#6ee7b7' : 'var(--muted)'
                     }}
                 >
                     <Package className="w-4 h-4" />
@@ -316,14 +316,14 @@ export default function InventoryIndex({ projects }: Props) {
 
             <div className="mt-6 space-y-6">
                 {/* Selectors */}
-                <div className="flex flex-wrap items-center gap-4 p-4 rounded-2xl animate-fade-in" style={{ backgroundColor: "#0d1117", border: "1px solid rgba(255,255,255,0.06)" }}>
+                <div className="flex flex-wrap items-center gap-4 p-4 rounded-2xl animate-fade-in" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
                     <div className="flex flex-col gap-1 min-w-[200px]">
                         <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">Проект</span>
                         <select
                             value={selectedProj}
                             onChange={(e) => setSelectedProj(e.target.value)}
-                            className="rounded-xl px-3 py-2.5 text-xs text-white outline-none cursor-pointer"
-                            style={{ backgroundColor: "#161b22", border: "1px solid rgba(255,255,255,0.08)" }}
+                            className="rounded-xl px-3 py-2.5 text-xs text-slate-800 outline-none cursor-pointer"
+                            style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
                         >
                             {projects.map((p) => (
                                 <option key={p.id} value={p.id}>{p.name}</option>
@@ -337,8 +337,8 @@ export default function InventoryIndex({ projects }: Props) {
                             value={selectedBldg}
                             onChange={(e) => setSelectedBldg(e.target.value)}
                             disabled={buildings.length === 0}
-                            className="rounded-xl px-3 py-2.5 text-xs text-white outline-none cursor-pointer disabled:opacity-50"
-                            style={{ backgroundColor: "#161b22", border: "1px solid rgba(255,255,255,0.08)" }}
+                            className="rounded-xl px-3 py-2.5 text-xs text-slate-800 outline-none cursor-pointer disabled:opacity-50"
+                            style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
                         >
                             {buildings.length === 0 && <option value="">Нет корпусов</option>}
                             {buildings.map((b) => (
@@ -352,7 +352,7 @@ export default function InventoryIndex({ projects }: Props) {
                     <>
                         {/* Metrics */}
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 animate-fade-in">
-                            <SummaryCard label="Всего оборудования" value={stats.total} accent="rgba(255,255,255,0.5)" />
+                            <SummaryCard label="Всего оборудования" value={stats.total} accent="var(--muted)" />
                             <SummaryCard label="В строю / OK" value={stats.ok} accent="#34d399" />
                             <SummaryCard label="ТО / Требуется" value={stats.dueSoon} accent="#fbbf24" />
                             <SummaryCard label="В поломке" value={stats.broken} accent="#f87171" />
@@ -368,14 +368,14 @@ export default function InventoryIndex({ projects }: Props) {
                         )}
 
                         {loading ? (
-                            <div className="rounded-2xl p-12 flex items-center justify-center" style={{ backgroundColor: "#0d1117", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)" }}>
+                            <div className="rounded-2xl p-12 flex items-center justify-center" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)', color: "var(--muted)" }}>
                                 <Loader2 className="w-5 h-5 animate-spin" style={{ color: "#34d399" }} />
                             </div>
                         ) : assets.length === 0 ? (
-                            <div className="rounded-2xl p-16 text-center border border-dashed animate-fade-in" style={{ backgroundColor: "rgba(255,255,255,0.02)", borderColor: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.45)" }}>
-                                <Boxes className="w-10 h-10 mx-auto mb-3" style={{ color: "rgba(255,255,255,0.2)" }} />
-                                <p className="text-sm font-medium text-white">Оборудование не зарегистрировано</p>
-                                <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>Зарегистрируйте насосы, лифты и бойлеры здания для проведения ТО</p>
+                            <div className="rounded-2xl p-16 text-center border border-dashed animate-fade-in" style={{ backgroundColor: "var(--border)", borderColor: 'var(--border)', color: "var(--muted)" }}>
+                                <Boxes className="w-10 h-10 mx-auto mb-3" style={{ color: "var(--border)" }} />
+                                <p className="text-sm font-medium text-slate-800">Оборудование не зарегистрировано</p>
+                                <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>Зарегистрируйте насосы, лифты и бойлеры здания для проведения ТО</p>
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
@@ -389,7 +389,7 @@ export default function InventoryIndex({ projects }: Props) {
                     <>
                         {/* Consumables Metrics */}
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 animate-fade-in">
-                            <SummaryCard label="Всего наименований" value={supplyStats.totalItems} accent="rgba(255,255,255,0.5)" />
+                            <SummaryCard label="Всего наименований" value={supplyStats.totalItems} accent="var(--muted)" />
                             <SummaryCard label="Заканчивается запас" value={supplyStats.lowStockCount} accent="#fbbf24" />
                             <SummaryCard label="Общая стоимость ($)" value={supplyStats.totalValue} accent="#34d399" />
                         </div>
@@ -404,14 +404,14 @@ export default function InventoryIndex({ projects }: Props) {
                         )}
 
                         {loadingSupplies ? (
-                            <div className="rounded-2xl p-12 flex items-center justify-center" style={{ backgroundColor: "#0d1117", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)" }}>
+                            <div className="rounded-2xl p-12 flex items-center justify-center" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)', color: "var(--muted)" }}>
                                 <Loader2 className="w-5 h-5 animate-spin" style={{ color: "#34d399" }} />
                             </div>
                         ) : supplies.length === 0 ? (
-                            <div className="rounded-2xl p-16 text-center border border-dashed animate-fade-in" style={{ backgroundColor: "rgba(255,255,255,0.02)", borderColor: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.45)" }}>
-                                <Boxes className="w-10 h-10 mx-auto mb-3" style={{ color: "rgba(255,255,255,0.2)" }} />
-                                <p className="text-sm font-medium text-white">Материалы не зарегистрированы</p>
-                                <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.3)" }}>Зарегистрируйте лампочки, фитинги и краны для контроля остатков</p>
+                            <div className="rounded-2xl p-16 text-center border border-dashed animate-fade-in" style={{ backgroundColor: "var(--border)", borderColor: 'var(--border)', color: "var(--muted)" }}>
+                                <Boxes className="w-10 h-10 mx-auto mb-3" style={{ color: "var(--border)" }} />
+                                <p className="text-sm font-medium text-slate-800">Материалы не зарегистрированы</p>
+                                <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>Зарегистрируйте лампочки, фитинги и краны для контроля остатков</p>
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
@@ -434,13 +434,13 @@ function SupplyCard({ supply, onEdit, onDelete }: { supply: SupplyRow; onEdit: (
     const totalVal = supply.quantity * (supply.unit_cost || 0);
 
     return (
-        <div className="rounded-2xl p-5 space-y-4 animate-fade-in" style={{ backgroundColor: "#0d1117", border: "1px solid rgba(255,255,255,0.06)" }}>
+        <div className="rounded-2xl p-5 space-y-4 animate-fade-in" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
             <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                        <p className="text-sm font-bold text-white truncate">{supply.name}</p>
+                        <p className="text-sm font-bold text-slate-800 truncate">{supply.name}</p>
                         {supply.category && (
-                            <span className="text-[9px] px-2 py-0.5 rounded font-bold uppercase tracking-wider shrink-0" style={{ backgroundColor: "rgba(255,255,255,0.05)", color: "#a5b4fc" }}>
+                            <span className="text-[9px] px-2 py-0.5 rounded font-bold uppercase tracking-wider shrink-0" style={{ backgroundColor: "var(--border)", color: "#a5b4fc" }}>
                                 {supply.category}
                             </span>
                         )}
@@ -453,7 +453,7 @@ function SupplyCard({ supply, onEdit, onDelete }: { supply: SupplyRow; onEdit: (
                 <div className="flex items-center gap-1.5 shrink-0">
                     <button
                         onClick={onEdit}
-                        className="p-1 rounded hover:bg-white/5 text-slate-500 hover:text-white transition-colors"
+                        className="p-1 rounded hover:bg-slate-100 text-slate-500 hover:text-white transition-colors"
                         title="Редактировать"
                     >
                         <Edit2 className="w-3.5 h-3.5" />
@@ -468,7 +468,7 @@ function SupplyCard({ supply, onEdit, onDelete }: { supply: SupplyRow; onEdit: (
                 </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-3 p-3.5 rounded-xl text-center font-mono" style={{ backgroundColor: "#080b14", border: "1px solid rgba(255,255,255,0.03)" }}>
+            <div className="grid grid-cols-3 gap-3 p-3.5 rounded-xl text-center font-mono" style={{ backgroundColor: 'var(--bg)', border: "1px solid var(--border)" }}>
                 <div>
                     <span className="block text-[9px] font-sans uppercase tracking-widest text-slate-500 font-bold mb-0.5">В наличии</span>
                     <p className="text-xs font-bold" style={{ color: isLow ? '#f87171' : '#34d399' }}>
@@ -481,12 +481,12 @@ function SupplyCard({ supply, onEdit, onDelete }: { supply: SupplyRow; onEdit: (
                 </div>
                 <div>
                     <span className="block text-[9px] font-sans uppercase tracking-widest text-slate-500 font-bold mb-0.5">Стоимость</span>
-                    <p className="text-xs text-white font-bold">${totalVal.toFixed(2)}</p>
+                    <p className="text-xs text-slate-800 font-bold">${totalVal.toFixed(2)}</p>
                 </div>
             </div>
 
             {supply.notes && (
-                <p className="text-xs pt-3 leading-relaxed" style={{ borderTop: "1px solid rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.4)" }}>
+                <p className="text-xs pt-3 leading-relaxed" style={{ borderTop: "1px solid var(--border)", color: "var(--muted)" }}>
                     {supply.notes}
                 </p>
             )}
@@ -560,12 +560,12 @@ function SupplyForm({ buildingId, supply, onSaved, onCancel }: SupplyFormProps) 
     }
 
     return (
-        <div className="rounded-2xl p-6 space-y-4 animate-fade-in" style={{ backgroundColor: "#0d1117", border: "1px solid rgba(16,185,129,0.25)" }}>
-            <div className="flex items-center justify-between pb-3 border-b border-white/[0.04]">
-                <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+        <div className="rounded-2xl p-6 space-y-4 animate-fade-in" style={{ backgroundColor: 'var(--card)', border: "1px solid rgba(16,185,129,0.25)" }}>
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">
                     {supply ? "Редактировать расходный материал" : "Добавить новый расходный материал"}
                 </h3>
-                <button onClick={onCancel} className="p-1 rounded hover:bg-white/5 text-slate-400 hover:text-white">
+                <button onClick={onCancel} className="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-white">
                     <X className="w-4 h-4" />
                 </button>
             </div>
@@ -576,7 +576,7 @@ function SupplyForm({ buildingId, supply, onSaved, onCancel }: SupplyFormProps) 
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         placeholder="напр. Светодиодные лампы E27"
-                        className="w-full rounded-xl px-3 py-2 text-xs text-white outline-none"
+                        className="w-full rounded-xl px-3 py-2 text-xs text-slate-800 outline-none"
                         style={fs()}
                     />
                 </Field>
@@ -584,11 +584,11 @@ function SupplyForm({ buildingId, supply, onSaved, onCancel }: SupplyFormProps) 
                     <select
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
-                        className="w-full rounded-xl px-3 py-2 text-xs text-white outline-none cursor-pointer"
+                        className="w-full rounded-xl px-3 py-2 text-xs text-slate-800 outline-none cursor-pointer"
                         style={fs()}
                     >
                         {["Plumbing", "Electrical", "Tools", "Cleaning", "Paint", "Materials", "Other"].map((c) => (
-                            <option key={c} value={c} style={{ backgroundColor: "#0d1117" }}>{c}</option>
+                            <option key={c} value={c} style={{ backgroundColor: 'var(--card)' }}>{c}</option>
                         ))}
                     </select>
                 </Field>
@@ -598,7 +598,7 @@ function SupplyForm({ buildingId, supply, onSaved, onCancel }: SupplyFormProps) 
                         min={0}
                         value={quantity}
                         onChange={(e) => setQuantity(e.target.value === "" ? "" : Number(e.target.value))}
-                        className="w-full rounded-xl px-3 py-2 text-xs text-white outline-none"
+                        className="w-full rounded-xl px-3 py-2 text-xs text-slate-800 outline-none"
                         style={fs()}
                     />
                 </Field>
@@ -607,7 +607,7 @@ function SupplyForm({ buildingId, supply, onSaved, onCancel }: SupplyFormProps) 
                         value={unit}
                         onChange={(e) => setUnit(e.target.value)}
                         placeholder="напр. шт, кг, м"
-                        className="w-full rounded-xl px-3 py-2 text-xs text-white outline-none"
+                        className="w-full rounded-xl px-3 py-2 text-xs text-slate-800 outline-none"
                         style={fs()}
                     />
                 </Field>
@@ -617,7 +617,7 @@ function SupplyForm({ buildingId, supply, onSaved, onCancel }: SupplyFormProps) 
                         min={0}
                         value={minThreshold}
                         onChange={(e) => setMinThreshold(e.target.value === "" ? "" : Number(e.target.value))}
-                        className="w-full rounded-xl px-3 py-2 text-xs text-white outline-none"
+                        className="w-full rounded-xl px-3 py-2 text-xs text-slate-800 outline-none"
                         style={fs()}
                     />
                 </Field>
@@ -628,7 +628,7 @@ function SupplyForm({ buildingId, supply, onSaved, onCancel }: SupplyFormProps) 
                         step="0.01"
                         value={unitCost}
                         onChange={(e) => setUnitCost(e.target.value === "" ? "" : Number(e.target.value))}
-                        className="w-full rounded-xl px-3 py-2 text-xs text-white outline-none"
+                        className="w-full rounded-xl px-3 py-2 text-xs text-slate-800 outline-none"
                         style={fs()}
                     />
                 </Field>
@@ -637,7 +637,7 @@ function SupplyForm({ buildingId, supply, onSaved, onCancel }: SupplyFormProps) 
                         value={supplier}
                         onChange={(e) => setSupplier(e.target.value)}
                         placeholder="напр. ООО ЭлектроСнаб"
-                        className="w-full rounded-xl px-3 py-2 text-xs text-white outline-none"
+                        className="w-full rounded-xl px-3 py-2 text-xs text-slate-800 outline-none"
                         style={fs()}
                     />
                 </Field>
@@ -649,7 +649,7 @@ function SupplyForm({ buildingId, supply, onSaved, onCancel }: SupplyFormProps) 
                   onChange={(e) => setNotes(e.target.value)}
                   rows={2}
                   placeholder="Любая важная информация о материале..."
-                  className="w-full rounded-xl px-3.5 py-2 text-xs text-white outline-none resize-none placeholder:text-slate-500"
+                  className="w-full rounded-xl px-3.5 py-2 text-xs text-slate-800 outline-none resize-none placeholder:text-slate-400"
                   style={fs()}
                 />
             </Field>
@@ -660,7 +660,7 @@ function SupplyForm({ buildingId, supply, onSaved, onCancel }: SupplyFormProps) 
                 <button
                     type="button"
                     onClick={onCancel}
-                    className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 border border-slate-700 hover:bg-white/5 transition-all"
+                    className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 border border-slate-700 hover:bg-slate-100 transition-all"
                 >
                     Отмена
                 </button>
@@ -698,12 +698,12 @@ function AssetCard({ asset, onEdit, onDelete }: AssetCardProps) {
         : null;
 
     return (
-        <div className="rounded-2xl p-5 space-y-4" style={{ backgroundColor: "#0d1117", border: "1px solid rgba(255,255,255,0.06)" }}>
+        <div className="rounded-2xl p-5 space-y-4" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
             <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                        <p className="text-sm font-bold text-white truncate">{asset.name}</p>
-                        <span className="text-[9px] px-2 py-0.5 rounded font-bold uppercase tracking-wider" style={{ backgroundColor: "rgba(255,255,255,0.05)", color: "#a5b4fc" }}>
+                        <p className="text-sm font-bold text-slate-800 truncate">{asset.name}</p>
+                        <span className="text-[9px] px-2 py-0.5 rounded font-bold uppercase tracking-wider" style={{ backgroundColor: "var(--border)", color: "#a5b4fc" }}>
                             {CAT_RU[asset.category] || asset.category}
                         </span>
                     </div>
@@ -719,7 +719,7 @@ function AssetCard({ asset, onEdit, onDelete }: AssetCardProps) {
                     </span>
                     <button
                         onClick={onEdit}
-                        className="p-1 rounded hover:bg-white/5 text-slate-500 hover:text-white transition-colors"
+                        className="p-1 rounded hover:bg-slate-100 text-slate-500 hover:text-white transition-colors"
                         title="Редактировать"
                     >
                         <Edit2 className="w-3.5 h-3.5" />
@@ -734,7 +734,7 @@ function AssetCard({ asset, onEdit, onDelete }: AssetCardProps) {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 rounded-xl" style={{ backgroundColor: "#080b14", border: "1px solid rgba(255,255,255,0.03)" }}>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 rounded-xl" style={{ backgroundColor: 'var(--bg)', border: "1px solid var(--border)" }}>
                 {asset.next_service_at && (
                     <InfoRow
                         icon={<Wrench className="w-3 h-3 text-emerald-400" />}
@@ -766,7 +766,7 @@ function AssetCard({ asset, onEdit, onDelete }: AssetCardProps) {
             </div>
 
             {asset.notes && (
-                <p className="text-xs pt-3 leading-relaxed" style={{ borderTop: "1px solid rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.4)" }}>
+                <p className="text-xs pt-3 leading-relaxed" style={{ borderTop: "1px solid var(--border)", color: "var(--muted)" }}>
                     {asset.notes}
                 </p>
             )}
@@ -780,9 +780,9 @@ function InfoRow({ icon, label, value, sub, warn }: { icon?: React.ReactNode; la
             <span className="flex items-center gap-1 text-[9px] uppercase tracking-widest text-slate-500 font-bold mb-0.5">
                 {icon} {label}
             </span>
-            <p className="text-xs text-white font-semibold">{value}</p>
+            <p className="text-xs text-slate-800 font-semibold">{value}</p>
             {sub && (
-                <p className="text-[10px] mt-0.5 flex items-center gap-0.5 truncate" style={{ color: warn ? "#f87171" : "rgba(255,255,255,0.35)" }}>
+                <p className="text-[10px] mt-0.5 flex items-center gap-0.5 truncate" style={{ color: warn ? "#f87171" : "var(--muted)" }}>
                     {warn && <AlertTriangle className="w-3 h-3 shrink-0" />}
                     {sub}
                 </p>
@@ -862,12 +862,12 @@ function AssetForm({ buildingId, asset, onSaved, onCancel }: FormProps) {
     }
 
     return (
-        <div className="rounded-2xl p-6 space-y-4" style={{ backgroundColor: "#0d1117", border: "1px solid rgba(16,185,129,0.25)" }}>
-            <div className="flex items-center justify-between pb-3 border-b border-white/[0.04]">
-                <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+        <div className="rounded-2xl p-6 space-y-4" style={{ backgroundColor: 'var(--card)', border: "1px solid rgba(16,185,129,0.25)" }}>
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">
                     {asset ? "Редактировать оборудование" : "Добавить новое оборудование"}
                 </h3>
-                <button onClick={onCancel} className="p-1 rounded hover:bg-white/5 text-slate-400 hover:text-white">
+                <button onClick={onCancel} className="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-white">
                     <X className="w-4 h-4" />
                 </button>
             </div>
@@ -878,7 +878,7 @@ function AssetForm({ buildingId, asset, onSaved, onCancel }: FormProps) {
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         placeholder="напр. Насос отопления Wilo"
-                        className="w-full rounded-xl px-3 py-2 text-xs text-white outline-none"
+                        className="w-full rounded-xl px-3 py-2 text-xs text-slate-800 outline-none"
                         style={fs()}
                     />
                 </Field>
@@ -886,11 +886,11 @@ function AssetForm({ buildingId, asset, onSaved, onCancel }: FormProps) {
                     <select
                         value={category}
                         onChange={(e) => setCategory(e.target.value as AssetCategory)}
-                        className="w-full rounded-xl px-3 py-2 text-xs text-white outline-none cursor-pointer"
+                        className="w-full rounded-xl px-3 py-2 text-xs text-slate-800 outline-none cursor-pointer"
                         style={fs()}
                     >
                         {ALL_CATS.map((c) => (
-                            <option key={c} value={c} style={{ backgroundColor: "#0d1117" }}>{CAT_RU[c]}</option>
+                            <option key={c} value={c} style={{ backgroundColor: 'var(--card)' }}>{CAT_RU[c]}</option>
                         ))}
                     </select>
                 </Field>
@@ -899,7 +899,7 @@ function AssetForm({ buildingId, asset, onSaved, onCancel }: FormProps) {
                         value={manufacturer}
                         onChange={(e) => setManufacturer(e.target.value)}
                         placeholder="напр. Wilo SE"
-                        className="w-full rounded-xl px-3 py-2 text-xs text-white outline-none"
+                        className="w-full rounded-xl px-3 py-2 text-xs text-slate-800 outline-none"
                         style={fs()}
                     />
                 </Field>
@@ -908,7 +908,7 @@ function AssetForm({ buildingId, asset, onSaved, onCancel }: FormProps) {
                         value={serialNumber}
                         onChange={(e) => setSerialNumber(e.target.value)}
                         placeholder="напр. SN-892183218"
-                        className="w-full rounded-xl px-3 py-2 text-xs text-white outline-none"
+                        className="w-full rounded-xl px-3 py-2 text-xs text-slate-800 outline-none"
                         style={fs()}
                     />
                 </Field>
@@ -917,7 +917,7 @@ function AssetForm({ buildingId, asset, onSaved, onCancel }: FormProps) {
                         value={location}
                         onChange={(e) => setLocation(e.target.value)}
                         placeholder="напр. Подвал, бойлерная №1"
-                        className="w-full rounded-xl px-3 py-2 text-xs text-white outline-none"
+                        className="w-full rounded-xl px-3 py-2 text-xs text-slate-800 outline-none"
                         style={fs()}
                     />
                 </Field>
@@ -925,13 +925,13 @@ function AssetForm({ buildingId, asset, onSaved, onCancel }: FormProps) {
                     <select
                         value={status}
                         onChange={(e) => setStatus(e.target.value as AssetStatus)}
-                        className="w-full rounded-xl px-3 py-2 text-xs text-white outline-none cursor-pointer"
+                        className="w-full rounded-xl px-3 py-2 text-xs text-slate-800 outline-none cursor-pointer"
                         style={fs()}
                     >
-                        <option value="operational" style={{ backgroundColor: "#0d1117" }}>В строю</option>
-                        <option value="needs_service" style={{ backgroundColor: "#0d1117" }}>Требует ТО</option>
-                        <option value="broken" style={{ backgroundColor: "#0d1117" }}>Сломан</option>
-                        <option value="retired" style={{ backgroundColor: "#0d1117" }}>Списан</option>
+                        <option value="operational" style={{ backgroundColor: 'var(--card)' }}>В строю</option>
+                        <option value="needs_service" style={{ backgroundColor: 'var(--card)' }}>Требует ТО</option>
+                        <option value="broken" style={{ backgroundColor: 'var(--card)' }}>Сломан</option>
+                        <option value="retired" style={{ backgroundColor: 'var(--card)' }}>Списан</option>
                     </select>
                 </Field>
                 <Field label="Дата установки">
@@ -939,8 +939,8 @@ function AssetForm({ buildingId, asset, onSaved, onCancel }: FormProps) {
                         type="date"
                         value={installedAt}
                         onChange={(e) => setInstalledAt(e.target.value)}
-                        className="w-full rounded-xl px-3 py-2 text-xs text-white outline-none cursor-pointer"
-                        style={{ ...fs(), colorScheme: "dark" }}
+                        className="w-full rounded-xl px-3 py-2 text-xs text-slate-800 outline-none cursor-pointer"
+                        style={{ ...fs() }}
                     />
                 </Field>
                 <Field label="Гарантия до">
@@ -948,8 +948,8 @@ function AssetForm({ buildingId, asset, onSaved, onCancel }: FormProps) {
                         type="date"
                         value={warrantyUntil}
                         onChange={(e) => setWarrantyUntil(e.target.value)}
-                        className="w-full rounded-xl px-3 py-2 text-xs text-white outline-none cursor-pointer"
-                        style={{ ...fs(), colorScheme: "dark" }}
+                        className="w-full rounded-xl px-3 py-2 text-xs text-slate-800 outline-none cursor-pointer"
+                        style={{ ...fs() }}
                     />
                 </Field>
                 <Field label="Следующее плановое ТО">
@@ -957,8 +957,8 @@ function AssetForm({ buildingId, asset, onSaved, onCancel }: FormProps) {
                         type="date"
                         value={nextServiceAt}
                         onChange={(e) => setNextServiceAt(e.target.value)}
-                        className="w-full rounded-xl px-3 py-2 text-xs text-white outline-none cursor-pointer"
-                        style={{ ...fs(), colorScheme: "dark" }}
+                        className="w-full rounded-xl px-3 py-2 text-xs text-slate-800 outline-none cursor-pointer"
+                        style={{ ...fs() }}
                     />
                 </Field>
                 <Field label="Интервал ТО в днях">
@@ -967,7 +967,7 @@ function AssetForm({ buildingId, asset, onSaved, onCancel }: FormProps) {
                         min={0}
                         value={serviceInterval}
                         onChange={(e) => setServiceInterval(e.target.value === "" ? "" : Number(e.target.value))}
-                        className="w-full rounded-xl px-3 py-2 text-xs text-white outline-none"
+                        className="w-full rounded-xl px-3 py-2 text-xs text-slate-800 outline-none"
                         style={fs()}
                     />
                 </Field>
@@ -979,7 +979,7 @@ function AssetForm({ buildingId, asset, onSaved, onCancel }: FormProps) {
                     onChange={(e) => setNotes(e.target.value)}
                     rows={2}
                     placeholder="Особенности эксплуатации, контакты мастеров по ТО..."
-                    className="w-full rounded-xl px-3.5 py-2 text-xs text-white outline-none resize-none placeholder:text-slate-500"
+                    className="w-full rounded-xl px-3.5 py-2 text-xs text-slate-800 outline-none resize-none placeholder:text-slate-400"
                     style={fs()}
                 />
             </Field>
@@ -990,7 +990,7 @@ function AssetForm({ buildingId, asset, onSaved, onCancel }: FormProps) {
                 <button
                     type="button"
                     onClick={onCancel}
-                    className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 border border-slate-700 hover:bg-white/5 transition-all"
+                    className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 border border-slate-700 hover:bg-slate-100 transition-all"
                 >
                     Отмена
                 </button>
@@ -1021,16 +1021,16 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 function fs() {
-    return { backgroundColor: "#161b22", border: "1px solid rgba(255,255,255,0.08)" };
+    return { backgroundColor: 'var(--card)', border: '1px solid var(--border)' };
 }
 
 // ── Summary Card ─────────────────────────────────────────────────────────────
 
 function SummaryCard({ label, value, accent }: { label: string; value: number | string; accent: string }) {
     return (
-        <div className="rounded-2xl p-5" style={{ backgroundColor: "#0d1117", border: "1px solid rgba(255,255,255,0.06)" }}>
+        <div className="rounded-2xl p-5" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
             <p className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: accent }}>{label}</p>
-            <p className="text-2xl text-white mt-2 font-bold font-mono" style={{ fontFamily: "var(--font-display)" }}>
+            <p className="text-2xl text-slate-800 mt-2 font-bold font-mono" style={{ fontFamily: "var(--font-display)" }}>
                 {value}
             </p>
         </div>

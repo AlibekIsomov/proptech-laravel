@@ -80,10 +80,10 @@ export default function UsersIndex({ users, roles, companies }: Props) {
     return (
         <AppShell>
             <header className="sticky top-0 z-20 flex items-center justify-between px-6 h-14 border-b shrink-0"
-                style={{ backgroundColor: '#0d1117', borderColor: 'rgba(255,255,255,0.06)' }}>
+                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
                 <div className="flex items-center gap-2">
                     <Users className="w-4 h-4" style={{ color: '#6366f1' }} />
-                    <h1 className="text-sm font-semibold text-white">Foydalanuvchilar</h1>
+                    <h1 className="text-sm font-semibold text-slate-800">Foydalanuvchilar</h1>
                     <span className="text-xs px-2 py-0.5 rounded-full ml-1"
                         style={{ backgroundColor: 'rgba(99,102,241,0.12)', color: '#a5b4fc' }}>
                         {users.length}
@@ -97,10 +97,10 @@ export default function UsersIndex({ users, roles, companies }: Props) {
             </header>
 
             <main className="px-6 py-6">
-                <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: '#0d1117', borderColor: '#1e2536' }}>
+                <div className="rounded-xl border overflow-hidden" style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
                     <table className="w-full">
                         <thead>
-                            <tr style={{ borderBottom: '1px solid #1e2536' }}>
+                            <tr style={{ borderBottom: '1px solid var(--border)' }}>
                                 {['Ism', 'Email', 'Rol', 'Kompaniya', 'Sana', ''].map(h => (
                                     <th key={h} className="px-5 py-3 text-left text-xs font-medium" style={{ color: '#475569' }}>{h}</th>
                                 ))}
@@ -110,15 +110,15 @@ export default function UsersIndex({ users, roles, companies }: Props) {
                             {users.map((u, i) => {
                                 const rc = ROLE_COLORS[u.role] ?? ROLE_COLORS.viewer;
                                 return (
-                                    <tr key={u.id} className="transition-colors hover:bg-white/[0.02]"
-                                        style={{ borderBottom: i < users.length - 1 ? '1px solid #1e2536' : undefined }}>
+                                    <tr key={u.id} className="transition-colors hover:bg-slate-50"
+                                        style={{ borderBottom: i < users.length - 1 ? '1px solid var(--border)' : undefined }}>
                                         <td className="px-5 py-3.5">
                                             <div className="flex items-center gap-2.5">
-                                                <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
+                                                <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-slate-800 shrink-0"
                                                     style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)' }}>
                                                     {u.full_name.slice(0, 2).toUpperCase()}
                                                 </div>
-                                                <span className="text-sm text-white font-medium">{u.full_name}</span>
+                                                <span className="text-sm text-slate-800 font-medium">{u.full_name}</span>
                                             </div>
                                         </td>
                                         <td className="px-5 py-3.5 text-sm" style={{ color: '#94a3b8' }}>{u.email}</td>
@@ -133,7 +133,7 @@ export default function UsersIndex({ users, roles, companies }: Props) {
                                         <td className="px-5 py-3.5">
                                             <div className="flex gap-1 justify-end">
                                                 <button onClick={() => openEdit(u)}
-                                                    className="p-1.5 rounded-lg hover:bg-white/5 transition-colors" style={{ color: '#64748b' }}>
+                                                    className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors" style={{ color: '#64748b' }}>
                                                     <Pencil className="w-3.5 h-3.5" />
                                                 </button>
                                                 <button onClick={() => handleDelete(u)}
@@ -155,9 +155,9 @@ export default function UsersIndex({ users, roles, companies }: Props) {
                     style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}
                     onClick={e => e.target === e.currentTarget && setShowModal(false)}>
                     <div className="w-full max-w-md rounded-2xl p-6"
-                        style={{ backgroundColor: '#0d1117', border: '1px solid rgba(255,255,255,0.09)' }}>
+                        style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-base font-semibold text-white">
+                            <h2 className="text-base font-semibold text-slate-800">
                                 {editing ? 'Foydalanuvchini tahrirlash' : 'Yangi foydalanuvchi'}
                             </h2>
                             <button onClick={() => setShowModal(false)} style={{ color: '#475569' }} className="hover:text-white">
@@ -166,39 +166,39 @@ export default function UsersIndex({ users, roles, companies }: Props) {
                         </div>
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
-                                <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.5)' }}>To'liq ism *</label>
+                                <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>To'liq ism *</label>
                                 <input type="text" required value={f('full_name')} onChange={set('full_name')}
-                                    className="w-full rounded-xl px-4 py-2.5 text-sm text-white outline-none"
-                                    style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }} />
+                                    className="w-full rounded-xl px-4 py-2.5 text-sm text-slate-800 outline-none"
+                                    style={{ backgroundColor: 'var(--border)', border: '1px solid var(--border)' }} />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.5)' }}>Email *</label>
+                                <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>Email *</label>
                                 <input type="email" required value={f('email')} onChange={set('email')}
-                                    className="w-full rounded-xl px-4 py-2.5 text-sm text-white outline-none"
-                                    style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }} />
+                                    className="w-full rounded-xl px-4 py-2.5 text-sm text-slate-800 outline-none"
+                                    style={{ backgroundColor: 'var(--border)', border: '1px solid var(--border)' }} />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                                <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>
                                     Parol {editing ? "(bo'sh qoldiring — o'zgarmaydi)" : '*'}
                                 </label>
                                 <input type="password" required={!editing} value={f('password')} onChange={set('password')}
-                                    className="w-full rounded-xl px-4 py-2.5 text-sm text-white outline-none"
-                                    style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }} />
+                                    className="w-full rounded-xl px-4 py-2.5 text-sm text-slate-800 outline-none"
+                                    style={{ backgroundColor: 'var(--border)', border: '1px solid var(--border)' }} />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.5)' }}>Rol *</label>
+                                    <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>Rol *</label>
                                     <select value={f('role')} onChange={set('role')}
-                                        className="w-full rounded-xl px-3 py-2.5 text-sm text-white outline-none"
-                                        style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.08)' }}>
+                                        className="w-full rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none"
+                                        style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}>
                                         {roles.map(r => <option key={r.id} value={r.name}>{r.name}</option>)}
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.5)' }}>PM Rol</label>
+                                    <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>PM Rol</label>
                                     <select value={f('pm_role')} onChange={set('pm_role')}
-                                        className="w-full rounded-xl px-3 py-2.5 text-sm text-white outline-none"
-                                        style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.08)' }}>
+                                        className="w-full rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none"
+                                        style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}>
                                         <option value="">Yo'q</option>
                                         <option value="property_manager">property_manager</option>
                                         <option value="dispatcher">dispatcher</option>
@@ -209,10 +209,10 @@ export default function UsersIndex({ users, roles, companies }: Props) {
                             </div>
                             {isSuperAdmin && (
                                 <div>
-                                    <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.5)' }}>Kompaniya</label>
+                                    <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>Kompaniya</label>
                                     <select value={f('company_id')} onChange={set('company_id')}
-                                        className="w-full rounded-xl px-3 py-2.5 text-sm text-white outline-none"
-                                        style={{ backgroundColor: '#080b14', border: '1px solid rgba(255,255,255,0.08)' }}>
+                                        className="w-full rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none"
+                                        style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}>
                                         {companies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                                     </select>
                                 </div>

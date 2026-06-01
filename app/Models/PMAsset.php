@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PMAsset extends Model
 {
+    use \App\Traits\SyncsToSupabase;
+
     use HasUuids;
     protected $table = 'pm_assets';
 

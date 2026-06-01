@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 #[ScopedBy([CompanyScope::class])]
 class Project extends Model
 {
+    use \App\Traits\SyncsToSupabase;
+
     use HasUuids;
     protected $fillable = [
         'company_id', 'name', 'description', 'location',

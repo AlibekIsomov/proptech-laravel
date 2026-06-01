@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[ScopedBy([CompanyScope::class])]
 class UtilityRate extends Model
 {
+    use \App\Traits\SyncsToSupabase;
+
     use HasUuids;
     protected $fillable = [
         'company_id', 'meter_type', 'rate_per_unit', 'currency',

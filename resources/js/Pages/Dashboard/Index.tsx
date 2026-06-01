@@ -11,30 +11,24 @@ import {
 } from 'lucide-react';
 import AppShell from '@/Components/AppShell';
 
-// ── Static chart data ─────────────────────────────────────────────────────────
-const monthlySales = [
-    { month: 'Sep', revenue: 820, units: 12 },
-    { month: 'Oct', revenue: 1140, units: 17 },
-    { month: 'Nov', revenue: 980, units: 14 },
-    { month: 'Dec', revenue: 1350, units: 21 },
-    { month: 'Jan', revenue: 1620, units: 24 },
-    { month: 'Feb', revenue: 1480, units: 19 },
-    { month: 'Mar', revenue: 1890, units: 28 },
-];
-
-const projectData = [
-    { name: 'Tashkent City', sold: 84, available: 36 },
-    { name: 'Yunusobod',     sold: 61, available: 19 },
-    { name: 'Mirzo Ulugbek', sold: 45, available: 55 },
-    { name: 'Sergeli',       sold: 32, available: 68 },
-];
-
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface Metrics {
     totalApts: number;
     soldApts:  number;
     availApts: number;
     revenue:   number;
+}
+
+interface MonthlySalesItem {
+    month: string;
+    units: number;
+    revenue: number;
+}
+
+interface ProjectDataItem {
+    name: string;
+    sold: number;
+    available: number;
 }
 
 interface Transaction {
@@ -60,6 +54,8 @@ interface PMStats {
 
 interface Props {
     metrics:       Metrics;
+    monthlySales:  MonthlySalesItem[];
+    projectData:   ProjectDataItem[];
     transactions:  Transaction[];
     notifications: Notification[];
     pmStats:       PMStats | null;
@@ -75,22 +71,22 @@ interface AuthUser {
 function timeAgo(iso: string): string {
     const diff = Date.now() - new Date(iso).getTime();
     const m = Math.floor(diff / 60000);
-    if (m < 1)  return 'just now';
-    if (m < 60) return `${m}m ago`;
+    if (m < 1)  return 'hozirgina';
+    if (m < 60) return `${m} daqiqa oldin`;
     const h = Math.floor(m / 60);
-    if (h < 24) return `${h}h ago`;
-    return `${Math.floor(h / 24)}d ago`;
+    if (h < 24) return `${h} soat oldin`;
+    return `${Math.floor(h / 24)} kun oldin`;
 }
 
 const STATUS_STYLES: Record<string, { bg: string; text: string; label: string }> = {
-    completed: { bg: '#052e16', text: '#10b981', label: 'Completed' },
-    reserved:  { bg: '#1e1b4b', text: '#6366f1', label: 'Reserved' },
+    completed: { bg: 'rgba(34,197,94,0.12)', text: '#15803d', label: 'Tugallangan' },
+    reserved:  { bg: 'rgba(39,162,71,0.12)', text: '#1a7a34', label: 'Bron qilingan' },
 };
 
 const STATUS_NOTIF: Record<string, { label: string; color: string }> = {
-    contacted: { label: 'Kontakt',  color: '#6366f1' },
+    contacted: { label: 'Kontakt',  color: '#27A247' },
     viewing:   { label: 'Ko\'rik',  color: '#f59e0b' },
-    reserved:  { label: 'Bron',     color: '#10b981' },
+    reserved:  { label: 'Bron',     color: '#4ade80' },
     bought:    { label: 'Sotilgan', color: '#22c55e' },
 };
 
@@ -103,19 +99,18 @@ function MetricCard({
 }) {
     return (
         <div className="rounded-2xl p-5 flex flex-col gap-4"
-            style={{ backgroundColor: '#0d1117', border: '1px solid rgba(255,255,255,0.07)' }}>
+            style={{ backgroundColor: 'var(--card)', border: '1px solid rgba(39,162,71,0.12)' }}>
             <div className="flex items-start justify-between">
-                <p className="text-xs font-medium uppercase tracking-wider"
-                    style={{ color: 'rgba(255,255,255,0.38)' }}>{title}</p>
+                <p className="text-xs font-medium uppercase tracking-wider text-slate-500">{title}</p>
                 <div className="flex items-center justify-center w-9 h-9 rounded-xl"
-                    style={{ background: `linear-gradient(135deg,${accent}22,${accent}10)`, border: `1px solid ${accent}25` }}>
+                    style={{ background: `linear-gradient(135deg,${accent}22,${accent}10)`, border: `1px solid ${accent}30` }}>
                     <span style={{ color: accent }}>{icon}</span>
                 </div>
             </div>
             <div>
                 {loading
-                    ? <div className="h-8 w-28 rounded-lg animate-pulse" style={{ backgroundColor: 'rgba(255,255,255,0.06)' }} />
-                    : <p className="text-3xl text-white font-bold">{value}</p>
+                    ? <div className="h-8 w-28 rounded-lg animate-pulse" style={{ backgroundColor: 'rgba(0,0,0,0.04)' }} />
+                    : <p className="text-3xl text-slate-800 font-bold">{value}</p>
                 }
                 {change && !loading && (
                     <div className="flex items-center gap-1 mt-1.5">
@@ -124,7 +119,7 @@ function MetricCard({
                             : <ChevronDown className="w-3.5 h-3.5" style={{ color: '#ef4444' }} />
                         }
                         <span className="text-xs font-semibold" style={{ color: positive ? '#10b981' : '#ef4444' }}>{change}</span>
-                        <span className="text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>vs last month</span>
+                        <span className="text-xs text-slate-400">o'tgan oyga nisbatan</span>
                     </div>
                 )}
             </div>
@@ -137,26 +132,25 @@ function PMTile({ href, title, value, hint, accent, icon }: {
     hint: string; accent: string; icon: React.ReactNode;
 }) {
     return (
-        <Link href={href} className="rounded-xl p-4 flex flex-col gap-3 transition-colors hover:bg-white/[0.02]"
-            style={{ backgroundColor: '#080b14', border: '1px solid #1e2536' }}>
+        <Link href={href} className="rounded-xl p-4 flex flex-col gap-3 transition-colors hover:bg-slate-50"
+            style={{ backgroundColor: 'var(--card)', border: '1px solid rgba(39,162,71,0.12)' }}>
             <div className="flex items-start justify-between">
-                <p className="text-xs font-medium uppercase tracking-wider"
-                    style={{ color: 'rgba(255,255,255,0.38)' }}>{title}</p>
+                <p className="text-xs font-medium uppercase tracking-wider text-slate-500">{title}</p>
                 <div className="flex items-center justify-center w-8 h-8 rounded-lg"
                     style={{ background: `linear-gradient(135deg,${accent}22,${accent}10)`, border: `1px solid ${accent}25` }}>
                     <span style={{ color: accent }}>{icon}</span>
                 </div>
             </div>
             <div>
-                <p className="text-2xl text-white font-bold">{value}</p>
-                <p className="text-xs mt-0.5" style={{ color: '#475569' }}>{hint}</p>
+                <p className="text-2xl text-slate-800 font-bold">{value}</p>
+                <p className="text-xs mt-0.5 text-slate-400">{hint}</p>
             </div>
         </Link>
     );
 }
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
-export default function DashboardIndex({ metrics, transactions, notifications, pmStats }: Props) {
+export default function DashboardIndex({ metrics, monthlySales, projectData, transactions, notifications, pmStats }: Props) {
     const { auth } = usePage<{ auth: { user: AuthUser } }>().props;
     const user = auth.user;
 
@@ -215,45 +209,45 @@ export default function DashboardIndex({ metrics, transactions, notifications, p
     return (
         <AppShell>
             {/* ── Top bar ── */}
-            <header className="sticky top-0 z-20 flex items-center justify-between px-6 h-14 border-b shrink-0"
-                style={{ backgroundColor: '#0d1117', borderColor: 'rgba(255,255,255,0.06)' }}>
+            <header className="sticky top-0 z-20 flex items-center justify-between px-6 h-14 border-b shrink-0 bg-white"
+                style={{ borderColor: 'rgba(39,162,71,0.10)' }}>
                 <div>
-                    <h1 className="text-sm font-semibold text-white">{greeting}</h1>
-                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
-                        {user.company_name ?? 'All Projects'} · Overview
+                    <h1 className="text-sm font-semibold text-slate-800">{greeting}</h1>
+                    <p className="text-xs text-slate-400">
+                        {user.company_name ?? 'Barcha loyihalar'} · Umumiy ko'rinish
                     </p>
                 </div>
 
                 {/* Notifications bell */}
                 <div className="relative" ref={notifRef}>
                     <button id="notif-btn" onClick={() => setShowNotif(v => !v)}
-                        className="relative p-2 rounded-lg transition-colors hover:bg-white/5"
-                        style={{ color: showNotif ? '#a5b4fc' : '#64748b' }}>
+                        className="relative p-2 rounded-lg transition-colors hover:bg-slate-100"
+                        style={{ color: showNotif ? '#27A247' : '#64748b' }}>
                         <Bell className="w-4 h-4" />
                         {notifications.length > 0 && (
                             <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full"
-                                style={{ backgroundColor: '#6366f1' }} />
+                                style={{ backgroundColor: '#27A247' }} />
                         )}
                     </button>
 
                     {showNotif && (
-                        <div className="absolute right-0 top-10 w-72 rounded-xl border shadow-2xl z-50 overflow-hidden"
-                            style={{ backgroundColor: '#0d1117', borderColor: '#1e2536' }}>
-                            <div className="px-4 py-3 border-b" style={{ borderColor: '#1e2536' }}>
-                                <p className="text-xs font-semibold text-white">Bildirishnomalar</p>
+                        <div className="absolute right-0 top-10 w-72 rounded-xl border shadow-2xl z-50 overflow-hidden bg-white"
+                            style={{ borderColor: 'rgba(39,162,71,0.15)' }}>
+                            <div className="px-4 py-3 border-b" style={{ borderColor: 'rgba(39,162,71,0.10)' }}>
+                                <p className="text-xs font-semibold text-slate-800">Bildirishnomalar</p>
                             </div>
                             {notifications.length === 0
                                 ? <div className="px-4 py-6 text-center">
-                                    <p className="text-xs" style={{ color: '#475569' }}>Bildirishnoma yo'q</p>
-                                  </div>
-                                : <div className="divide-y" style={{ borderColor: '#1e2536' }}>
+                                    <p className="text-xs text-slate-400">Bildirishnoma yo'q</p>
+                                   </div>
+                                : <div className="divide-y divide-slate-100">
                                     {notifications.map(n => {
                                         const cfg = STATUS_NOTIF[n.status];
                                         return (
-                                            <div key={n.id} className="px-4 py-3 hover:bg-white/[0.02] transition-colors">
+                                            <div key={n.id} className="px-4 py-3 hover:bg-slate-50 transition-colors">
                                                 <div className="flex items-center justify-between gap-2">
-                                                    <p className="text-xs font-medium text-white truncate">{n.full_name}</p>
-                                                    <span className="text-[10px] shrink-0" style={{ color: '#334155' }}>
+                                                    <p className="text-xs font-medium text-slate-800 truncate">{n.full_name}</p>
+                                                    <span className="text-[10px] shrink-0 text-slate-400">
                                                         {timeAgo(n.created_at)}
                                                     </span>
                                                 </div>
@@ -274,77 +268,77 @@ export default function DashboardIndex({ metrics, transactions, notifications, p
                 {/* ── Metrics ── */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <MetricCard title="Jami kvartiralar" value={metrics.totalApts.toLocaleString()}
-                        accent="#6366f1" icon={<Building2 className="w-4 h-4" />} />
+                        accent="#27A247" icon={<Building2 className="w-4 h-4" />} />
                     <MetricCard title="Sotilgan" value={metrics.soldApts.toLocaleString()}
-                        accent="#10b981" icon={<TrendingUp className="w-4 h-4" />} />
+                        accent="#4ade80" icon={<TrendingUp className="w-4 h-4" />} />
                     <MetricCard title="Bo'sh" value={metrics.availApts.toLocaleString()}
                         accent="#f59e0b" icon={<Home className="w-4 h-4" />} />
                     <MetricCard title="Daromad" value={fmt(metrics.revenue)}
-                        accent="#6366f1" icon={<DollarSign className="w-4 h-4" />} />
+                        accent="#27A247" icon={<DollarSign className="w-4 h-4" />} />
                 </div>
 
                 {/* ── Charts ── */}
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-                    <div className="lg:col-span-3 rounded-xl border p-5"
-                        style={{ backgroundColor: '#0d1117', borderColor: '#1e2536' }}>
-                        <h2 className="text-sm font-semibold text-white mb-1">Revenue Trend</h2>
-                        <p className="text-xs mb-4" style={{ color: '#64748b' }}>Monthly revenue in USD thousands</p>
+                    <div className="lg:col-span-3 rounded-xl border p-5 bg-white"
+                        style={{ borderColor: 'rgba(39,162,71,0.10)' }}>
+                        <h2 className="text-sm font-semibold text-slate-800 mb-1">Daromad trendi</h2>
+                        <p className="text-xs mb-4 text-slate-400">Oylik daromad (ming USD)</p>
                         <ResponsiveContainer width="100%" height={200}>
                             <AreaChart data={monthlySales} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
                                 <defs>
                                     <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.25} />
-                                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                                        <stop offset="5%" stopColor="#27A247" stopOpacity={0.30} />
+                                        <stop offset="95%" stopColor="#27A247" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#1e2536" vertical={false} />
+                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(39,162,71,0.12)" vertical={false} />
                                 <XAxis dataKey="month" tick={{ fill: '#475569', fontSize: 11 }} axisLine={false} tickLine={false} />
                                 <YAxis tick={{ fill: '#475569', fontSize: 11 }} axisLine={false} tickLine={false} />
-                                <Tooltip contentStyle={{ backgroundColor: '#0d1117', border: '1px solid #1e2536', borderRadius: 8, fontSize: 12, color: '#e2e8f0' }}
-                                    formatter={(v) => [`$${v}K`, 'Revenue']} />
-                                <Area type="monotone" dataKey="revenue" stroke="#6366f1" strokeWidth={2} fill="url(#revenueGrad)" dot={false} />
+                                <Tooltip contentStyle={{ backgroundColor: '#ffffff', border: '1px solid rgba(39,162,71,0.15)', borderRadius: 8, fontSize: 12, color: '#1a2e22' }}
+                                    formatter={(v) => [`$${v}K`, 'Daromad']} />
+                                <Area type="monotone" dataKey="revenue" stroke="#27A247" strokeWidth={2} fill="url(#revenueGrad)" dot={false} />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>
 
-                    <div className="lg:col-span-2 rounded-xl border p-5"
-                        style={{ backgroundColor: '#0d1117', borderColor: '#1e2536' }}>
-                        <h2 className="text-sm font-semibold text-white mb-1">Units by Project</h2>
-                        <p className="text-xs mb-4" style={{ color: '#64748b' }}>Sold vs available</p>
+                    <div className="lg:col-span-2 rounded-xl border p-5 bg-white"
+                        style={{ borderColor: 'rgba(39,162,71,0.10)' }}>
+                        <h2 className="text-sm font-semibold text-slate-800 mb-1">Loyiha bo'yicha birliklar</h2>
+                        <p className="text-xs mb-4 text-slate-400">Sotilgan vs bo'sh</p>
                         <ResponsiveContainer width="100%" height={200}>
                             <BarChart data={projectData} layout="vertical" margin={{ top: 0, right: 4, left: 0, bottom: 0 }} barSize={8} barGap={3}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#1e2536" horizontal={false} />
+                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(39,162,71,0.12)" horizontal={false} />
                                 <XAxis type="number" tick={{ fill: '#475569', fontSize: 10 }} axisLine={false} tickLine={false} />
                                 <YAxis dataKey="name" type="category" width={90} tick={{ fill: '#475569', fontSize: 10 }} axisLine={false} tickLine={false} />
-                                <Tooltip contentStyle={{ backgroundColor: '#0d1117', border: '1px solid #1e2536', borderRadius: 8, fontSize: 12, color: '#e2e8f0' }} />
-                                <Bar dataKey="sold" fill="#10b981" radius={[0, 4, 4, 0]} name="Sold" />
-                                <Bar dataKey="available" fill="#1e2536" radius={[0, 4, 4, 0]} name="Available" />
+                                <Tooltip contentStyle={{ backgroundColor: '#ffffff', border: '1px solid rgba(39,162,71,0.15)', borderRadius: 8, fontSize: 12, color: '#1a2e22' }} />
+                                <Bar dataKey="sold" fill="#27A247" radius={[0, 4, 4, 0]} name="Sotilgan" />
+                                <Bar dataKey="available" fill="#dcfce7" radius={[0, 4, 4, 0]} name="Bo'sh" />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
 
                 {/* ── Recent transactions ── */}
-                <div className="rounded-xl border" style={{ backgroundColor: '#0d1117', borderColor: '#1e2536' }}>
-                    <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: '#1e2536' }}>
+                <div className="rounded-xl border bg-white" style={{ borderColor: 'rgba(39,162,71,0.10)' }}>
+                    <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: 'rgba(39,162,71,0.08)' }}>
                         <div>
-                            <h2 className="text-sm font-semibold text-white">So'nggi tranzaksiyalar</h2>
-                            <p className="text-xs mt-0.5" style={{ color: '#64748b' }}>Kvartira sotuv va bronlar</p>
+                            <h2 className="text-sm font-semibold text-slate-800">So'nggi tranzaksiyalar</h2>
+                            <p className="text-xs mt-0.5 text-slate-400">Kvartira sotuv va bronlar</p>
                         </div>
-                        <div className="flex items-center gap-2 rounded-lg px-3 py-1.5"
-                            style={{ backgroundColor: '#080b14', border: '1px solid #1e2536' }}>
-                            <Search className="w-3.5 h-3.5" style={{ color: '#475569' }} />
+                        <div className="flex items-center gap-2 rounded-lg px-3 py-1.5 bg-slate-50"
+                            style={{ border: '1px solid rgba(39,162,71,0.12)' }}>
+                            <Search className="w-3.5 h-3.5 text-slate-400" />
                             <input type="text" id="tx-search" placeholder="Qidirish…" value={searchQuery}
                                 onChange={e => setSearchQuery(e.target.value)}
-                                className="bg-transparent text-xs text-white outline-none placeholder:text-slate-600 w-32" />
+                                className="bg-transparent text-xs text-slate-800 outline-none placeholder:text-slate-400 w-32 border-none p-0 focus:ring-0 focus:outline-none" />
                         </div>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full">
                             <thead>
-                                <tr style={{ borderBottom: '1px solid #1e2536' }}>
+                                <tr style={{ borderBottom: '1px solid rgba(39,162,71,0.08)' }}>
                                     {['ID', 'Mijoz', 'Kvartira', 'Summa', 'Sana', 'Holat'].map(h => (
-                                        <th key={h} className="px-5 py-3 text-left text-xs font-medium" style={{ color: '#475569' }}>{h}</th>
+                                        <th key={h} className="px-5 py-3 text-left text-xs font-medium text-slate-500">{h}</th>
                                     ))}
                                 </tr>
                             </thead>
@@ -352,13 +346,13 @@ export default function DashboardIndex({ metrics, transactions, notifications, p
                                 {filteredTx.map((t, i) => {
                                     const s = STATUS_STYLES[t.status];
                                     return (
-                                        <tr key={t.id} className="transition-colors hover:bg-white/[0.02]"
-                                            style={{ borderBottom: i < filteredTx.length - 1 ? '1px solid #1e2536' : undefined }}>
-                                            <td className="px-5 py-3.5 text-xs font-mono" style={{ color: '#475569' }}>{t.id}</td>
-                                            <td className="px-5 py-3.5 text-sm text-white font-medium">{t.client}</td>
-                                            <td className="px-5 py-3.5 text-sm font-mono" style={{ color: '#94a3b8' }}>{t.apartment}</td>
-                                            <td className="px-5 py-3.5 text-sm font-semibold text-white">{t.amount}</td>
-                                            <td className="px-5 py-3.5 text-sm" style={{ color: '#64748b' }}>{t.date}</td>
+                                        <tr key={t.id} className="transition-colors hover:bg-slate-50"
+                                            style={{ borderBottom: i < filteredTx.length - 1 ? '1px solid rgba(39,162,71,0.07)' : undefined }}>
+                                            <td className="px-5 py-3.5 text-xs font-mono text-slate-400">{t.id}</td>
+                                            <td className="px-5 py-3.5 text-sm text-slate-800 font-medium">{t.client}</td>
+                                            <td className="px-5 py-3.5 text-sm font-mono text-slate-500">{t.apartment}</td>
+                                            <td className="px-5 py-3.5 text-sm font-semibold text-slate-800">{t.amount}</td>
+                                            <td className="px-5 py-3.5 text-sm text-slate-500">{t.date}</td>
                                             <td className="px-5 py-3.5">
                                                 <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
                                                     style={{ backgroundColor: s.bg, color: s.text }}>{s.label}</span>
@@ -373,41 +367,41 @@ export default function DashboardIndex({ metrics, transactions, notifications, p
 
                 {/* ── PM Quick Stats (admin/company_admin uchun) ── */}
                 {pmStats && (
-                    <div className="rounded-xl border" style={{ backgroundColor: '#0d1117', borderColor: '#1e2536' }}>
-                        <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: '#1e2536' }}>
+                    <div className="rounded-xl border bg-white" style={{ borderColor: 'rgba(39,162,71,0.10)' }}>
+                        <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: 'rgba(39,162,71,0.08)' }}>
                             <div>
-                                <h2 className="text-sm font-semibold text-white">Property Management</h2>
-                                <p className="text-xs mt-0.5" style={{ color: '#64748b' }}>Bino ekspluatatsiyasi va xizmat ko'rsatish</p>
+                                <h2 className="text-sm font-semibold text-slate-800">Property Management</h2>
+                                <p className="text-xs mt-0.5 text-slate-400">Bino ekspluatatsiyasi va xizmat ko'rsatish</p>
                             </div>
                         </div>
                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 p-5">
                             <PMTile href="/pm/requests" title="Faol arizalar" value={pmStats.open_requests}
                                 hint="Nosozlik arizalari" accent="#f59e0b" icon={<Wrench className="w-4 h-4" />} />
                             <PMTile href="/pm/vendors" title="Vendor baza" value={pmStats.vendors}
-                                hint="Pudratchi va reyting" accent="#6366f1" icon={<UsersIcon className="w-4 h-4" />} />
+                                hint="Pudratchi va reyting" accent="#27A247" icon={<UsersIcon className="w-4 h-4" />} />
                             <PMTile href="/pm/invoices" title="PM To'lovlar" value="—"
-                                hint="Hisob-fakturalar" accent="#10b981" icon={<Receipt className="w-4 h-4" />} />
+                                hint="Hisob-fakturalar" accent="#4ade80" icon={<Receipt className="w-4 h-4" />} />
                             <PMTile href="/pm/meters" title="Kommunal" value="—"
-                                hint="Elektr · Gaz · Suv" accent="#8b5cf6" icon={<Gauge className="w-4 h-4" />} />
+                                hint="Elektr · Gaz · Suv" accent="#86efac" icon={<Gauge className="w-4 h-4" />} />
                         </div>
                     </div>
                 )}
 
                 {/* ── AI Insights ── */}
-                <div className="rounded-xl border" style={{ backgroundColor: '#0d1117', borderColor: '#1e2536' }}>
-                    <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: '#1e2536' }}>
+                <div className="rounded-xl border bg-white" style={{ borderColor: 'rgba(39,162,71,0.10)' }}>
+                    <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: 'rgba(39,162,71,0.08)' }}>
                         <div>
                             <div className="flex items-center gap-2">
-                                <Sparkles className="w-4 h-4" style={{ color: '#6366f1' }} />
-                                <h2 className="text-sm font-semibold text-white">AI Insights</h2>
+                                <Sparkles className="w-4 h-4" style={{ color: '#27A247' }} />
+                                <h2 className="text-sm font-semibold text-slate-800">AI Insights</h2>
                             </div>
-                            <p className="text-xs mt-0.5" style={{ color: '#64748b' }}>
-                                Claude savdo ma'lumotlarini tahlil qiladi
+                            <p className="text-xs mt-0.5 text-slate-400">
+                                AI savdo ma'lumotlarini tahlil qiladi
                             </p>
                         </div>
                         <button id="ai-insights-btn" onClick={fetchInsights} disabled={aiLoading}
-                            className="flex items-center gap-2 text-sm font-medium text-white px-4 py-2 rounded-lg transition-opacity hover:opacity-80 disabled:opacity-50"
-                            style={{ backgroundColor: '#6366f1' }}>
+                            className="flex items-center gap-2 text-sm font-medium text-slate-800 px-4 py-2 rounded-lg transition-opacity hover:opacity-80 disabled:opacity-50 cursor-pointer"
+                            style={{ background: 'linear-gradient(135deg, #27A247, #1a7a34)', boxShadow: '0 4px 16px rgba(39,162,71,0.3)' }}>
                             {aiLoading
                                 ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />Tahlil qilinmoqda…</>
                                 : <><Sparkles className="w-3.5 h-3.5" />AI tahlil</>
@@ -417,42 +411,40 @@ export default function DashboardIndex({ metrics, transactions, notifications, p
 
                     <div className="p-5">
                         {aiError && (
-                            <div className="rounded-lg px-4 py-3 text-sm border"
-                                style={{ backgroundColor: '#1f0a0a', borderColor: '#7f1d1d', color: '#fca5a5' }}>
+                            <div className="rounded-lg px-4 py-3 text-sm border bg-red-50 border-red-200 text-red-700">
                                 {aiError}
                             </div>
                         )}
                         {aiLoading && (
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 {[0, 1, 2].map(i => (
-                                    <div key={i} className="h-24 rounded-xl border animate-pulse"
-                                        style={{ backgroundColor: '#080b14', borderColor: '#1e2536' }} />
+                                    <div key={i} className="h-24 rounded-xl border animate-pulse bg-slate-50 border-slate-200" />
                                 ))}
                             </div>
                         )}
                         {!aiLoading && insights.length > 0 && (
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 {insights.map((text, i) => (
-                                    <div key={i} className="rounded-xl border p-4 flex flex-col gap-3"
-                                        style={{ backgroundColor: '#080b14', borderColor: '#1e2536' }}>
+                                    <div key={i} className="rounded-xl border p-4 flex flex-col gap-3 bg-slate-50"
+                                        style={{ borderColor: 'rgba(39,162,71,0.12)' }}>
                                         <div className="flex items-center justify-center w-8 h-8 rounded-lg shrink-0"
-                                            style={{ backgroundColor: '#1e1b4b' }}>
-                                            <Lightbulb className="w-4 h-4" style={{ color: '#6366f1' }} />
+                                            style={{ background: 'rgba(39,162,71,0.12)' }}>
+                                            <Lightbulb className="w-4 h-4" style={{ color: '#27A247' }} />
                                         </div>
-                                        <p className="text-sm leading-relaxed" style={{ color: '#cbd5e1' }}>{text}</p>
+                                        <p className="text-sm leading-relaxed text-slate-700">{text}</p>
                                     </div>
                                 ))}
                             </div>
                         )}
                         {!aiLoading && !aiError && insights.length === 0 && (
                             <div className="flex flex-col items-center justify-center py-10 gap-3">
-                                <div className="flex items-center justify-center w-12 h-12 rounded-xl"
-                                    style={{ backgroundColor: '#1e1b4b' }}>
-                                    <Sparkles className="w-5 h-5" style={{ color: '#6366f1' }} />
+                                <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-slate-50"
+                                    style={{ border: '1px solid rgba(39,162,71,0.12)' }}>
+                                    <Sparkles className="w-5 h-5" style={{ color: '#27A247' }} />
                                 </div>
                                 <div className="text-center">
-                                    <p className="text-sm font-medium text-white">Hali tahlil yo'q</p>
-                                    <p className="text-xs mt-1" style={{ color: '#475569' }}>
+                                    <p className="text-sm font-medium text-slate-800">Hali tahlil yo'q</p>
+                                    <p className="text-xs mt-1 text-slate-400">
                                         "AI tahlil" tugmasini bosing
                                     </p>
                                 </div>

@@ -15,6 +15,10 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
+    'brand_name' => env('BRAND_NAME', '1Mahalla'),
+    'brand_tagline' => env('BRAND_TAGLINE', 'Mahalla · Texnologiya'),
+    'brand_legal_name' => env('BRAND_LEGAL_NAME', '1Mahalla'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment

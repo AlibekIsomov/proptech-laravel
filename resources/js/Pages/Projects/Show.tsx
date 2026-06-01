@@ -113,15 +113,15 @@ export default function ProjectShow({ project, buildings, aptCounts }: Props) {
 
             {/* Top bar */}
             <header className="sticky top-0 z-20 flex items-center gap-3 px-6 h-14 border-b shrink-0"
-                style={{ backgroundColor: "#0d1117", borderColor: "rgba(255,255,255,0.06)" }}>
+                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
                 <button onClick={() => router.visit("/projects")}
-                    className="p-1.5 rounded-lg transition-colors hover:bg-white/5" style={{ color: "#64748b" }}>
+                    className="p-1.5 rounded-lg transition-colors hover:bg-slate-100" style={{ color: "#64748b" }}>
                     <ArrowLeft className="w-4 h-4" />
                 </button>
                 <div className="flex items-center gap-2 min-w-0">
                     <span className="text-xs" style={{ color: "#475569" }}>Проекты</span>
                     <ChevronRight className="w-3 h-3 shrink-0" style={{ color: "#334155" }} />
-                    <span className="text-sm font-semibold text-white truncate">
+                    <span className="text-sm font-semibold text-slate-800 truncate">
                         {project.name}
                     </span>
                 </div>
@@ -130,13 +130,13 @@ export default function ProjectShow({ project, buildings, aptCounts }: Props) {
             <main className="px-6 py-6 w-full space-y-6">
                 {/* Project info */}
                 <div className="rounded-2xl border p-5 flex items-center gap-4"
-                    style={{ backgroundColor: "#0d1117", borderColor: "rgba(255,255,255,0.06)" }}>
+                    style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
                     <div className="flex items-center justify-center w-12 h-12 rounded-xl shrink-0"
                         style={{ backgroundColor: "rgba(99,102,241,0.12)" }}>
                         <Building2 className="w-6 h-6" style={{ color: "#6366f1" }} />
                     </div>
                     <div className="min-w-0">
-                        <h1 className="text-lg font-bold text-white">{project.name}</h1>
+                        <h1 className="text-lg font-bold text-slate-800">{project.name}</h1>
                         <div className="flex items-center gap-1.5 mt-0.5">
                             <MapPin className="w-3 h-3" style={{ color: "#475569" }} />
                             <span className="text-xs" style={{ color: "#64748b" }}>{project.location || "Нет адреса"}</span>
@@ -144,7 +144,7 @@ export default function ProjectShow({ project, buildings, aptCounts }: Props) {
                     </div>
                     <div className="ml-auto flex gap-5 text-center shrink-0">
                         <div>
-                            <p className="text-xl font-bold text-white">{buildings.length}</p>
+                            <p className="text-xl font-bold text-slate-800">{buildings.length}</p>
                             <p className="text-xs mt-0.5" style={{ color: "#475569" }}>Корпусов</p>
                         </div>
                     </div>
@@ -153,7 +153,7 @@ export default function ProjectShow({ project, buildings, aptCounts }: Props) {
                 {/* Buildings */}
                 <div>
                     <div className="flex items-center justify-between mb-3">
-                        <h2 className="text-sm font-semibold text-white">Корпуса</h2>
+                        <h2 className="text-sm font-semibold text-slate-800">Корпуса</h2>
                         {canEdit && (
                             <button
                                 onClick={() => { setBuildingName(""); setShowAddBuilding(true); }}
@@ -166,8 +166,8 @@ export default function ProjectShow({ project, buildings, aptCounts }: Props) {
 
                     {buildings.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-14 gap-3 rounded-2xl border border-dashed"
-                            style={{ borderColor: "rgba(255,255,255,0.08)", backgroundColor: "rgba(255,255,255,0.01)" }}>
-                            <Building2 className="w-8 h-8" style={{ color: "rgba(255,255,255,0.15)" }} />
+                            style={{ borderColor: 'var(--border)', backgroundColor: "var(--border)" }}>
+                            <Building2 className="w-8 h-8" style={{ color: "var(--border)" }} />
                             <p className="text-xs text-slate-500">Нет корпусов. Добавьте первый корпус для проекта.</p>
                         </div>
                     ) : (
@@ -178,19 +178,19 @@ export default function ProjectShow({ project, buildings, aptCounts }: Props) {
                                 return (
                                     <div key={b.id} className="rounded-2xl border overflow-hidden transition-all duration-300"
                                         style={{
-                                            borderColor: active ? "#6366f1" : "rgba(255,255,255,0.06)",
-                                            backgroundColor: active ? "rgba(99,102,241,0.05)" : "#0d1117"
+                                            borderColor: active ? "#6366f1" : "var(--border)",
+                                            backgroundColor: active ? "rgba(99,102,241,0.05)" : "var(--card)"
                                         }}>
                                         {/* Building toggle */}
                                         <button onClick={() => setSelectedBuilding(active ? null : b)}
-                                            className="w-full p-4 text-left flex items-center justify-between gap-2 hover:bg-white/[0.01] transition-colors">
+                                            className="w-full p-4 text-left flex items-center justify-between gap-2 hover:bg-slate-50 transition-colors">
                                             <div className="flex items-center gap-2.5 min-w-0">
                                                 <div className="flex items-center justify-center w-8 h-8 rounded-lg shrink-0"
                                                     style={{ backgroundColor: active ? "#6366f1" : "rgba(99,102,241,0.12)" }}>
-                                                    <Building2 className="w-4 h-4 text-white" />
+                                                    <Building2 className="w-4 h-4 text-slate-800" />
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <p className="text-xs font-bold text-white truncate">{b.name}</p>
+                                                    <p className="text-xs font-bold text-slate-800 truncate">{b.name}</p>
                                                     <p className="text-[10px] mt-0.5 text-slate-500 font-semibold">
                                                         {count} квартир
                                                     </p>
@@ -198,17 +198,17 @@ export default function ProjectShow({ project, buildings, aptCounts }: Props) {
                                             </div>
                                             {active
                                                 ? <ChevronUp   className="w-4 h-4 shrink-0" style={{ color: "#6366f1" }} />
-                                                : <ChevronDown className="w-4 h-4 shrink-0" style={{ color: "rgba(255,255,255,0.2)" }} />}
+                                                : <ChevronDown className="w-4 h-4 shrink-0" style={{ color: "var(--border)" }} />}
                                         </button>
 
                                         {/* Action buttons (when selected) */}
                                         {active && canEdit && (
-                                            <div className="px-3 pb-3 border-t" style={{ borderColor: "rgba(255,255,255,0.04)" }}>
+                                            <div className="px-3 pb-3 border-t" style={{ borderColor: "var(--border)" }}>
                                                 <div className="mt-3">
                                                     <button
                                                         onClick={() => { setBulkBuildingId(b.id); setGenError(null); setBulkFloors("9"); setBulkAptsPerFloor("4"); setShowBulkGen(true); }}
                                                         className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl border text-xs font-semibold transition-colors hover:border-indigo-500/40"
-                                                        style={{ borderColor: "rgba(255,255,255,0.08)", color: "#a5b4fc", backgroundColor: "rgba(99,102,241,0.05)" }}>
+                                                        style={{ borderColor: 'var(--border)', color: "#a5b4fc", backgroundColor: "rgba(99,102,241,0.05)" }}>
                                                         <Zap className="w-3.5 h-3.5 text-indigo-400" />
                                                         <span>Сгенерировать шахматку</span>
                                                     </button>
@@ -226,7 +226,7 @@ export default function ProjectShow({ project, buildings, aptCounts }: Props) {
                 {selectedBuilding && (
                     <div className="animate-fade-in">
                         <div className="flex items-center gap-2 mb-4">
-                            <h2 className="text-sm font-semibold text-white">
+                            <h2 className="text-sm font-semibold text-slate-800">
                                 Шахматка — {selectedBuilding.name}
                             </h2>
                         </div>
@@ -241,9 +241,9 @@ export default function ProjectShow({ project, buildings, aptCounts }: Props) {
                     style={{ backgroundColor: "rgba(0,0,0,0.7)", backdropFilter: "blur(2px)" }}
                     onClick={(e) => e.target === e.currentTarget && setShowAddBuilding(false)}>
                     <div className="w-full max-w-sm rounded-2xl p-6"
-                        style={{ backgroundColor: "#0d1117", border: "1px solid rgba(255,255,255,0.09)" }}>
+                        style={{ backgroundColor: 'var(--card)', border: "1px solid var(--border)" }}>
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-base font-semibold text-white">Добавить корпус</h2>
+                            <h2 className="text-base font-semibold text-slate-800">Добавить корпус</h2>
                             <button onClick={() => setShowAddBuilding(false)} style={{ color: "#475569" }}
                                 className="hover:text-white transition-colors">
                                 <X className="w-5 h-5" />
@@ -252,11 +252,11 @@ export default function ProjectShow({ project, buildings, aptCounts }: Props) {
 
                         <form onSubmit={handleAddBuilding} className="space-y-4">
                             <div>
-                                <label className="block text-xs font-semibold mb-1.5" style={{ color: "rgba(255,255,255,0.5)" }}>Название корпуса</label>
+                                <label className="block text-xs font-semibold mb-1.5" style={{ color: "var(--muted)" }}>Название корпуса</label>
                                 <input type="text" required placeholder="напр. Корпус Б" value={buildingName}
                                     onChange={(e) => setBuildingName(e.target.value)}
-                                    className="w-full rounded-xl px-4 py-2.5 text-xs text-white outline-none"
-                                    style={{ backgroundColor: "#161b22", border: "1px solid rgba(255,255,255,0.08)" }} />
+                                    className="w-full rounded-xl px-4 py-2.5 text-xs text-slate-800 outline-none"
+                                    style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }} />
                             </div>
 
                             <button type="submit" disabled={addingBuilding}
@@ -276,11 +276,11 @@ export default function ProjectShow({ project, buildings, aptCounts }: Props) {
                     style={{ backgroundColor: "rgba(0,0,0,0.8)", backdropFilter: "blur(2px)" }}
                     onClick={(e) => e.target === e.currentTarget && setShowBulkGen(false)}>
                     <div className="w-full max-w-sm rounded-2xl p-6"
-                        style={{ backgroundColor: "#0d1117", border: "1px solid rgba(255,255,255,0.09)" }}>
+                        style={{ backgroundColor: 'var(--card)', border: "1px solid var(--border)" }}>
                         <div className="flex items-center justify-between mb-5">
                             <div className="flex items-center gap-2">
                                 <Zap className="w-4 h-4 text-indigo-400" />
-                                <h2 className="text-sm font-bold text-white uppercase tracking-wider">Массовое создание</h2>
+                                <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Массовое создание</h2>
                             </div>
                             <button onClick={() => setShowBulkGen(false)} style={{ color: "#475569" }}
                                 className="hover:text-white transition-colors">
@@ -291,44 +291,44 @@ export default function ProjectShow({ project, buildings, aptCounts }: Props) {
                         <form onSubmit={handleBulkGenerate} className="space-y-4">
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "rgba(255,255,255,0.4)" }}>Этажей</label>
+                                    <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "var(--muted)" }}>Этажей</label>
                                     <input type="number" min={1} required value={bulkFloors}
                                         onChange={(e) => setBulkFloors(e.target.value)}
-                                        className="w-full rounded-xl px-3 py-2 text-xs text-white outline-none"
-                                        style={{ backgroundColor: "#161b22", border: "1px solid rgba(255,255,255,0.08)" }} />
+                                        className="w-full rounded-xl px-3 py-2 text-xs text-slate-800 outline-none"
+                                        style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }} />
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "rgba(255,255,255,0.4)" }}>Квартир на этаж</label>
+                                    <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "var(--muted)" }}>Квартир на этаж</label>
                                     <input type="number" min={1} required value={bulkAptsPerFloor}
                                         onChange={(e) => setBulkAptsPerFloor(e.target.value)}
-                                        className="w-full rounded-xl px-3 py-2 text-xs text-white outline-none"
-                                        style={{ backgroundColor: "#161b22", border: "1px solid rgba(255,255,255,0.08)" }} />
+                                        className="w-full rounded-xl px-3 py-2 text-xs text-slate-800 outline-none"
+                                        style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }} />
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "rgba(255,255,255,0.4)" }}>Комнат</label>
+                                    <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "var(--muted)" }}>Комнат</label>
                                     <input type="number" min={1} required value={bulkRooms}
                                         onChange={(e) => setBulkRooms(e.target.value)}
-                                        className="w-full rounded-xl px-3 py-2 text-xs text-white outline-none"
-                                        style={{ backgroundColor: "#161b22", border: "1px solid rgba(255,255,255,0.08)" }} />
+                                        className="w-full rounded-xl px-3 py-2 text-xs text-slate-800 outline-none"
+                                        style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }} />
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "rgba(255,255,255,0.4)" }}>Площадь, м²</label>
+                                    <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "var(--muted)" }}>Площадь, м²</label>
                                     <input type="number" min={1} required value={bulkArea}
                                         onChange={(e) => setBulkArea(e.target.value)}
-                                        className="w-full rounded-xl px-3 py-2 text-xs text-white outline-none"
-                                        style={{ backgroundColor: "#161b22", border: "1px solid rgba(255,255,255,0.08)" }} />
+                                        className="w-full rounded-xl px-3 py-2 text-xs text-slate-800 outline-none"
+                                        style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }} />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "rgba(255,255,255,0.4)" }}>Базовая цена, $</label>
+                                <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "var(--muted)" }}>Базовая цена, $</label>
                                 <input type="number" min={0} required value={bulkBasePrice}
                                     onChange={(e) => setBulkBasePrice(e.target.value)}
-                                    className="w-full rounded-xl px-3.5 py-2 text-xs text-white outline-none"
-                                    style={{ backgroundColor: "#161b22", border: "1px solid rgba(255,255,255,0.08)" }} />
+                                    className="w-full rounded-xl px-3.5 py-2 text-xs text-slate-800 outline-none"
+                                    style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }} />
                             </div>
 
                             {genError && <p className="text-xs text-red-400 font-semibold">{genError}</p>}

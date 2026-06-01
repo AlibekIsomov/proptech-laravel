@@ -60,10 +60,10 @@ export default function PMProjectsIndex({ projects }: Props) {
     return (
         <AppShell>
             <header className="sticky top-0 z-20 flex items-center justify-between px-6 h-14 border-b shrink-0"
-                style={{ backgroundColor: '#0a0f0d', borderColor: 'rgba(16,185,129,0.10)' }}>
+                style={{ backgroundColor: 'var(--card)', borderColor: 'rgba(16,185,129,0.10)' }}>
                 <div className="flex items-center gap-2">
                     <FolderKanban className="w-4 h-4" style={{ color: '#10b981' }} />
-                    <h1 className="text-sm font-semibold text-white">Loyihalar</h1>
+                    <h1 className="text-sm font-semibold text-slate-800">Loyihalar</h1>
                     <span className="text-xs px-2 py-0.5 rounded-full ml-1"
                         style={{ backgroundColor: 'rgba(16,185,129,0.12)', color: '#34d399' }}>
                         {projects.length}
@@ -85,7 +85,7 @@ export default function PMProjectsIndex({ projects }: Props) {
                             style={{ backgroundColor: 'rgba(16,185,129,0.10)' }}>
                             <FolderKanban className="w-6 h-6" style={{ color: '#10b981' }} />
                         </div>
-                        <p className="text-sm font-medium text-white">Loyihalar yo'q</p>
+                        <p className="text-sm font-medium text-slate-800">Loyihalar yo'q</p>
                         <p className="text-xs" style={{ color: '#475569' }}>Birinchi loyihani yarating</p>
                     </div>
                 ) : (
@@ -95,13 +95,13 @@ export default function PMProjectsIndex({ projects }: Props) {
                             return (
                                 <div key={p.id}
                                     className="rounded-2xl p-5 flex flex-col gap-4 group cursor-pointer transition-all hover:border-emerald-500/30"
-                                    style={{ backgroundColor: '#0a0f0d', border: '1px solid rgba(16,185,129,0.08)' }}
+                                    style={{ backgroundColor: 'var(--card)', border: '1px solid rgba(16,185,129,0.08)' }}
                                     onClick={() => router.visit(`/pm/projects/${p.id}`)}>
                                     <div className="flex items-start justify-between">
                                         <div className="flex-1 min-w-0">
                                             <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full mb-2"
                                                 style={{ backgroundColor: s.bg, color: s.text }}>{s.label}</span>
-                                            <h2 className="text-sm font-semibold text-white group-hover:text-emerald-300 transition-colors">
+                                            <h2 className="text-sm font-semibold text-slate-800 group-hover:text-emerald-300 transition-colors">
                                                 {p.name}
                                             </h2>
                                             {p.location && (
@@ -115,7 +115,7 @@ export default function PMProjectsIndex({ projects }: Props) {
                                             <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2"
                                                 onClick={e => e.stopPropagation()}>
                                                 <button onClick={() => openEdit(p)}
-                                                    className="p-1.5 rounded-lg hover:bg-white/5 transition-colors"
+                                                    className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
                                                     style={{ color: '#64748b' }}>
                                                     <Pencil className="w-3.5 h-3.5" />
                                                 </button>
@@ -129,19 +129,19 @@ export default function PMProjectsIndex({ projects }: Props) {
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-3">
-                                        <div className="rounded-xl p-3" style={{ backgroundColor: '#060a07', border: '1px solid rgba(16,185,129,0.08)' }}>
+                                        <div className="rounded-xl p-3" style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.08)' }}>
                                             <div className="flex items-center gap-1.5 mb-1">
                                                 <Building2 className="w-3 h-3" style={{ color: '#10b981' }} />
                                                 <span className="text-[10px] uppercase tracking-wider" style={{ color: '#475569' }}>Binolar</span>
                                             </div>
-                                            <p className="text-xl font-bold text-white">{p.buildings_count}</p>
+                                            <p className="text-xl font-bold text-slate-800">{p.buildings_count}</p>
                                         </div>
-                                        <div className="rounded-xl p-3" style={{ backgroundColor: '#060a07', border: '1px solid rgba(16,185,129,0.08)' }}>
+                                        <div className="rounded-xl p-3" style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.08)' }}>
                                             <div className="flex items-center gap-1.5 mb-1">
                                                 <Home className="w-3 h-3" style={{ color: '#14b8a6' }} />
                                                 <span className="text-[10px] uppercase tracking-wider" style={{ color: '#475569' }}>Kvartiralar</span>
                                             </div>
-                                            <p className="text-xl font-bold text-white">{p.apartments_count}</p>
+                                            <p className="text-xl font-bold text-slate-800">{p.apartments_count}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -156,9 +156,9 @@ export default function PMProjectsIndex({ projects }: Props) {
                     style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}
                     onClick={e => e.target === e.currentTarget && setShowModal(false)}>
                     <div className="w-full max-w-md rounded-2xl p-6"
-                        style={{ backgroundColor: '#0a0f0d', border: '1px solid rgba(16,185,129,0.12)' }}>
+                        style={{ backgroundColor: 'var(--card)', border: '1px solid rgba(16,185,129,0.12)' }}>
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-base font-semibold text-white">
+                            <h2 className="text-base font-semibold text-slate-800">
                                 {editing ? 'Loyihani tahrirlash' : 'Yangi loyiha'}
                             </h2>
                             <button onClick={() => setShowModal(false)} style={{ color: '#475569' }}
@@ -173,19 +173,19 @@ export default function PMProjectsIndex({ projects }: Props) {
                                 { label: 'Manzil',        key: 'location', required: false },
                             ].map(({ label, key, required }) => (
                                 <div key={key}>
-                                    <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.5)' }}>{label}</label>
+                                    <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>{label}</label>
                                     <input type="text" required={required} value={(form as any)[key]}
                                         onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
-                                        className="w-full rounded-xl px-4 py-2.5 text-sm text-white outline-none"
-                                        style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(16,185,129,0.15)' }} />
+                                        className="w-full rounded-xl px-4 py-2.5 text-sm text-slate-800 outline-none"
+                                        style={{ backgroundColor: 'var(--border)', border: '1px solid rgba(16,185,129,0.15)' }} />
                                 </div>
                             ))}
 
                             <div>
-                                <label className="block text-xs font-medium mb-1.5" style={{ color: 'rgba(255,255,255,0.5)' }}>Holat</label>
+                                <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>Holat</label>
                                 <select value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
-                                    className="w-full rounded-xl px-4 py-2.5 text-sm text-white outline-none"
-                                    style={{ backgroundColor: '#060a07', border: '1px solid rgba(16,185,129,0.15)' }}>
+                                    className="w-full rounded-xl px-4 py-2.5 text-sm text-slate-800 outline-none"
+                                    style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.15)' }}>
                                     <option value="active">Faol</option>
                                     <option value="paused">To'xtatilgan</option>
                                     <option value="completed">Tugallangan</option>

@@ -7,14 +7,18 @@
 }
 
 :root {
-    --bg:           #080b14;
-    --card:         #0d1117;
-    --border:       rgba(255,255,255,0.08);
-    --accent:       #6366f1;
+    /* 1Mahalla brand light green palette */
+    --bg:           #f4faf5;   /* Pleasant white background with soft green tint */
+    --card:         #ffffff;   /* Pure white cards/panels */
+    --border:       rgba(39, 162, 71, 0.12); /* Soft green-tinted borders */
+    --accent:       #27A247;   /* Logo primary green */
+    --accent-light: #2cbd54;   /* Lighter green for hover */
+    --accent-dim:   #1e8038;   /* Darker green for depth */
     --success:      #10b981;
     --warning:      #f59e0b;
-    --text:         #e2e8f0;
-    --muted:        rgba(255,255,255,0.4);
+    --danger:       #ef4444;
+    --text:         #1a2e22;   /* Deep green-tinted dark charcoal text */
+    --muted:        rgba(26, 46, 34, 0.55);
     --font-display: 'Sora', sans-serif;
     --font-body:    'DM Sans', sans-serif;
 }
@@ -31,26 +35,27 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
-/* ── Global Form Elements Dark-Mode Reset ── */
+/* ── Global Form Elements Light-Mode Reset ── */
 input, select, textarea {
-    color: #ffffff;
-    background-color: #080b14;
-    border: 1px solid rgba(255,255,255,0.08);
+    color: var(--text);
+    background-color: #ffffff;
+    border: 1px solid rgba(39, 162, 71, 0.15);
     font-family: inherit;
 }
 
 input:focus, select:focus, textarea:focus {
-    border-color: #6366f1;
+    border-color: #27A247;
     outline: none;
+    box-shadow: 0 0 0 2px rgba(39, 162, 71, 0.12);
 }
 
 input::placeholder, textarea::placeholder {
-    color: rgba(255,255,255,0.3);
+    color: rgba(26, 46, 34, 0.35);
 }
 
 option {
-    background-color: #0d1117;
-    color: #ffffff;
+    background-color: #ffffff;
+    color: var(--text);
 }
 
 /* ── Webkit Autofill Style Override ── */
@@ -63,9 +68,9 @@ textarea:-webkit-autofill:focus,
 select:-webkit-autofill,
 select:-webkit-autofill:hover,
 select:-webkit-autofill:focus {
-    -webkit-text-fill-color: #ffffff !important;
+    -webkit-text-fill-color: var(--text) !important;
     transition: background-color 500000s ease-in-out 0s !important;
-    caret-color: #ffffff !important;
+    caret-color: var(--text) !important;
 }
 
 /* Button overrides for standard styles */
@@ -79,20 +84,20 @@ button {
 /* ── Scrollbar ─────────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar              { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track        { background: transparent; }
-::-webkit-scrollbar-thumb        { background: #1e2536; border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover  { background: #2d3748; }
+::-webkit-scrollbar-thumb        { background: rgba(39, 162, 71, 0.2); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover  { background: #27A247; }
 
 /* ── Range slider ──────────────────────────────────────────────────────────── */
-input[type="range"] { accent-color: #6366f1; }
+input[type="range"] { accent-color: #27A247; }
 
 /* ── Login orb animations ──────────────────────────────────────────────────── */
 @keyframes orb-float {
-    0%, 100% { transform: translateY(0)   scale(1);    opacity: 0.08; }
-    50%       { transform: translateY(-30px) scale(1.05); opacity: 0.15; }
+    0%, 100% { transform: translateY(0)   scale(1);    opacity: 0.10; }
+    50%       { transform: translateY(-30px) scale(1.05); opacity: 0.18; }
 }
 @keyframes orb-float-2 {
-    0%, 100% { transform: translateY(0)   scale(1);    opacity: 0.06; }
-    50%       { transform: translateY(20px)  scale(0.95); opacity: 0.12; }
+    0%, 100% { transform: translateY(0)   scale(1);    opacity: 0.07; }
+    50%       { transform: translateY(20px)  scale(0.95); opacity: 0.14; }
 }
 .orb-1 { animation: orb-float   8s  ease-in-out infinite; }
 .orb-2 { animation: orb-float-2 10s ease-in-out infinite; }
@@ -108,7 +113,7 @@ input[type="range"] { accent-color: #6366f1; }
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent);
     transform: translateX(-100%) skew(-15deg);
 }
 .btn-shine:hover::after { animation: shine 0.55s ease forwards; }
@@ -124,3 +129,35 @@ input[type="range"] { accent-color: #6366f1; }
     transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
 }
 .project-card:hover { transform: translateY(-2px); }
+
+/* ── Light-mode Table and Page overrides ────────────────────────────────── */
+/* Force page headers and descriptions to be legible on light bg */
+main h1.text-2xl, main h1.text-3xl {
+    color: var(--text) !important;
+}
+main p.text-xs, main p.text-sm {
+    color: var(--muted) !important;
+}
+
+/* Table element overrides: force readable text inside tables */
+table {
+    color: var(--text);
+}
+table thead tr {
+    border-bottom: 1px solid var(--border) !important;
+}
+table th {
+    color: var(--muted) !important;
+}
+table td, table td span, table td p {
+    color: var(--text);
+}
+/* Subtext inside table cells (emails, descriptions, etc.) */
+table td p.text-slate-400, table td p[style*="color: rgba(255,255,255,0.35)"] {
+    color: var(--muted) !important;
+}
+
+/* Fix generic modal overrides */
+.fixed.inset-0[style*="backgroundColor: rgba(0,0,0,0.8)"] {
+    background-color: rgba(26, 46, 34, 0.4) !important; /* Soft green-tinted transparent backdrop */
+}

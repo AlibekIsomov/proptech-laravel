@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Apartment;
 use App\Models\Client;
 use App\Models\MaintenanceRequest;
+use App\Models\Project;
 use App\Models\Vendor;
 use App\Services\ClaudeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -21,6 +23,46 @@ class DashboardController extends Controller
         $soldApts  = Apartment::where('status', 'sold')->count();
         $availApts = Apartment::where('status', 'available')->count();
         $revenue   = Apartment::where('status', 'sold')->sum('price');
+
+        // ── Oylik savdo trendi (so'nggi 7 oy) ─────────────────────────────────
+        $monthlySales = Apartment::select(
+                DB::raw("TO_CHAR(updated_at, 'Mon') as month"),
+                DB::raw("TO_CHAR(updated_at, 'YYYY-MM') as month_key"),
+                DB::raw('COUNT(*) as units'),
+                DB::raw('SUM(price) / 1000 as revenue')
+            )
+            ->where('status', 'sold')
+            ->where('updated_at', '>=', now()->subMonths(7)->startOfMonth())
+            ->groupBy(DB::raw("TO_CHAR(updated_at, 'YYYY-MM')"), DB::raw("TO_CHAR(updated_at, 'Mon')"))
+            ->orderBy('month_key')
+            ->get()
+            ->map(fn ($r) => [
+                'month'   => trim($r->month),
+                'units'   => (int) $r->units,
+                'revenue' => round((float) $r->revenue, 1),
+            ])
+            ->values();
+
+        // Agar ma'lumot yo'q bo'lsa, bo'sh placeholder
+        if ($monthlySales->isEmpty()) {
+            $monthlySales = collect([['month' => now()->format('M'), 'units' => 0, 'revenue' => 0]]);
+        }
+
+        // ── Loyiha bo'yicha statistika ─────────────────────────────────────────
+        $projectData = Project::select('projects.id', 'projects.name')
+            ->withCount([
+                'apartments as sold'      => fn ($q) => $q->where('apartments.status', 'sold'),
+                'apartments as available' => fn ($q) => $q->where('apartments.status', 'available'),
+            ])
+            ->orderByDesc('sold')
+            ->limit(6)
+            ->get()
+            ->map(fn ($p) => [
+                'name'      => $p->name,
+                'sold'      => (int) $p->sold,
+                'available' => (int) $p->available,
+            ])
+            ->values();
 
         // ── Recent transactions (so'nggi 5 ta) ───────────────────────────────
         $transactions = Client::with(['apartment'])
@@ -37,9 +79,9 @@ class DashboardController extends Controller
                 'status'    => $c->status === 'bought' ? 'completed' : 'reserved',
             ]);
 
-        // ── PM quick stats (company_admin va super_admin uchun) ───────────────
+        // ── PM quick stats ────────────────────────────────────────────────────
         $pmStats = null;
-        if (auth()->user()->hasAnyRole(['super_admin', 'company_admin', 'property_manager'])) {
+        if (auth()->user()?->hasAnyRole(['super_admin', 'company_admin', 'property_manager'])) {
             $pmStats = [
                 'open_requests' => MaintenanceRequest::where('status', 'open')->count(),
                 'vendors'       => Vendor::where('is_active', true)->count(),
@@ -60,6 +102,8 @@ class DashboardController extends Controller
                 'availApts' => $availApts,
                 'revenue'   => (float) $revenue,
             ],
+            'monthlySales'  => $monthlySales,
+            'projectData'   => $projectData,
             'transactions'  => $transactions,
             'notifications' => $notifications,
             'pmStats'       => $pmStats,
@@ -67,8 +111,7 @@ class DashboardController extends Controller
     }
 
     /**
-     * POST /api/ai-insights
-     * Dashboard uchun AI tahlil
+     * GET /api/ai-insights
      */
     public function aiInsights(Request $request, ClaudeService $claude): JsonResponse
     {

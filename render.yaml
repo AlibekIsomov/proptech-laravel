@@ -41,8 +41,8 @@ services:
 
       # Branding & UI Configs
       - key: BRAND_NAME
-        value: "PropTech UZ"
+        value: "1Mahalla"
       - key: BRAND_TAGLINE
         value: "Real Estate Suite"
       - key: BRAND_LEGAL_NAME
-        value: "PropTech UZ"
+        value: "1Mahalla"

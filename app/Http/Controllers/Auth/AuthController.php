@@ -42,17 +42,21 @@ class AuthController extends Controller
         $request->session()->regenerate();
 
         $user   = Auth::user();
-        $role   = $user->getPrimaryRoleAttribute();
         $pmRole = $user->pm_role;
 
-        // Rolga qarab yo'naltirish (middleware.ts logikasining PHP ekvivalenti)
+        // PM-specific rollar — har doim o'z portallariga
         if ($pmRole === 'resident')         return redirect()->route('resident.dashboard');
         if ($pmRole === 'dispatcher')       return redirect()->route('dispatcher.dashboard');
         if ($pmRole === 'vendor')           return redirect()->route('vendor.dashboard');
         if ($pmRole === 'property_manager') return redirect()->route('pm.dashboard');
 
-        // Sales routes are currently disabled — send all sales roles to PM portal
-        return redirect()->route('pm.dashboard');
+        // Qaysi login formidan kelganini route nomi orqali aniqlash
+        if ($request->routeIs('pm.login.post')) {
+            return redirect()->route('pm.dashboard');
+        }
+
+        // /login sahifasidan kirganlar — Savdo dashboardga
+        return redirect()->route('dashboard');
     }
 
     public function logout(Request $request): RedirectResponse
@@ -60,6 +64,6 @@ class AuthController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect()->route('login');
+        return redirect()->route('pm.login');
     }
 }
