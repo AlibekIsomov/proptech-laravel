@@ -33,5 +33,9 @@ php artisan view:cache
 echo "🗄️  Running database migrations..."
 php artisan migrate --force --no-interaction || echo "⚠️  Migration failed (DB may not be ready), continuing..."
 
+# Auto-seed from Supabase if local DB is empty (safe no-op if already populated)
+echo "🌱  Checking if local DB needs seeding from Supabase..."
+php artisan db:seed-from-supabase || echo "ℹ️  Supabase seed skipped (Supabase may not be configured or local DB is already populated)."
+
 echo "✅ Starting PHP-FPM..."
 exec php-fpm
