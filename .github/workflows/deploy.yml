@@ -68,7 +68,7 @@ jobs:
           restore-keys: npm-
 
       - name: 📥 Install npm dependencies
-        run: npm ci
+        run: npm install
 
       - name: 🏗️ Build frontend assets (Vite)
         run: npm run build
