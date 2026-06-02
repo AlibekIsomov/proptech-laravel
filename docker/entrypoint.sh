@@ -30,6 +30,16 @@ php artisan storage:link --force 2>/dev/null || echo "⚠️  storage:link warni
 echo "⏳ Waiting for services..."
 sleep 2
 
+# APP_KEY tekshiruv — yo'q bo'lsa avtomatik generate qilamiz
+# Bu bo'lmasa "No application encryption key" xatosi chiqadi (500 error)
+if [ -z "${APP_KEY}" ] || [ "${APP_KEY}" = "" ]; then
+    echo "🔑  APP_KEY topilmadi — yangi kalit generatsiya qilinmoqda..."
+    php artisan key:generate --force
+    echo "✅  APP_KEY muvaffaqiyatli yaratildi."
+else
+    echo "🔑  APP_KEY mavjud."
+fi
+
 # Cache Laravel configurations
 echo "⚙️  Caching configurations..."
 php artisan config:clear
