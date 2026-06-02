@@ -12,7 +12,7 @@ trait SyncsToSupabase
     public static function bootSyncsToSupabase(): void
     {
         static::saved(function ($model) {
-            if (config('database.sync_to_supabase', true)) {
+            if (env('SYNC_TO_SUPABASE', true)) {
                 SyncModelToSupabase::dispatch(
                     get_class($model),
                     $model->getAttributes(),
@@ -22,7 +22,7 @@ trait SyncsToSupabase
         });
 
         static::deleted(function ($model) {
-            if (config('database.sync_to_supabase', true)) {
+            if (env('SYNC_TO_SUPABASE', true)) {
                 SyncModelToSupabase::dispatch(
                     get_class($model),
                     [$model->getKeyName() => $model->getKey()],

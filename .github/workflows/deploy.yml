@@ -68,6 +68,8 @@ jobs:
           DB_DATABASE: proptech_test
           DB_USERNAME: postgres
           DB_PASSWORD: secret
+          DB_URL: ""
+          SYNC_TO_SUPABASE: "false"
         run: php artisan migrate --force
 
       - name: ✅ Run PHPUnit tests
@@ -78,6 +80,8 @@ jobs:
           DB_DATABASE: proptech_test
           DB_USERNAME: postgres
           DB_PASSWORD: secret
+          DB_URL: ""
+          SYNC_TO_SUPABASE: "false"
         run: php artisan test --parallel
 
   # ─────────────────────────────────────────────
