@@ -53,7 +53,7 @@ jobs:
           restore-keys: composer-
 
       - name: 📥 Install Composer dependencies
-        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+        run: composer install --optimize-autoloader --no-interaction --prefer-dist
 
       - name: ⚙️ Setup .env for testing
         run: |
