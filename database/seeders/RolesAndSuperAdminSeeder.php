@@ -29,7 +29,7 @@ class RolesAndSuperAdminSeeder extends Seeder
             Role::firstOrCreate(['name' => $role, 'guard_name' => 'web']);
         }
 
-        $this->command->info('✓ Rollar yaratildi');
+        $this->command?->info('✓ Rollar yaratildi');
 
         // ── Super Admin kompaniyasi ────────────────────────────────────────────
         $company = Company::firstOrCreate(
@@ -48,7 +48,7 @@ class RolesAndSuperAdminSeeder extends Seeder
         );
 
         $admin->assignRole('super_admin');
-        $this->command->info('✓ Super Admin yaratildi: admin@proptech.uz / password');
+        $this->command?->info('✓ Super Admin yaratildi: admin@proptech.uz / password');
 
         // ── Test kompaniyasi va company_admin ─────────────────────────────────
         $testCompany = Company::firstOrCreate(
@@ -66,6 +66,6 @@ class RolesAndSuperAdminSeeder extends Seeder
         );
 
         $companyAdmin->assignRole('company_admin');
-        $this->command->info('✓ Company Admin yaratildi: demo@proptech.uz / password');
+        $this->command?->info('✓ Company Admin yaratildi: demo@proptech.uz / password');
     }
 }

@@ -72,6 +72,18 @@ jobs:
           SYNC_TO_SUPABASE: "false"
         run: php artisan migrate --force
 
+      - name: 🌱 Seed roles
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: proptech_test
+          DB_USERNAME: postgres
+          DB_PASSWORD: secret
+          DB_URL: ""
+          SYNC_TO_SUPABASE: "false"
+        run: php artisan db:seed --class=RolesAndSuperAdminSeeder --force
+
       - name: ✅ Run PHPUnit tests
         env:
           DB_CONNECTION: pgsql
