@@ -1,54 +1,33 @@
+version: '3.8'
+
 services:
-  # PHP-FPM container — faqat Laravel backend
+  # PHP-FPM container — CI/CD yuklagan tayyor tayyor image'ni tortadi
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: proptech-laravel-app:latest
+    image: ${IMAGE_NAME:-ghcr.io/alibekisomov/proptech-laravel}:${IMAGE_TAG:-latest}
     container_name: proptech_app
     restart: unless-stopped
     env_file:
       - .env
     volumes:
-      - .:/var/www/html
-      - vendor_data:/var/www/html/vendor
-      - build_data:/var/www/html/public/build
+      # Production-da kodni bog'lamaymiz, faqat o'zgaruvchan papkalarni bog'laymiz:
       - storage_data:/var/www/html/storage
+      - build_data:/var/www/html/public/build
     networks:
       - proptech-network
-    depends_on: []
 
-  # Nginx container — faqat web server (PHP so'rovlarini app:9000 ga yo'naltiradi)
+  # Nginx container — Web server
   web:
     image: nginx:alpine
     container_name: proptech_web
     restart: unless-stopped
     ports:
-      - "8080:80"
+      - "80:80" # Production uchun 8080 emas, to'g'ridan-to'g'ri 80-portni ochdik
     volumes:
-      - .:/var/www/html
+      # Nginx assetlarni o'qishi uchun faqat build papkasini ulash kifoya
       - build_data:/var/www/html/public/build
-      - ./docker/nginx.dev.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx.prod.conf:/etc/nginx/nginx.conf:ro # Production nginx config
     depends_on:
       - app
-    networks:
-      - proptech-network
-
-  # Node/Vite container — frontend dev server (HMR)
-  node:
-    image: node:20-alpine
-    container_name: proptech_node
-    restart: unless-stopped
-    ports:
-      - "5173:5173"
-    working_dir: /app
-    environment:
-      - NODE_OPTIONS=--max-old-space-size=1536
-    command: sh -c "npm install --legacy-peer-deps && npm run build && cp -r /app/public/build /var/www/html/public/"
-    mem_limit: 2g
-    volumes:
-      - .:/app
-      - build_data:/var/www/html/public/build
     networks:
       - proptech-network
 
@@ -58,7 +37,7 @@ services:
     container_name: proptech_db
     restart: unless-stopped
     ports:
-      - "5433:5432"
+      - "5432:5432" # Tashqi portni ham production-ga mosladik
     environment:
       POSTGRES_DB: ${DB_DATABASE:-proptech}
       POSTGRES_USER: ${DB_USERNAME:-postgres}
@@ -73,8 +52,6 @@ networks:
     driver: bridge
 
 volumes:
-  vendor_data:
   build_data:
   storage_data:
   db_data:
-

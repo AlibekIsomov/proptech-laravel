@@ -1,0 +1,203 @@
+name: 🚀 Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch: # Qo'lda ham ishga tushirish imkoni
+
+env:
+  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/proptech-laravel
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  # ─────────────────────────────────────────────
+  # 1. TEST
+  # ─────────────────────────────────────────────
+  test:
+    name: 🧪 Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: proptech_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐘 Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: pdo, pdo_pgsql, pgsql, zip, gd, opcache, mbstring
+          coverage: none
+
+      - name: 📦 Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: 📥 Install Composer dependencies
+        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+      - name: ⚙️ Setup .env for testing
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: 🗄️ Run migrations
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: proptech_test
+          DB_USERNAME: postgres
+          DB_PASSWORD: secret
+        run: php artisan migrate --force
+
+      - name: ✅ Run PHPUnit tests
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: proptech_test
+          DB_USERNAME: postgres
+          DB_PASSWORD: secret
+        run: php artisan test --parallel
+
+  # ─────────────────────────────────────────────
+  # 2. BUILD & PUSH DOCKER IMAGE
+  # ─────────────────────────────────────────────
+  build:
+    name: 🐳 Build & Push Docker Image
+    runs-on: ubuntu-latest
+    needs: test
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      image: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+
+    steps:
+      - name: ⬇️ Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🔑 Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🏷️ Docker metadata (tags & labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' }}
+
+      - name: 🏗️ Build & Push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          dockerfile: Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ─────────────────────────────────────────────
+  # 3. DEPLOY TO VPS via SSH
+  # ─────────────────────────────────────────────
+  deploy:
+    name: 🚀 Deploy to VPS
+    runs-on: ubuntu-latest
+    needs: build
+    environment: production
+
+    steps:
+      - name: ⬇️ Checkout code (docker-compose.yml uchun)
+        uses: actions/checkout@v4
+
+      - name: 🔑 Login to GitHub Container Registry (VPS uchun token yuborish)
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: 📡 Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          envs: IMAGE_NAME,IMAGE_TAG
+          script: |
+            set -e
+
+            echo "📂 Working directory: ${{ secrets.DEPLOY_PATH }}"
+            cd ${{ secrets.DEPLOY_PATH }}
+
+            # GitHub Container Registry ga login
+            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io \
+              -u ${{ github.actor }} \
+              --password-stdin
+
+            # Yangi image ni pull qilish
+            echo "⬇️  Pulling new image..."
+            docker pull ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+            docker pull ${{ env.IMAGE_NAME }}:latest
+
+            # docker-compose.yml ni git orqali yangilash
+            git pull origin ${{ github.ref_name }}
+
+            # Environment o'zgaruvchilarini yangilash
+            echo "IMAGE_TAG=${{ env.IMAGE_TAG }}" >> .env
+
+            # Zero-downtime restart: app container ni almashtirish
+            echo "🔄 Restarting app container..."
+            docker compose pull app
+            docker compose up -d --no-deps --build app
+
+            # Migration va optimize
+            echo "🗄️  Running migrations..."
+            docker compose exec -T app php artisan migrate --force
+
+            echo "⚡ Optimizing..."
+            docker compose exec -T app php artisan optimize
+
+            # Eski image larni tozalash
+            echo "🧹 Pruning old images..."
+            docker image prune -f
+
+            echo "✅ Deploy muvaffaqiyatli yakunlandi!"
+
+      - name: 🔔 Notify on success
+        if: success()
+        run: |
+          echo "✅ Deploy muvaffaqiyatli! Commit: ${{ github.sha }}"
+
+      - name: ❌ Notify on failure
+        if: failure()
+        run: |
+          echo "❌ Deploy muvaffaqiyatsiz tugadi! Log ni tekshiring."
