@@ -68,6 +68,9 @@ export default function Index({ clients, managers, apartments }: Props) {
   const [assignedTo, setAssignedTo] = useState('');
   const [apartmentId, setApartmentId] = useState('');
   const [status, setStatus] = useState<'new' | 'contacted' | 'viewing' | 'reserved' | 'bought'>('new');
+  
+  const [downPayment, setDownPayment] = useState('');
+  const [durationMonths, setDurationMonths] = useState('12');
 
   const [submitting, setSubmitting] = useState(false);
 
@@ -89,6 +92,8 @@ export default function Index({ clients, managers, apartments }: Props) {
     setAssignedTo('');
     setApartmentId('');
     setStatus('new');
+    setDownPayment('');
+    setDurationMonths('12');
     setShowModal(true);
   };
 
@@ -103,6 +108,8 @@ export default function Index({ clients, managers, apartments }: Props) {
     setAssignedTo(client.assigned_to ? String(client.assigned_to) : '');
     setApartmentId(client.apartment ? client.apartment.id : '');
     setStatus(client.status);
+    setDownPayment('');
+    setDurationMonths('12');
     setShowModal(true);
   };
 
@@ -120,6 +127,10 @@ export default function Index({ clients, managers, apartments }: Props) {
       assigned_to:  assignedTo ? Number(assignedTo) : null,
       apartment_id: apartmentId || null,
       status:       status,
+      installment:  status === 'bought' && apartmentId ? {
+        down_payment: downPayment ? Number(downPayment) : 0,
+        duration_months: durationMonths ? Number(durationMonths) : 12,
+      } : undefined,
     };
 
     if (editingClient) {
@@ -524,6 +535,37 @@ export default function Index({ clients, managers, apartments }: Props) {
                   </select>
                 </div>
               </div>
+
+              {/* Installment Plan section if bought */}
+              {status === 'bought' && apartmentId && (
+                <div className="p-4 rounded-xl border border-indigo-500/30 bg-indigo-50/50 space-y-3">
+                  <h4 className="text-xs font-bold text-indigo-900 uppercase tracking-wider">Bo'lib to'lash (Installment Plan)</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold mb-1.5 text-slate-600">Boshlang'ich to'lov (USD)</label>
+                      <input
+                        type="number"
+                        value={downPayment}
+                        onChange={(e) => setDownPayment(e.target.value)}
+                        placeholder="e.g. 20000"
+                        className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
+                        style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold mb-1.5 text-slate-600">Muddat (oy)</label>
+                      <input
+                        type="number"
+                        value={durationMonths}
+                        onChange={(e) => setDurationMonths(e.target.value)}
+                        placeholder="e.g. 24"
+                        className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
+                        style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Assignee */}
               <div>

@@ -473,3 +473,4 @@ function SummaryCard({ label, value, accent }: { label: string; value: string; a
     </div>
   );
 }
+

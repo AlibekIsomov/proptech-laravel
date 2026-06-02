@@ -27,4 +27,5 @@ class Client extends Model
     public function company(): BelongsTo    { return $this->belongsTo(Company::class); }
     public function assignedTo(): BelongsTo { return $this->belongsTo(User::class, 'assigned_to'); }
     public function apartment(): BelongsTo  { return $this->belongsTo(Apartment::class); }
+    public function installmentPlans(): \Illuminate\Database\Eloquent\Relations\HasMany { return $this->hasMany(InstallmentPlan::class); }
 }

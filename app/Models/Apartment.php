@@ -23,9 +23,6 @@ class Apartment extends Model
     }
 
     public function building(): BelongsTo     { return $this->belongsTo(Building::class); }
-    public function residents(): HasMany      { return $this->hasMany(Resident::class); }
     public function clients(): HasMany        { return $this->hasMany(Client::class); }
-    public function utilityMeters(): HasMany  { return $this->hasMany(UtilityMeter::class); }
-    public function maintenanceRequests(): HasMany { return $this->hasMany(MaintenanceRequest::class); }
-    public function pmInvoices(): HasMany     { return $this->hasMany(PMInvoice::class); }
+    public function installmentPlans(): HasMany { return $this->hasMany(InstallmentPlan::class); }
 }

@@ -48,7 +48,7 @@ interface ProjectOption {
 interface ApartmentOption {
   id:          string;
   number:      string;
-  building_id: string;
+  pm_building_id: string;
   floor:       number;
 }
 
@@ -128,7 +128,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
 
   const apartmentsForSelectedCreateBldg = useMemo(() => {
     if (!createBldgId) return [];
-    return apartments.filter(a => a.building_id === createBldgId);
+    return apartments.filter(a => a.pm_building_id === createBldgId);
   }, [createBldgId, apartments]);
 
   const filteredResidentsForCreate = useMemo(() => {
@@ -846,3 +846,4 @@ function DetailField({ label, value, isWide = false }: { label: string; value: s
     </div>
   );
 }
+

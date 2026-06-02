@@ -127,7 +127,6 @@ class ProjectController extends Controller
         $data = $request->validate([
             'project_id' => 'required|exists:projects,id',
             'name' => 'required|string|max:255',
-            'monthly_fee_per_sqm' => 'nullable|numeric|min:0',
         ]);
 
         Building::create($data);

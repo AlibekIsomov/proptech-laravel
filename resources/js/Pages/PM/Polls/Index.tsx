@@ -6,7 +6,7 @@ import AppShell from "@/Components/AppShell";
 interface Building {
     id: string;
     name: string;
-    project_id: string;
+    pm_project_id: string;
 }
 
 interface Project {
@@ -24,7 +24,7 @@ type PollStatus = "open" | "closed" | "cancelled";
 
 interface PollRow {
     id:          string;
-    building_id: string;
+    pm_building_id: string;
     title:       string;
     description: string | null;
     options:     PollOption[];
@@ -83,7 +83,7 @@ export default function PollsIndex({ projects }: Props) {
         }
         setLoading(true);
         try {
-            const res = await fetch(`/pm/polls?building_id=${selectedBldg}`, {
+            const res = await fetch(`/pm/polls?pm_building_id=${selectedBldg}`, {
                 headers: {
                     "Accept": "application/json",
                     "X-Requested-With": "XMLHttpRequest",
@@ -282,7 +282,7 @@ function CreatePollCard({ buildingId, onCreated, onCancel }: CreateProps) {
                     "X-CSRF-TOKEN": (document.querySelector("meta[name=\"csrf-token\"]") as HTMLMetaElement)?.content || "",
                 },
                 body: JSON.stringify({
-                    building_id: buildingId,
+                    pm_building_id: buildingId,
                     title:       title.trim(),
                     description: description.trim() || null,
                     options:     cleanOpts,
@@ -527,3 +527,4 @@ function PollCard({ poll, aptCount, onStatusChange, onDelete }: PollCardProps) {
         </div>
     );
 }
+

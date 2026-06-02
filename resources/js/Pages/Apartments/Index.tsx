@@ -47,6 +47,11 @@ export default function Index({ apartments, projects, buildings }: Props) {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'available' | 'reserved' | 'sold'>('all');
 
+  const { url } = usePage();
+  const queryParams = new URLSearchParams(url.split('?')[1] || '');
+  const [searchProjectId, setSearchProjectId] = useState(queryParams.get('project_id') || '');
+  const [searchBuildingId, setSearchBuildingId] = useState(queryParams.get('building_id') || '');
+
   // Modal State
   const [showModal, setShowModal] = useState(false);
   const [editingApt, setEditingApt] = useState<Apartment | null>(null);
@@ -220,6 +225,50 @@ export default function Index({ apartments, projects, buildings }: Props) {
         </div>
       </div>
 
+      <div className="mt-6 flex flex-wrap gap-4 p-4 rounded-2xl" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
+        <label className="flex flex-col gap-1.5 min-w-[200px]">
+          <span className="text-[10px] uppercase tracking-widest font-semibold text-slate-400">
+            Project
+          </span>
+          <select
+            value={searchProjectId}
+            onChange={(e) => {
+              setSearchProjectId(e.target.value);
+              setSearchBuildingId('');
+              router.get('/apartments', { project_id: e.target.value, building_id: '' }, { preserveState: true });
+            }}
+            className="rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none transition-all cursor-pointer bg-white"
+            style={{ border: '1px solid var(--border)' }}
+          >
+            <option value="">All Projects</option>
+            {projects.map((p) => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </select>
+        </label>
+
+        <label className="flex flex-col gap-1.5 min-w-[200px]">
+          <span className="text-[10px] uppercase tracking-widest font-semibold text-slate-400">
+            Building
+          </span>
+          <select
+            value={searchBuildingId}
+            onChange={(e) => {
+              setSearchBuildingId(e.target.value);
+              router.get('/apartments', { project_id: searchProjectId, building_id: e.target.value }, { preserveState: true });
+            }}
+            disabled={!searchProjectId}
+            className="rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none transition-all cursor-pointer disabled:opacity-50 bg-white"
+            style={{ border: '1px solid var(--border)' }}
+          >
+            <option value="">All Buildings</option>
+            {buildings.filter(b => b.project_id === searchProjectId).map((b) => (
+              <option key={b.id} value={b.id}>{b.name}</option>
+            ))}
+          </select>
+        </label>
+      </div>
+
       <div className="mt-6 space-y-6">
         {/* Status filter pills */}
         <div className="flex items-center gap-2.5 flex-wrap">
@@ -260,7 +309,7 @@ export default function Index({ apartments, projects, buildings }: Props) {
               <table className="w-full text-left">
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                    {['Number', 'Building/Project', 'Floor', 'Rooms', 'Size (m²)', 'Price', '$/m²', 'Monthly Fee', 'Status', 'Actions'].map((h) => (
+                    {['Number', 'Building/Project', 'Floor', 'Rooms', 'Size (m²)', 'Price', '$/m²', 'Status', 'Actions'].map((h) => (
                       <th key={h} className="px-6 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--muted)' }}>
                         {h}
                       </th>
@@ -291,9 +340,6 @@ export default function Index({ apartments, projects, buildings }: Props) {
                         </td>
                         <td className="px-6 py-4 text-xs font-mono" style={{ color: 'var(--muted)' }}>
                           {ppm2 !== '—' ? `$${ppm2}` : ppm2}
-                        </td>
-                        <td className="px-6 py-4 text-xs font-semibold text-slate-800">
-                          {monthlyFee !== '—' ? `$${monthlyFee}` : '—'}
                         </td>
                         <td className="px-6 py-4 text-xs">
                           <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold"

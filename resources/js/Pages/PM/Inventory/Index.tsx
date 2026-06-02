@@ -6,7 +6,7 @@ import AppShell from "@/Components/AppShell";
 interface Building {
     id: string;
     name: string;
-    project_id: string;
+    pm_project_id: string;
 }
 
 interface Project {
@@ -20,7 +20,7 @@ type AssetStatus   = "operational"|"needs_service"|"broken"|"retired";
 
 interface AssetRow {
     id:                    string;
-    building_id:           string;
+    pm_building_id:           string;
     name:                  string;
     category:              AssetCategory;
     serial_number:         string | null;
@@ -36,7 +36,7 @@ interface AssetRow {
 
 interface SupplyRow {
     id:            string;
-    building_id:   string;
+    pm_building_id:   string;
     name:          string;
     category:      string | null;
     quantity:      number;
@@ -116,7 +116,7 @@ export default function InventoryIndex({ projects }: Props) {
         }
         setLoading(true);
         try {
-            const res = await fetch(`/pm/inventory?building_id=${selectedBldg}`, {
+            const res = await fetch(`/pm/inventory?pm_building_id=${selectedBldg}`, {
                 headers: {
                     "Accept": "application/json",
                     "X-Requested-With": "XMLHttpRequest",
@@ -140,7 +140,7 @@ export default function InventoryIndex({ projects }: Props) {
         }
         setLoadingSupplies(true);
         try {
-            const res = await fetch(`/pm/inventory?building_id=${selectedBldg}&type=supply`, {
+            const res = await fetch(`/pm/inventory?pm_building_id=${selectedBldg}&type=supply`, {
                 headers: {
                     "Accept": "application/json",
                     "X-Requested-With": "XMLHttpRequest",
@@ -543,7 +543,7 @@ function SupplyForm({ buildingId, supply, onSaved, onCancel }: SupplyFormProps) 
             if (supplier.trim()) formData.append("supplier", supplier.trim());
             if (notes.trim()) formData.append("notes", notes.trim());
             if (image) formData.append("image", image);
-            if (!supply) formData.append("building_id", buildingId);
+            if (!supply) formData.append("pm_building_id", buildingId);
             
             if (supply) {
                 // Laravel handles PUT with FormData via _method
@@ -863,7 +863,7 @@ function AssetForm({ buildingId, asset, onSaved, onCancel }: FormProps) {
                 notes:                 notes.trim() || null,
                 status,
             };
-            if (!asset) body.building_id = buildingId;
+            if (!asset) body.pm_building_id = buildingId;
             const res  = await fetch(url, {
                 method,
                 headers: {
@@ -1061,3 +1061,4 @@ function SummaryCard({ label, value, accent }: { label: string; value: number | 
         </div>
     );
 }
+

@@ -18,7 +18,7 @@ interface Project {
 
 interface Building {
     id: string;
-    project_id: string;
+    pm_project_id: string;
     name: string;
     created_at: string;
 }
@@ -39,7 +39,7 @@ interface Props {
 // ── Apartment form ──────────────────────────────────────────────────────────
 
 interface AptForm {
-    building_id: string;
+    pm_building_id: string;
     floor: string;
     number: string;
     rooms: string;
@@ -50,7 +50,7 @@ interface AptForm {
 }
 
 const emptyApt = (buildingId = ''): AptForm => ({
-    building_id: buildingId,
+    pm_building_id: buildingId,
     floor: '', number: '', rooms: '2', area: '', price: '',
     status: 'available', type: '',
 });
@@ -132,7 +132,7 @@ export default function PMProjectShow({ project, buildings, aptStats }: Props) {
 
         setGenerating(true);
         router.post('/pm/apartments/bulk-generate', {
-            building_id:          bulkBuildingId,
+            pm_building_id:          bulkBuildingId,
             floors:               floorsNum,
             apartments_per_floor: aptsNum,
             rooms:                parseInt(bulkRooms) || 1,
@@ -154,7 +154,7 @@ export default function PMProjectShow({ project, buildings, aptStats }: Props) {
         e.preventDefault();
         setAptSubmitting(true);
         router.post('/pm/apartments', {
-            building_id: aptForm.building_id,
+            pm_building_id: aptForm.pm_building_id,
             floor:       Number(aptForm.floor),
             number:      aptForm.number.trim(),
             rooms:       Number(aptForm.rooms),
@@ -324,7 +324,7 @@ export default function PMProjectShow({ project, buildings, aptStats }: Props) {
                             </h2>
                         </div>
                         <FloorPlan
-                            building_id={selectedBuilding.id}
+                            pm_building_id={selectedBuilding.id}
                             refreshKey={fpRefreshKey}
                             apiBase="/pm"
                         />
@@ -561,3 +561,4 @@ export default function PMProjectShow({ project, buildings, aptStats }: Props) {
         </AppShell>
     );
 }
+

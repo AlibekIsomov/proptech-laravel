@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Models\PM\Apartment;
+use App\Models\PM\Building;
+
 use App\Models\Scopes\CompanyScope;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Model;
@@ -41,3 +44,4 @@ class InventoryItem extends Model
         return $this->quantity <= $this->min_threshold;
     }
 }
+

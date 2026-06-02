@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Models\PM\Apartment;
+use App\Models\PM\Building;
+
 use App\Models\Scopes\CompanyScope;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Model;
@@ -33,3 +36,4 @@ class UtilityMeter extends Model
     public function readings(): HasMany    { return $this->hasMany(MeterReading::class, 'meter_id'); }
     public function latestReading()        { return $this->readings()->latest('reading_date')->first(); }
 }
+

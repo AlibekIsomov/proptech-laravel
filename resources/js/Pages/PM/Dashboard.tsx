@@ -13,7 +13,7 @@ interface Project {
 interface Building {
   id: string;
   name: string;
-  project_id: string;
+  pm_project_id: string;
 }
 
 interface Metrics {
@@ -46,17 +46,17 @@ export default function PMDashboard({
 
   // Cascade buildings based on selected project
   const filteredBuildings = useMemo(() => {
-    return buildings.filter((b) => b.project_id === selectedProj);
+    return buildings.filter((b) => b.pm_project_id === selectedProj);
   }, [buildings, selectedProj]);
 
   // When selected project changes, reset selected building to first available
   const handleProjectChange = (projId: string) => {
     setSelectedProj(projId);
-    const firstBld = buildings.find((b) => b.project_id === projId);
+    const firstBld = buildings.find((b) => b.pm_project_id === projId);
     const newBldId = firstBld ? firstBld.id : '';
     setSelectedBldg(newBldId);
     
-    router.visit(route('pm.dashboard', { project_id: projId, building_id: newBldId }), {
+    router.visit(route('pm.dashboard', { pm_project_id: projId, pm_building_id: newBldId }), {
       preserveState: true,
       only: ['apartments', 'metrics', 'selectedProj', 'selectedBldg'],
     });
@@ -64,7 +64,7 @@ export default function PMDashboard({
 
   const handleBuildingChange = (bldgId: string) => {
     setSelectedBldg(bldgId);
-    router.visit(route('pm.dashboard', { project_id: selectedProj, building_id: bldgId }), {
+    router.visit(route('pm.dashboard', { pm_project_id: selectedProj, pm_building_id: bldgId }), {
       preserveState: true,
       only: ['apartments', 'metrics', 'selectedProj', 'selectedBldg'],
     });
@@ -230,3 +230,4 @@ function route(name: string, params?: any) {
   }
   return '';
 }
+

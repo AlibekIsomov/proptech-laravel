@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Models\PM\Apartment;
+use App\Models\PM\Building;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -30,3 +33,4 @@ class PMAsset extends Model
 
     public function building(): BelongsTo { return $this->belongsTo(Building::class); }
 }
+

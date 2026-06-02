@@ -96,12 +96,48 @@ class ClientController extends Controller
             'notes'        => ['nullable', 'string'],
             'assigned_to'  => ['nullable', 'exists:users,id'],
             'apartment_id' => ['nullable', 'exists:apartments,id'],
+            'installment'  => ['nullable', 'array'],
         ]);
 
         // Agar status "reserved" yoki "bought" bo'lsa, kvartira statusini ham o'zgartirish
         if (in_array($data['status'], ['reserved', 'bought']) && isset($data['apartment_id'])) {
             $newAptStatus = $data['status'] === 'bought' ? 'sold' : 'reserved';
             Apartment::where('id', $data['apartment_id'])->update(['status' => $newAptStatus]);
+
+            // Installment Plan generation
+            if ($data['status'] === 'bought' && $request->has('installment')) {
+                $installment = $request->input('installment');
+                $apt = Apartment::find($data['apartment_id']);
+                if ($apt && $apt->price && empty($client->installmentPlans()->where('apartment_id', $apt->id)->first())) {
+                    $totalAmount = $apt->price;
+                    $downPayment = floatval($installment['down_payment'] ?? 0);
+                    $duration = intval($installment['duration_months'] ?? 12);
+                    $startDate = $installment['start_date'] ?? now()->toDateString();
+                    
+                    if ($duration > 0) {
+                        $monthly = ($totalAmount - $downPayment) / $duration;
+                        $plan = \App\Models\InstallmentPlan::create([
+                            'client_id' => $client->id,
+                            'apartment_id' => $apt->id,
+                            'total_amount' => $totalAmount,
+                            'down_payment' => $downPayment,
+                            'duration_months' => $duration,
+                            'monthly_payment_amount' => $monthly,
+                            'start_date' => $startDate,
+                            'status' => 'active',
+                        ]);
+
+                        for ($i = 0; $i < $duration; $i++) {
+                            \App\Models\InstallmentPayment::create([
+                                'installment_plan_id' => $plan->id,
+                                'due_date' => \Carbon\Carbon::parse($startDate)->addMonths($i)->toDateString(),
+                                'amount' => $monthly,
+                                'status' => 'pending',
+                            ]);
+                        }
+                    }
+                }
+            }
         }
 
         $client->update($data);

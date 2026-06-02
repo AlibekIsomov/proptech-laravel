@@ -9,7 +9,7 @@ import AppShell from "@/Components/AppShell";
 interface BuildingRow {
     id: string;
     name: string;
-    project_id: string;
+    pm_project_id: string;
 }
 
 interface Project {
@@ -26,7 +26,7 @@ type CommunalStatus = "operational" | "maintenance" | "broken" | "retired";
 
 interface CommunalAssetRow {
     id:                    string;
-    building_id:           string;
+    pm_building_id:           string;
     asset_type:            CommunalType;
     name:                  string;
     description:           string | null;
@@ -94,7 +94,7 @@ export default function CommunalIndex({ projects }: Props) {
         }
         setLoading(true);
         try {
-            const res = await fetch(`/pm/communal?building_id=${selectedBldg}`, {
+            const res = await fetch(`/pm/communal?pm_building_id=${selectedBldg}`, {
                 headers: {
                     "Accept": "application/json",
                     "X-Requested-With": "XMLHttpRequest",
@@ -437,7 +437,7 @@ function CommunalForm({ buildingId, asset, onSaved, onCancel }: FormProps) {
                 last_inspection_date: lastInsp || null,
                 next_inspection_date: nextInsp || null,
             };
-            if (!asset) body.building_id = buildingId;
+            if (!asset) body.pm_building_id = buildingId;
 
             const res  = await fetch(url, {
                 method,
@@ -593,3 +593,4 @@ function SummaryCard({ label, value, accent }: { label: string; value: number; a
         </div>
     );
 }
+

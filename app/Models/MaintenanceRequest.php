@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Models\PM\Apartment;
+use App\Models\PM\Building;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -39,3 +42,4 @@ class MaintenanceRequest extends Model
     public function dispatcher(): BelongsTo     { return $this->belongsTo(User::class, 'assigned_dispatcher_id'); }
     public function photos(): HasMany           { return $this->hasMany(MaintenancePhoto::class, 'request_id'); }
 }
+

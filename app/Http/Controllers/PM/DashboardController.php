@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\PM;
 
 use App\Http\Controllers\Controller;
-use App\Models\Project;
-use App\Models\Building;
-use App\Models\Apartment;
+use App\Models\PM\Project;
+use App\Models\PM\Building;
+use App\Models\PM\Apartment;
 use App\Models\MaintenanceRequest;
 use App\Models\Resident;
 use App\Models\PMInvoice;
@@ -22,17 +22,17 @@ class DashboardController extends Controller
     {
         // ── Load Selector Lists ──────────────────────────────────────────────
         $projects = Project::orderBy('name')->get(['id', 'name']);
-        $buildings = Building::orderBy('name')->get(['id', 'name', 'project_id']);
+        $buildings = Building::orderBy('name')->get(['id', 'name', 'pm_project_id']);
 
         // Determine selected project and building
-        $selectedProj = $request->input('project_id');
+        $selectedProj = $request->input('pm_project_id');
         if (!$selectedProj && $projects->isNotEmpty()) {
             $selectedProj = $projects->first()->id;
         }
 
-        $selectedBldg = $request->input('building_id');
+        $selectedBldg = $request->input('pm_building_id');
         if ($selectedProj && !$selectedBldg) {
-            $firstBldg = $buildings->where('project_id', $selectedProj)->first();
+            $firstBldg = $buildings->where('pm_project_id', $selectedProj)->first();
             $selectedBldg = $firstBldg ? $firstBldg->id : null;
         }
 
@@ -47,7 +47,7 @@ class DashboardController extends Controller
 
         if ($selectedBldg) {
             // Load apartments
-            $apts = Apartment::where('building_id', $selectedBldg)
+            $apts = Apartment::where('pm_building_id', $selectedBldg)
                 ->orderBy('floor', 'desc')
                 ->orderBy('number')
                 ->get(['id', 'number', 'floor', 'area', 'rooms']);
@@ -137,3 +137,5 @@ class DashboardController extends Controller
         ]);
     }
 }
+
+

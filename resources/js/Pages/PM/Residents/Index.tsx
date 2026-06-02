@@ -14,8 +14,8 @@ interface Resident {
   move_in_date:      string | null;
   is_active:        boolean;
   apartment_id:       string;
-  building_id?:       string;
-  project_id?:        string;
+  pm_building_id?:       string;
+  pm_project_id?:        string;
   apartment:        string;
   building:         string;
   project:          string;
@@ -35,7 +35,7 @@ interface ProjectOption {
 interface ApartmentOption {
   id:          string;
   number:      string;
-  building_id: string;
+  pm_building_id: string;
   floor:       number;
 }
 
@@ -88,7 +88,7 @@ export default function Index({ residents, projects, apartments }: Props) {
       let buildingName = '';
       let projectName = '';
       for (const p of projects) {
-        const b = p.buildings.find((b) => b.id === apt.building_id);
+        const b = p.buildings.find((b) => b.id === apt.pm_building_id);
         if (b) {
           buildingName = b.name;
           projectName = p.name;
@@ -116,7 +116,7 @@ export default function Index({ residents, projects, apartments }: Props) {
 
   const apartmentsForSelectedBldg = useMemo(() => {
     if (!bldgId) return [];
-    return apartments.filter(a => a.building_id === bldgId);
+    return apartments.filter(a => a.pm_building_id === bldgId);
   }, [bldgId, apartments]);
 
   const filteredApartmentsForSelector = useMemo(() => {
@@ -124,10 +124,10 @@ export default function Index({ residents, projects, apartments }: Props) {
     if (projId) {
       const proj = projects.find(p => p.id === projId);
       const bldgIds = proj ? proj.buildings.map(b => b.id) : [];
-      result = result.filter(a => bldgIds.includes(a.building_id));
+      result = result.filter(a => bldgIds.includes(a.pm_building_id));
     }
     if (bldgId) {
-      result = result.filter(a => a.building_id === bldgId);
+      result = result.filter(a => a.pm_building_id === bldgId);
     }
     if (searchAptQuery.trim()) {
       const q = searchAptQuery.toLowerCase();
@@ -158,8 +158,8 @@ export default function Index({ residents, projects, apartments }: Props) {
 
   const openEditModal = (r: Resident) => {
     setEditingResident(r);
-    setProjId(r.project_id || '');
-    setBldgId(r.building_id || '');
+    setProjId(r.pm_project_id || '');
+    setBldgId(r.pm_building_id || '');
     setApartmentId(r.apartment_id);
     setSearchAptQuery('');
     setIsAptDropdownOpen(false);
@@ -527,13 +527,13 @@ export default function Index({ residents, projects, apartments }: Props) {
                                   // Find the correct project ID automatically
                                   let foundProjId = '';
                                   for (const p of projects) {
-                                    if (p.buildings.some(b => b.id === a.building_id)) {
+                                    if (p.buildings.some(b => b.id === a.pm_building_id)) {
                                       foundProjId = p.id;
                                       break;
                                     }
                                   }
                                   setProjId(foundProjId);
-                                  setBldgId(a.building_id);
+                                  setBldgId(a.pm_building_id);
                                   setIsAptDropdownOpen(false);
                                 }}
                                 className="w-full text-left rounded-lg px-3 py-2 text-xs transition-all flex items-center justify-between hover:bg-slate-50 cursor-pointer"
@@ -667,3 +667,4 @@ export default function Index({ residents, projects, apartments }: Props) {
     </AppShell>
   );
 }
+

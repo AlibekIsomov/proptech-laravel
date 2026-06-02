@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(npx tsc *)",
-      "Bash(php artisan *)"
+      "Bash(php artisan *)",
+      "Bash(grep *)"
     ]
   }
 }

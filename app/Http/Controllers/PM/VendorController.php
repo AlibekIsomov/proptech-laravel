@@ -73,3 +73,5 @@ class VendorController extends Controller
         return back()->with('success', 'Vendor o\'chirildi.');
     }
 }
+
+

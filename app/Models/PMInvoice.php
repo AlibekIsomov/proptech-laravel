@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Models\PM\Apartment;
+use App\Models\PM\Building;
+
 use App\Models\Scopes\CompanyScope;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Model;
@@ -42,3 +45,4 @@ class PMInvoice extends Model
     public function resident(): BelongsTo  { return $this->belongsTo(Resident::class); }
     public function company(): BelongsTo   { return $this->belongsTo(Company::class); }
 }
+
