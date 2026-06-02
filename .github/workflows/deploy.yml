@@ -8,7 +8,7 @@ on:
   workflow_dispatch: # Qo'lda ham ishga tushirish imkoni
 
 env:
-  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/proptech-laravel
+  IMAGE_NAME: ghcr.io/alibekisomov/proptech-laravel
   IMAGE_TAG: ${{ github.sha }}
 
 jobs:
