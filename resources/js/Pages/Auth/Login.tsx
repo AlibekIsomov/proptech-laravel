@@ -8,6 +8,7 @@ interface Props {
 
 interface SharedProps {
     brand?: { name?: string; tagline?: string; legalName?: string };
+    [key: string]: any;
 }
 
 const Icons = {

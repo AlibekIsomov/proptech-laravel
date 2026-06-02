@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { X, ChevronDown, User, Loader2, ArrowRight } from "lucide-react";
+import { router } from "@inertiajs/react";
 
 // ── Types ─────────────────────────────────────────────────────────────
 

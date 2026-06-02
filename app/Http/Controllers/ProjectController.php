@@ -91,11 +91,21 @@ class ProjectController extends Controller
             'created_at' => $b->created_at->format('Y-m-d'),
         ]);
 
-        // Count apartments per building
-        $aptCounts = Apartment::whereIn('building_id', $buildings->pluck('id'))
-            ->get()
+        $aptStats = Apartment::whereIn('building_id', $buildings->pluck('id'))
+            ->selectRaw("building_id,
+                count(*) as total,
+                sum(case when status='available' then 1 else 0 end) as available,
+                sum(case when status='sold'      then 1 else 0 end) as sold,
+                sum(case when status='reserved'  then 1 else 0 end) as reserved")
             ->groupBy('building_id')
-            ->map(fn($group) => $group->count());
+            ->get()
+            ->keyBy('building_id')
+            ->map(fn($r) => [
+                'total'     => (int) $r->total,
+                'available' => (int) $r->available,
+                'sold'      => (int) $r->sold,
+                'reserved'  => (int) $r->reserved,
+            ]);
 
         return Inertia::render('Projects/Show', [
             'project' => [
@@ -105,7 +115,7 @@ class ProjectController extends Controller
                 'created_at' => $project->created_at->format('Y-m-d'),
             ],
             'buildings' => $buildings,
-            'aptCounts' => $aptCounts,
+            'aptStats'  => $aptStats,
         ]);
     }
 
@@ -117,6 +127,7 @@ class ProjectController extends Controller
         $data = $request->validate([
             'project_id' => 'required|exists:projects,id',
             'name' => 'required|string|max:255',
+            'monthly_fee_per_sqm' => 'nullable|numeric|min:0',
         ]);
 
         Building::create($data);

@@ -42,10 +42,11 @@ class ApartmentController extends Controller
                 'building_id' => $a->building_id,
                 'building'    => $a->building?->name,
                 'project'     => $a->building?->project?->name,
+                'monthly_fee_per_sqm' => $a->building?->monthly_fee_per_sqm ?? 0,
             ]);
 
         $projects  = Project::select('id', 'name')->get();
-        $buildings = Building::select('id', 'name', 'project_id')->get();
+        $buildings = Building::select('id', 'name', 'project_id', 'monthly_fee_per_sqm')->get();
 
         return Inertia::render('Apartments/Index', compact('apartments', 'projects', 'buildings'));
     }
@@ -228,8 +229,10 @@ class ApartmentController extends Controller
      */
     public function floorPlan(string $buildingId): \Illuminate\Http\JsonResponse
     {
+        $building = Building::findOrFail($buildingId);
+        
         // Get all apartments in this building
-        $apartments = Apartment::where('building_id', $buildingId)->get()->map(function($a) {
+        $apartments = Apartment::where('building_id', $buildingId)->get()->map(function($a) use ($building) {
             $client = $a->clients()->first();
             return [
                 'id' => $a->id,
@@ -247,6 +250,7 @@ class ApartmentController extends Controller
                     'phone' => $client->phone,
                     'assigned_to' => $client->assigned_to,
                 ] : null,
+                'monthly_fee_per_sqm' => (float)$building->monthly_fee_per_sqm,
             ];
         });
 

@@ -15,6 +15,7 @@ interface Apartment {
   building_id: string;
   building:    string;
   project:     string;
+  monthly_fee_per_sqm: number;
 }
 
 interface Project {
@@ -259,7 +260,7 @@ export default function Index({ apartments, projects, buildings }: Props) {
               <table className="w-full text-left">
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                    {['Number', 'Building/Project', 'Floor', 'Rooms', 'Size (m²)', 'Price', '$/m²', 'Status', 'Actions'].map((h) => (
+                    {['Number', 'Building/Project', 'Floor', 'Rooms', 'Size (m²)', 'Price', '$/m²', 'Monthly Fee', 'Status', 'Actions'].map((h) => (
                       <th key={h} className="px-6 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--muted)' }}>
                         {h}
                       </th>
@@ -269,8 +270,11 @@ export default function Index({ apartments, projects, buildings }: Props) {
                 <tbody className="divide-y divide-white/[0.04]">
                   {filtered.map((apt) => {
                     const cfg = STATUS_CONFIG[apt.status] || STATUS_CONFIG.available;
-                    const ppm2 = apt.size_m2 && Number(apt.size_m2) > 0 && apt.price
-                      ? Math.round(Number(apt.price) / Number(apt.size_m2)).toLocaleString()
+                    const ppm2 = apt.area && Number(apt.area) > 0 && apt.price
+                      ? Math.round(Number(apt.price) / Number(apt.area)).toLocaleString()
+                      : '—';
+                    const monthlyFee = apt.area && apt.monthly_fee_per_sqm
+                      ? (Number(apt.area) * Number(apt.monthly_fee_per_sqm)).toFixed(2)
                       : '—';
                     return (
                       <tr key={apt.id} className="transition-all hover:bg-slate-50">
@@ -287,6 +291,9 @@ export default function Index({ apartments, projects, buildings }: Props) {
                         </td>
                         <td className="px-6 py-4 text-xs font-mono" style={{ color: 'var(--muted)' }}>
                           {ppm2 !== '—' ? `$${ppm2}` : ppm2}
+                        </td>
+                        <td className="px-6 py-4 text-xs font-semibold text-slate-800">
+                          {monthlyFee !== '—' ? `$${monthlyFee}` : '—'}
                         </td>
                         <td className="px-6 py-4 text-xs">
                           <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold"

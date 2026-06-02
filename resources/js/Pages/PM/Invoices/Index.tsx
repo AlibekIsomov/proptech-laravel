@@ -27,6 +27,8 @@ interface Invoice {
 interface ApartmentOption {
   id: string;
   label: string;
+  area?: number;
+  monthly_fee_per_sqm?: number;
   residents: { id: string; name: string }[];
 }
 
@@ -210,7 +212,15 @@ function CreateInvoiceModal({ apartments, onClose }: { apartments: ApartmentOpti
         </div>
         <form onSubmit={submit} className="space-y-3">
           <Field label="Квартира" error={errors.apartment_id}>
-            <select value={data.apartment_id} onChange={(e) => setData('apartment_id', e.target.value)}
+            <select value={data.apartment_id} onChange={(e) => {
+                const aptId = e.target.value;
+                const apt = apartments.find(a => a.id === aptId);
+                let pmFee = '0';
+                if (apt && apt.area && apt.monthly_fee_per_sqm) {
+                  pmFee = (apt.area * apt.monthly_fee_per_sqm).toFixed(2);
+                }
+                setData({ ...data, apartment_id: aptId, pm_fee: pmFee });
+              }}
               className="w-full rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none"
               style={{ backgroundColor: 'var(--border)', border: '1px solid var(--border)' }}>
               <option value="">— Выбрать —</option>

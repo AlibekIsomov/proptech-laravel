@@ -37,6 +37,7 @@ class InventoryController extends Controller
                         'supplier'      => $i->supplier,
                         'notes'         => $i->notes,
                         'is_low_stock'  => $i->isLowStock(),
+                        'image_url'     => $i->image_url,
                     ]);
 
                 return response()->json(['items' => $items]);
@@ -98,7 +99,12 @@ class InventoryController extends Controller
                 'unit_cost'     => 'nullable|numeric|min:0',
                 'supplier'      => 'nullable|string|max:255',
                 'notes'         => 'nullable|string',
+                'image'         => 'nullable|image|max:2048',
             ]);
+
+            if ($request->hasFile('image')) {
+                $data['image_path'] = $request->file('image')->store('inventory_images', 'public');
+            }
 
             $data['company_id'] = auth()->user()->company_id;
 
@@ -143,7 +149,15 @@ class InventoryController extends Controller
                 'unit_cost'     => 'nullable|numeric|min:0',
                 'supplier'      => 'nullable|string|max:255',
                 'notes'         => 'nullable|string',
+                'image'         => 'nullable|image|max:2048',
             ]);
+
+            if ($request->hasFile('image')) {
+                if ($item->image_path) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($item->image_path);
+                }
+                $data['image_path'] = $request->file('image')->store('inventory_images', 'public');
+            }
 
             $item->update($data);
 
@@ -178,6 +192,9 @@ class InventoryController extends Controller
     {
         $item = \App\Models\InventoryItem::find($id);
         if ($item) {
+            if ($item->image_path) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($item->image_path);
+            }
             $item->delete();
             return response()->json(['success' => true]);
         }

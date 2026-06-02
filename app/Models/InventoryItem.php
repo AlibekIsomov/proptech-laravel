@@ -17,13 +17,22 @@ class InventoryItem extends Model
     protected $fillable = [
         'company_id', 'building_id', 'name', 'category',
         'quantity', 'unit', 'min_threshold', 'unit_cost', 'supplier', 'notes',
+        'image_path',
     ];
+
+    protected $appends = ['image_url'];
 
     protected function casts(): array
     {
         return ['unit_cost' => 'decimal:2'];
     }
 
+    protected function imageUrl(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(
+            get: fn () => $this->image_path ? \Illuminate\Support\Facades\Storage::url($this->image_path) : null,
+        );
+    }
     public function company(): BelongsTo  { return $this->belongsTo(Company::class); }
     public function building(): BelongsTo { return $this->belongsTo(Building::class); }
 

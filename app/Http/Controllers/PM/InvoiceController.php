@@ -39,10 +39,12 @@ class InvoiceController extends Controller
                 'paid_at'              => $i->paid_at?->toISOString(),
             ]);
 
-        $apartments = Apartment::with(['residents' => fn ($q) => $q->where('is_active', true)])
+        $apartments = Apartment::with(['residents' => fn ($q) => $q->where('is_active', true), 'building'])
             ->get()->map(fn ($a) => [
                 'id'       => $a->id,
                 'label'    => "№{$a->number}",
+                'area'     => (float) $a->area,
+                'monthly_fee_per_sqm' => (float) ($a->building?->monthly_fee_per_sqm ?? 0),
                 'residents'=> $a->residents->map(fn ($r) => ['id' => $r->id, 'name' => $r->full_name]),
             ]);
 

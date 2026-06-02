@@ -46,6 +46,7 @@ interface SupplyRow {
     supplier:      string | null;
     notes:         string | null;
     is_low_stock:  boolean;
+    image_url?:    string | null;
 }
 
 interface Props {
@@ -450,6 +451,11 @@ function SupplyCard({ supply, onEdit, onDelete }: { supply: SupplyRow; onEdit: (
                         {supply.unit_cost ? <span>Цена: ${supply.unit_cost.toFixed(2)}</span> : null}
                     </div>
                 </div>
+                {supply.image_url && (
+                    <div className="shrink-0 mr-2 rounded-lg overflow-hidden border border-slate-200" style={{ width: '48px', height: '48px' }}>
+                        <img src={supply.image_url} alt={supply.name} className="w-full h-full object-cover" />
+                    </div>
+                )}
                 <div className="flex items-center gap-1.5 shrink-0">
                     <button
                         onClick={onEdit}
@@ -512,6 +518,7 @@ function SupplyForm({ buildingId, supply, onSaved, onCancel }: SupplyFormProps) 
     const [unitCost,     setUnitCost]     = useState<number | "">(supply?.unit_cost ?? 0);
     const [supplier,     setSupplier]     = useState(supply?.supplier ?? "");
     const [notes,        setNotes]        = useState(supply?.notes ?? "");
+    const [image,        setImage]        = useState<File | null>(null);
     const [saving,       setSaving]       = useState(false);
     const [error,        setError]        = useState<string | null>(null);
 
@@ -524,27 +531,32 @@ function SupplyForm({ buildingId, supply, onSaved, onCancel }: SupplyFormProps) 
         setError(null);
         try {
             const url    = supply ? `/pm/inventory/${supply.id}` : "/pm/inventory";
-            const method = supply ? "PUT" : "POST";
-            const body: Record<string, unknown> = {
-                type:          "supply",
-                name:          name.trim(),
-                category,
-                quantity:      quantity === "" ? 0 : Number(quantity),
-                unit:          unit.trim() || "pcs",
-                min_threshold: minThreshold === "" ? 0 : Number(minThreshold),
-                unit_cost:     unitCost === "" ? null : Number(unitCost),
-                supplier:      supplier.trim() || null,
-                notes:         notes.trim() || null,
-            };
-            if (!supply) body.building_id = buildingId;
+            
+            const formData = new FormData();
+            formData.append("type", "supply");
+            formData.append("name", name.trim());
+            formData.append("category", category);
+            formData.append("quantity", (quantity === "" ? 0 : Number(quantity)).toString());
+            formData.append("unit", unit.trim() || "pcs");
+            formData.append("min_threshold", (minThreshold === "" ? 0 : Number(minThreshold)).toString());
+            if (unitCost !== "") formData.append("unit_cost", Number(unitCost).toString());
+            if (supplier.trim()) formData.append("supplier", supplier.trim());
+            if (notes.trim()) formData.append("notes", notes.trim());
+            if (image) formData.append("image", image);
+            if (!supply) formData.append("building_id", buildingId);
+            
+            if (supply) {
+                // Laravel handles PUT with FormData via _method
+                formData.append("_method", "PUT");
+            }
+
             const res  = await fetch(url, {
-                method,
+                method: "POST", // override for FormData with _method
                 headers: {
-                    "Content-Type": "application/json",
                     "Accept": "application/json",
                     "X-CSRF-TOKEN": (document.querySelector("meta[name=\"csrf-token\"]") as HTMLMetaElement)?.content || "",
                 },
-                body: JSON.stringify(body),
+                body: formData,
             });
             const json = await res.json();
             if (!res.ok) {
@@ -638,6 +650,19 @@ function SupplyForm({ buildingId, supply, onSaved, onCancel }: SupplyFormProps) 
                         onChange={(e) => setSupplier(e.target.value)}
                         placeholder="напр. ООО ЭлектроСнаб"
                         className="w-full rounded-xl px-3 py-2 text-xs text-slate-800 outline-none"
+                        style={fs()}
+                    />
+                </Field>
+                <Field label="Фото (Изображение)">
+                    <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                            if (e.target.files && e.target.files.length > 0) {
+                                setImage(e.target.files[0]);
+                            }
+                        }}
+                        className="w-full rounded-xl px-3 py-1.5 text-xs text-slate-800 outline-none file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"
                         style={fs()}
                     />
                 </Field>

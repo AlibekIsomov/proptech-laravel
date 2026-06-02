@@ -72,6 +72,7 @@ export default function PMProjectShow({ project, buildings, aptStats }: Props) {
     // ── Add building ────────────────────────────────────────────────────────
     const [showAddBuilding, setShowAddBuilding] = useState(false);
     const [buildingName,    setBuildingName]    = useState('');
+    const [monthlyFee,      setMonthlyFee]      = useState('0');
     const [addingBuilding,  setAddingBuilding]  = useState(false);
 
     // ── Bulk generate ───────────────────────────────────────────────────────
@@ -104,8 +105,11 @@ export default function PMProjectShow({ project, buildings, aptStats }: Props) {
         e.preventDefault();
         if (!buildingName.trim()) return;
         setAddingBuilding(true);
-        router.post(`/pm/projects/${project.id}/buildings`, { name: buildingName.trim() }, {
-            onFinish: () => { setAddingBuilding(false); setBuildingName(''); setShowAddBuilding(false); },
+        router.post(`/pm/projects/${project.id}/buildings`, {
+            name: buildingName.trim(),
+            monthly_fee_per_sqm: monthlyFee ? parseFloat(monthlyFee) : 0,
+        }, {
+            onFinish: () => { setAddingBuilding(false); setBuildingName(''); setMonthlyFee('0'); setShowAddBuilding(false); },
         });
     }
 
@@ -347,6 +351,13 @@ export default function PMProjectShow({ project, buildings, aptStats }: Props) {
                                 <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--muted)' }}>Bino nomi</label>
                                 <input type="text" required placeholder="masalan: A korpus" value={buildingName}
                                     onChange={e => setBuildingName(e.target.value)}
+                                    className="w-full rounded-xl px-4 py-2.5 text-sm text-slate-800 outline-none"
+                                    style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.15)' }} />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--muted)' }}>Oylik to'lov (m² uchun), $</label>
+                                <input type="number" step="0.01" min="0" placeholder="masalan: 1.50" value={monthlyFee}
+                                    onChange={e => setMonthlyFee(e.target.value)}
                                     className="w-full rounded-xl px-4 py-2.5 text-sm text-slate-800 outline-none"
                                     style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.15)' }} />
                             </div>

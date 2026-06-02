@@ -104,11 +104,15 @@ class ProjectController extends Controller
 
     public function storeBuilding(Request $request, Project $project): RedirectResponse
     {
-        $data = $request->validate(['name' => 'required|string|max:255']);
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'monthly_fee_per_sqm' => 'nullable|numeric|min:0',
+        ]);
 
         Building::create([
             'project_id' => $project->id,
             'name'       => $data['name'],
+            'monthly_fee_per_sqm' => $data['monthly_fee_per_sqm'] ?? 0,
         ]);
 
         return back()->with('success', 'Bino qo\'shildi.');
