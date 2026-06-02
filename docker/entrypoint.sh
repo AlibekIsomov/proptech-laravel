@@ -17,8 +17,14 @@ chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 if [ ! -f /var/www/html/public/index.php ]; then
     echo "📦  Populating public/ volume from image..."
     cp -r /var/www/html/public.bak/. /var/www/html/public/
+    chown -R www-data:www-data /var/www/html/public
     echo "✅  public/ volume populated."
 fi
+
+# Storage symlink — public/storage → storage/app/public
+# Bu bo'lmasa fayl yuklash va media xizmat 500 xato beradi
+echo "🔗  Creating storage symlink..."
+php artisan storage:link --force 2>/dev/null || echo "⚠️  storage:link warning (may already exist)"
 
 # Wait a moment for DB to be ready (if needed)
 echo "⏳ Waiting for services..."
@@ -44,6 +50,10 @@ php artisan migrate --force --no-interaction || echo "⚠️  Migration failed (
 # Auto-seed from Supabase if local DB is empty (safe no-op if already populated)
 echo "🌱  Checking if local DB needs seeding from Supabase..."
 php artisan db:seed-from-supabase || echo "ℹ️  Supabase seed skipped (Supabase may not be configured or local DB is already populated)."
+
+# Laravel log — 500 xatoliklarni debugging uchun
+echo "📋 Laravel log (last 30 lines):"
+tail -n 30 /var/www/html/storage/logs/laravel.log 2>/dev/null || echo "(log empty or not found)"
 
 echo "✅ Starting PHP-FPM..."
 exec php-fpm

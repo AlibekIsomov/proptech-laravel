@@ -239,6 +239,14 @@ jobs:
             echo "⚡ Optimizing..."
             docker compose exec -T app php artisan optimize
 
+            # Laravel log — 500 xatoliklarni debugging uchun
+            echo "📋 Laravel log (last 30 lines):"
+            docker compose exec -T app tail -n 30 storage/logs/laravel.log 2>/dev/null || echo "(log empty or not found)"
+
+            # App container holati
+            echo "🐳 Container status:"
+            docker compose ps
+
             # Eski image larni tozalash
             echo "🧹 Pruning old images..."
             docker image prune -f
