@@ -41,17 +41,18 @@ else
 fi
 
 # Cache Laravel configurations
+# Xato bo'lsa clear qilamiz — cache bo'lmasa ham ishlaydi, faqat sekinroq
 echo "⚙️  Caching configurations..."
 php artisan config:clear
-php artisan config:cache
+php artisan config:cache || { echo "⚠️  config:cache failed — running without cache"; php artisan config:clear; }
 
 echo "🗺️  Caching routes..."
 php artisan route:clear
-php artisan route:cache
+php artisan route:cache || { echo "⚠️  route:cache failed — running without cache"; php artisan route:clear; }
 
 echo "👁️  Caching views..."
 php artisan view:clear
-php artisan view:cache
+php artisan view:cache || { echo "⚠️  view:cache failed — running without cache"; php artisan view:clear; }
 
 # Run database migrations
 echo "🗄️  Running database migrations..."
