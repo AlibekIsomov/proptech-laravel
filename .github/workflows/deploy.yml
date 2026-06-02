@@ -9,7 +9,7 @@ on:
 
 env:
   IMAGE_NAME: ghcr.io/alibekisomov/proptech-laravel
-  IMAGE_TAG: ${{ github.sha }}
+  IMAGE_TAG: sha-${{ github.sha }}
 
 jobs:
   # ─────────────────────────────────────────────
@@ -148,7 +148,7 @@ jobs:
         with:
           images: ${{ env.IMAGE_NAME }}
           tags: |
-            type=sha,prefix=sha-
+            type=sha,prefix=sha-,format=long
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' }}
 
       - name: 🏗️ Build & Push image
