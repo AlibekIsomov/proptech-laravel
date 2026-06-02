@@ -206,7 +206,11 @@ jobs:
             git pull origin ${{ github.ref_name }}
 
             # Environment o'zgaruvchilarini yangilash
-            echo "IMAGE_TAG=${{ env.IMAGE_TAG }}" >> .env
+            if grep -q "^IMAGE_TAG=" .env; then
+              sed -i "s/^IMAGE_TAG=.*/IMAGE_TAG=${{ env.IMAGE_TAG }}/" .env
+            else
+              echo "IMAGE_TAG=${{ env.IMAGE_TAG }}" >> .env
+            fi
 
             # 1️⃣  Avval db va web ni ishga tushiramiz (agar ishlamayotgan bo'lsa)
             echo "🗄️  Ensuring db & web services are running..."
