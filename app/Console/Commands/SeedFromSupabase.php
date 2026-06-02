@@ -142,7 +142,14 @@ class SeedFromSupabase extends Command
             }
         }
 
-        // ── 6. Re-enable FK constraints ─────────────────────────────────────
+        // ── 6. Reset PostgreSQL sequences to prevent duplicate key errors ───
+        try {
+            $this->resetSequences();
+        } catch (Exception $e) {
+            $this->warn('⚠️  Could not reset database sequences: ' . $e->getMessage());
+        }
+
+        // ── 7. Re-enable FK constraints ─────────────────────────────────────
         DB::connection('pgsql')->statement('SET session_replication_role = DEFAULT;');
 
         $this->newLine();
@@ -261,5 +268,43 @@ class SeedFromSupabase extends Command
         ];
 
         return $pivotPrimaryKeys[$table] ?? 'id';
+    }
+
+    /**
+     * Reset PostgreSQL sequences for all synced tables.
+     */
+    protected function resetSequences(): void
+    {
+        $this->info('🔄  Resetting PostgreSQL sequences...');
+
+        foreach ($this->tables as $table) {
+            if (! $this->localTableExists($table)) {
+                continue;
+            }
+
+            $primaryKey = $this->guessPrimaryKey($table);
+            if ($primaryKey !== 'id') {
+                continue;
+            }
+
+            try {
+                // Get the sequence name for the table's primary key
+                $result = DB::connection('pgsql')->select("
+                    SELECT pg_get_serial_sequence(:table, :col) as seq
+                ", ['table' => $table, 'col' => 'id']);
+
+                $sequence = $result[0]->seq ?? null;
+
+                if ($sequence) {
+                    DB::connection('pgsql')->statement("
+                        SELECT setval(?, COALESCE((SELECT max(id) FROM \"{$table}\"), 0) + 1, false)
+                    ", [$sequence]);
+                }
+            } catch (Exception $e) {
+                Log::warning("Could not reset sequence for {$table}: " . $e->getMessage());
+            }
+        }
+
+        $this->info('✅  Sequences reset complete.');
     }
 }
