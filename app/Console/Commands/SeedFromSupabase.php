@@ -190,12 +190,26 @@ class SeedFromSupabase extends Command
                 // Use upsert so re-running won't duplicate rows
                 DB::connection('pgsql')
                     ->table($table)
-                    ->upsert($data, [$primaryKey]);
+                    ->upsert($data, $this->getUpsertKeys($table));
 
                 $total += count($data);
             });
 
         return $total;
+    }
+
+    /**
+     * Get the unique key columns used for upserting.
+     */
+    protected function getUpsertKeys(string $table): array
+    {
+        $pivotUpsertKeys = [
+            'model_has_roles'        => ['role_id', 'model_id', 'model_type'],
+            'model_has_permissions'  => ['permission_id', 'model_id', 'model_type'],
+            'role_has_permissions'   => ['permission_id', 'role_id'],
+        ];
+
+        return $pivotUpsertKeys[$table] ?? [$this->guessPrimaryKey($table)];
     }
 
     /**
