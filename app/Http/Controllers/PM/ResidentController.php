@@ -4,14 +4,14 @@ namespace App\Http\Controllers\PM;
 
 use App\Http\Controllers\Controller;
 use App\Models\Resident;
-use App\Models\Apartment;
+use App\Models\PM\Apartment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
-use App\Models\Project;
-use App\Models\Building;
+use App\Models\PM\Project;
+use App\Models\PM\Building;
 
 class ResidentController extends Controller
 {
@@ -30,8 +30,8 @@ class ResidentController extends Controller
                 'move_in_date'     => $r->move_in_date?->format('Y-m-d'),
                 'is_active'        => $r->is_active,
                 'apartment_id'     => $r->apartment_id,
-                'building_id'      => $r->apartment?->building_id,
-                'project_id'       => $r->apartment?->building?->project_id,
+                'pm_building_id'      => $r->apartment?->pm_building_id,
+                'pm_project_id'       => $r->apartment?->building?->pm_project_id,
                 'apartment'        => $r->apartment?->number,
                 'building'         => $r->apartment?->building?->name,
                 'project'          => $r->apartment?->building?->project?->name,
@@ -51,7 +51,7 @@ class ResidentController extends Controller
         $apartments = Apartment::orderBy('number')->get()->map(fn($a) => [
             'id'          => $a->id,
             'number'      => $a->number,
-            'building_id' => $a->building_id,
+            'pm_building_id' => $a->pm_building_id,
             'floor'       => $a->floor,
         ]);
 
@@ -61,7 +61,7 @@ class ResidentController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'apartment_id'     => ['required', 'exists:apartments,id'],
+            'apartment_id'     => ['required', 'exists:pm_apartments,id'],
             'full_name'        => ['required', 'string', 'max:255'],
             'phone'            => ['nullable', 'string', 'max:30'],
             'email'            => ['nullable', 'email'],
@@ -81,7 +81,7 @@ class ResidentController extends Controller
     public function update(Request $request, Resident $resident): RedirectResponse
     {
         $data = $request->validate([
-            'apartment_id'     => ['required', 'exists:apartments,id'],
+            'apartment_id'     => ['required', 'exists:pm_apartments,id'],
             'full_name'        => ['required', 'string', 'max:255'],
             'phone'            => ['nullable', 'string', 'max:30'],
             'email'            => ['nullable', 'email'],
@@ -102,3 +102,5 @@ class ResidentController extends Controller
         return back()->with('success', 'Yashovchi arxivlandi.');
     }
 }
+
+

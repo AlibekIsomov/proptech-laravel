@@ -4,7 +4,7 @@ namespace App\Http\Controllers\PM;
 
 use App\Http\Controllers\Controller;
 use App\Models\PMAsset;
-use App\Models\Project;
+use App\Models\PM\Project;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -16,7 +16,7 @@ class InventoryController extends Controller
     public function index(Request $request)
     {
         if (($request->wantsJson() || $request->ajax()) && !$request->header('X-Inertia')) {
-            $buildingId = $request->query('building_id');
+            $buildingId = $request->query('pm_building_id');
             if (!$buildingId) {
                 return response()->json(['assets' => [], 'items' => []]);
             }
@@ -27,7 +27,7 @@ class InventoryController extends Controller
                     ->get()
                     ->map(fn($i) => [
                         'id'            => $i->id,
-                        'building_id'   => $i->building_id,
+                        'pm_building_id'   => $i->building_id,
                         'name'          => $i->name,
                         'category'      => $i->category,
                         'quantity'      => $i->quantity,
@@ -49,7 +49,7 @@ class InventoryController extends Controller
                 ->get()
                 ->map(fn($a) => [
                     'id'                    => $a->id,
-                    'building_id'           => $a->building_id,
+                    'pm_building_id'           => $a->building_id,
                     'name'                  => $a->name,
                     'category'              => $a->category,
                     'serial_number'         => $a->serial_number,
@@ -74,7 +74,7 @@ class InventoryController extends Controller
             'buildings' => $p->buildings->map(fn($b) => [
                 'id' => $b->id,
                 'name' => $b->name,
-                'project_id' => $b->project_id,
+                'pm_project_id' => $b->pm_project_id,
             ]),
         ]);
 
@@ -90,7 +90,7 @@ class InventoryController extends Controller
     {
         if ($request->input('type') === 'supply') {
             $data = $request->validate([
-                'building_id'   => 'required|exists:buildings,id',
+                'pm_building_id'   => 'required|exists:pm_buildings,id',
                 'name'          => 'required|string|max:255',
                 'category'      => 'nullable|string|max:255',
                 'quantity'      => 'required|integer|min:0',
@@ -101,6 +101,9 @@ class InventoryController extends Controller
                 'notes'         => 'nullable|string',
                 'image'         => 'nullable|image|max:2048',
             ]);
+
+            $data['building_id'] = $data['pm_building_id'];
+            unset($data['pm_building_id']);
 
             if ($request->hasFile('image')) {
                 $data['image_path'] = $request->file('image')->store('inventory_images', 'public');
@@ -114,7 +117,7 @@ class InventoryController extends Controller
         }
 
         $data = $request->validate([
-            'building_id'           => 'required|exists:buildings,id',
+            'pm_building_id'           => 'required|exists:pm_buildings,id',
             'name'                  => 'required|string|max:255',
             'category'              => 'required|in:elevator,pump,boiler,hvac,electrical,plumbing,security,other',
             'serial_number'         => 'nullable|string|max:255',
@@ -127,6 +130,9 @@ class InventoryController extends Controller
             'notes'                 => 'nullable|string',
             'status'                => 'required|in:operational,needs_service,broken,retired',
         ]);
+
+        $data['building_id'] = $data['pm_building_id'];
+        unset($data['pm_building_id']);
 
         $asset = PMAsset::create($data);
 
@@ -205,3 +211,5 @@ class InventoryController extends Controller
         return response()->json(['success' => true]);
     }
 }
+
+

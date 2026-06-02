@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\PM;
 
 use App\Http\Controllers\Controller;
-use App\Models\Apartment;
-use App\Models\Building;
-use App\Models\Project;
+use App\Models\PM\Apartment;
+use App\Models\PM\Building;
+use App\Models\PM\Project;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -35,26 +35,36 @@ class ProjectController extends Controller
     {
         $buildings = $project->buildings()->orderBy('created_at')->get()->map(fn($b) => [
             'id'         => $b->id,
-            'project_id' => $b->project_id,
+            'pm_project_id' => $b->pm_project_id,
             'name'       => $b->name,
             'created_at' => $b->created_at->format('Y-m-d'),
         ]);
 
-        $stats = Apartment::whereIn('building_id', $buildings->pluck('id'))
-            ->selectRaw("building_id,
-                count(*) as total,
-                sum(case when status='available' then 1 else 0 end) as available,
-                sum(case when status='sold'      then 1 else 0 end) as sold,
-                sum(case when status='reserved'  then 1 else 0 end) as reserved")
-            ->groupBy('building_id')
+        $buildingIds = $buildings->pluck('id');
+
+        $totalCounts = Apartment::whereIn('pm_building_id', $buildingIds)
+            ->selectRaw('pm_building_id, count(*) as total')
+            ->groupBy('pm_building_id')
             ->get()
-            ->keyBy('building_id')
-            ->map(fn($r) => [
-                'total'     => (int) $r->total,
-                'available' => (int) $r->available,
-                'sold'      => (int) $r->sold,
-                'reserved'  => (int) $r->reserved,
-            ]);
+            ->keyBy('pm_building_id');
+
+        $occupiedCounts = Apartment::whereIn('pm_building_id', $buildingIds)
+            ->whereHas('residents', fn ($q) => $q->where('is_active', true))
+            ->selectRaw('pm_building_id, count(*) as occupied')
+            ->groupBy('pm_building_id')
+            ->get()
+            ->keyBy('pm_building_id');
+
+        $stats = $buildingIds->mapWithKeys(function ($id) use ($totalCounts, $occupiedCounts) {
+            $total    = (int) ($totalCounts[$id]->total ?? 0);
+            $occupied = (int) ($occupiedCounts[$id]->occupied ?? 0);
+            return [$id => [
+                'total'     => $total,
+                'available' => $total - $occupied,
+                'sold'      => $occupied,
+                'reserved'  => 0,
+            ]];
+        });
 
         return Inertia::render('PM/Projects/Show', [
             'project' => [
@@ -110,7 +120,7 @@ class ProjectController extends Controller
         ]);
 
         Building::create([
-            'project_id' => $project->id,
+            'pm_project_id' => $project->id,
             'name'       => $data['name'],
             'monthly_fee_per_sqm' => $data['monthly_fee_per_sqm'] ?? 0,
         ]);
@@ -118,3 +128,5 @@ class ProjectController extends Controller
         return back()->with('success', 'Bino qo\'shildi.');
     }
 }
+
+

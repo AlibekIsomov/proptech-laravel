@@ -2,11 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Models\Building;
 use App\Models\Company;
 use App\Models\InventoryItem;
+use App\Models\PM\Building;
+use App\Models\PM\Project;
 use App\Models\PMAsset;
-use App\Models\Project;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
@@ -43,13 +43,14 @@ class InventoryTest extends TestCase
 
         $project = Project::create([
             'company_id' => $this->company->id,
-            'name'       => 'Test Project',
-            'city'       => 'Tashkent',
+            'name'       => 'Test PM Project',
+            'status'     => 'active',
         ]);
 
         $this->building = Building::create([
-            'project_id' => $project->id,
-            'name'       => 'Block A',
+            'pm_project_id'       => $project->id,
+            'name'                => 'Block A',
+            'monthly_fee_per_sqm' => 1.50,
         ]);
     }
 
@@ -61,9 +62,9 @@ class InventoryTest extends TestCase
         $response->assertOk();
     }
 
-    public function test_equipment_assets_list_can_be_queried(): void
+    public function test_equipment_assets_list_can_be_queried_by_pm_building_id(): void
     {
-        $asset = PMAsset::create([
+        PMAsset::create([
             'building_id'           => $this->building->id,
             'name'                  => 'Main Elevator',
             'category'              => 'elevator',
@@ -75,7 +76,7 @@ class InventoryTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)
-            ->getJson(route('pm.inventory.index', ['building_id' => $this->building->id]));
+            ->getJson(route('pm.inventory.index', ['pm_building_id' => $this->building->id]));
 
         $response->assertOk();
         $response->assertJsonFragment([
@@ -84,9 +85,9 @@ class InventoryTest extends TestCase
         ]);
     }
 
-    public function test_consumable_supplies_list_can_be_queried(): void
+    public function test_consumable_supplies_list_can_be_queried_by_pm_building_id(): void
     {
-        $item = InventoryItem::create([
+        InventoryItem::create([
             'company_id'    => $this->company->id,
             'building_id'   => $this->building->id,
             'name'          => 'LED Bulb E27',
@@ -99,7 +100,7 @@ class InventoryTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)
-            ->getJson(route('pm.inventory.index', ['building_id' => $this->building->id, 'type' => 'supply']));
+            ->getJson(route('pm.inventory.index', ['pm_building_id' => $this->building->id, 'type' => 'supply']));
 
         $response->assertOk();
         $response->assertJsonFragment([
@@ -111,7 +112,7 @@ class InventoryTest extends TestCase
     public function test_equipment_asset_can_be_created(): void
     {
         $payload = [
-            'building_id'           => $this->building->id,
+            'pm_building_id'        => $this->building->id,
             'name'                  => 'Water Pump Wilo',
             'category'              => 'pump',
             'status'                => 'operational',
@@ -139,7 +140,7 @@ class InventoryTest extends TestCase
     {
         $payload = [
             'type'          => 'supply',
-            'building_id'   => $this->building->id,
+            'pm_building_id' => $this->building->id,
             'name'          => 'Plumbing Pipe 1/2 inch',
             'category'      => 'Plumbing',
             'quantity'      => 50,
@@ -164,6 +165,19 @@ class InventoryTest extends TestCase
         ]);
     }
 
+    public function test_inventory_store_rejects_non_pm_building(): void
+    {
+        $response = $this->actingAs($this->user)
+            ->post(route('pm.inventory.store'), [
+                'pm_building_id'        => '00000000-0000-0000-0000-000000000000',
+                'name'                  => 'Phantom Pump',
+                'category'              => 'pump',
+                'status'                => 'operational',
+            ]);
+
+        $response->assertSessionHasErrors(['pm_building_id']);
+    }
+
     public function test_equipment_asset_can_be_updated_and_deleted(): void
     {
         $asset = PMAsset::create([
@@ -173,7 +187,6 @@ class InventoryTest extends TestCase
             'status'      => 'broken',
         ]);
 
-        // Update
         $response = $this->actingAs($this->user)
             ->put(route('pm.inventory.update', $asset), [
                 'name'                  => 'Repaired Pump',
@@ -193,7 +206,6 @@ class InventoryTest extends TestCase
         $this->assertEquals('operational', $asset->fresh()->status);
         $this->assertEquals('Repaired Pump', $asset->fresh()->name);
 
-        // Delete
         $response = $this->actingAs($this->user)
             ->delete(route('pm.inventory.destroy', $asset));
 
@@ -204,14 +216,13 @@ class InventoryTest extends TestCase
     public function test_consumable_supply_can_be_updated_and_deleted(): void
     {
         $item = InventoryItem::create([
-            'company_id'    => $this->company->id,
-            'building_id'   => $this->building->id,
-            'name'          => 'Old Wire',
-            'quantity'      => 10,
-            'unit'          => 'meters',
+            'company_id'  => $this->company->id,
+            'building_id' => $this->building->id,
+            'name'        => 'Old Wire',
+            'quantity'    => 10,
+            'unit'        => 'meters',
         ]);
 
-        // Update
         $response = $this->actingAs($this->user)
             ->put(route('pm.inventory.update', $item), [
                 'type'          => 'supply',
@@ -230,7 +241,6 @@ class InventoryTest extends TestCase
         $this->assertEquals('Thick Copper Wire', $fresh->name);
         $this->assertEquals(80, $fresh->quantity);
 
-        // Delete
         $response = $this->actingAs($this->user)
             ->delete(route('pm.inventory.destroy', $item));
 

@@ -46,7 +46,7 @@ class ApartmentController extends Controller
             ]);
 
         $projects  = Project::select('id', 'name')->get();
-        $buildings = Building::select('id', 'name', 'project_id', 'monthly_fee_per_sqm')->get();
+        $buildings = Building::select('id', 'name', 'project_id')->get();
 
         return Inertia::render('Apartments/Index', compact('apartments', 'projects', 'buildings'));
     }

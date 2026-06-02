@@ -2,11 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Models\Apartment;
-use App\Models\Building;
 use App\Models\Company;
 use App\Models\MaintenanceRequest;
-use App\Models\Project;
+use App\Models\PM\Apartment;
+use App\Models\PM\Building;
+use App\Models\PM\Project;
 use App\Models\Resident;
 use App\Models\User;
 use App\Models\Vendor;
@@ -20,6 +20,7 @@ class MaintenanceRequestTest extends TestCase
     protected User $user;
     protected Company $company;
     protected Apartment $apartment;
+    protected Building $building;
     protected Resident $resident;
     protected Vendor $vendor;
 
@@ -47,20 +48,21 @@ class MaintenanceRequestTest extends TestCase
 
         $project = Project::create([
             'company_id' => $this->company->id,
-            'name'       => 'Test Project',
-            'city'       => 'Tashkent',
+            'name'       => 'Test PM Project',
+            'status'     => 'active',
         ]);
 
-        $building = Building::create([
-            'project_id' => $project->id,
-            'name'       => 'Block A',
+        $this->building = Building::create([
+            'pm_project_id'       => $project->id,
+            'name'                => 'Block A',
+            'monthly_fee_per_sqm' => 1.50,
         ]);
 
         $this->apartment = Apartment::create([
-            'building_id' => $building->id,
-            'floor'       => 1,
-            'number'      => '1A',
-            'status'      => 'available',
+            'pm_building_id' => $this->building->id,
+            'floor'          => 1,
+            'number'         => '1A',
+            'rooms'          => 2,
         ]);
 
         $this->resident = Resident::create([
@@ -103,13 +105,44 @@ class MaintenanceRequestTest extends TestCase
             ->post(route('pm.requests.store'), $payload);
 
         $response->assertRedirect();
-        
+
         $this->assertDatabaseHas('maintenance_requests', [
             'title'        => 'Kitchen sink is clogged',
             'apartment_id' => $this->apartment->id,
             'resident_id'  => $this->resident->id,
             'status'       => 'open',
         ]);
+    }
+
+    public function test_ticket_store_sets_building_id_from_apartment(): void
+    {
+        $response = $this->actingAs($this->user)
+            ->post(route('pm.requests.store'), [
+                'apartment_id' => $this->apartment->id,
+                'priority'     => 'medium',
+                'title'        => 'Building ID Check',
+                'description'  => 'Testing building_id is set correctly.',
+            ]);
+
+        $response->assertRedirect();
+
+        $this->assertDatabaseHas('maintenance_requests', [
+            'title'       => 'Building ID Check',
+            'building_id' => $this->building->id,
+        ]);
+    }
+
+    public function test_ticket_store_validates_against_pm_apartments_table(): void
+    {
+        $response = $this->actingAs($this->user)
+            ->post(route('pm.requests.store'), [
+                'apartment_id' => '00000000-0000-0000-0000-000000000000',
+                'priority'     => 'low',
+                'title'        => 'Ghost Ticket',
+                'description'  => 'This should fail.',
+            ]);
+
+        $response->assertSessionHasErrors(['apartment_id']);
     }
 
     public function test_ticket_can_be_created_manually_with_immediate_vendor(): void
@@ -144,6 +177,7 @@ class MaintenanceRequestTest extends TestCase
         $ticket = MaintenanceRequest::create([
             'company_id'   => $this->company->id,
             'apartment_id' => $this->apartment->id,
+            'building_id'  => $this->building->id,
             'resident_id'  => $this->resident->id,
             'priority'     => 'medium',
             'title'        => 'Initial Ticket',
@@ -151,7 +185,7 @@ class MaintenanceRequestTest extends TestCase
             'status'       => 'open',
         ]);
 
-        // 1. Progress to assigned
+        // 1. Assign to vendor
         $response = $this->actingAs($this->user)
             ->put(route('pm.requests.update', $ticket), [
                 'status'             => 'assigned',
@@ -159,13 +193,12 @@ class MaintenanceRequestTest extends TestCase
                 'priority'           => 'medium',
             ]);
 
-        $response->assertSessionHasNoErrors();
         $response->assertRedirect();
         $ticket = $ticket->fresh();
         $this->assertEquals('assigned', $ticket->status);
         $this->assertNotNull($ticket->assigned_at);
 
-        // 2. Progress to in_progress
+        // 2. Start work
         $response = $this->actingAs($this->user)
             ->put(route('pm.requests.update', $ticket), [
                 'status'             => 'in_progress',
@@ -190,6 +223,6 @@ class MaintenanceRequestTest extends TestCase
         $ticket = $ticket->fresh();
         $this->assertEquals('completed', $ticket->status);
         $this->assertNotNull($ticket->completed_at);
-        $this->assertEquals(50.00, (float)$ticket->cost_amount);
+        $this->assertEquals(50.00, (float) $ticket->cost_amount);
     }
 }

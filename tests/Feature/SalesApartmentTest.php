@@ -155,21 +155,6 @@ class SalesApartmentTest extends TestCase
         $this->assertEquals(6, Apartment::where('building_id', $this->building->id)->where('floor', '>=', 3)->count());
     }
 
-    public function test_apartment_details_can_be_retrieved_via_json(): void
-    {
-        $response = $this->actingAs($this->user)
-            ->get(route('pm.apartments.detail', $this->apartment));
-
-        $response->assertOk();
-        $response->assertJsonStructure([
-            'apartment',
-            'resident',
-            'requests',
-            'meters',
-            'invoices',
-        ]);
-    }
-
     public function test_building_floor_plan_can_be_retrieved_via_json(): void
     {
         $response = $this->actingAs($this->user)

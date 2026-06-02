@@ -90,7 +90,7 @@ Route::middleware('auth')->group(function () {
                 ->name('meters.photo-reading');
 
             // Apartment details for drawer
-            Route::get('apartments/{apartment}/detail', [\App\Http\Controllers\ApartmentController::class, 'detail'])
+            Route::get('apartments/{apartment}/detail', [\App\Http\Controllers\PM\ApartmentController::class, 'detail'])
                 ->name('apartments.detail');
 
             // ── Projects, Buildings, Apartments management ──────────────────
@@ -99,17 +99,17 @@ Route::middleware('auth')->group(function () {
                 ->name('projects.buildings.store');
 
             // Apartment routes (bulk-generate before resource to avoid conflict)
-            Route::post('apartments/bulk-generate', [\App\Http\Controllers\ApartmentController::class, 'bulkGenerate'])
+            Route::post('apartments/bulk-generate', [\App\Http\Controllers\PM\ApartmentController::class, 'bulkGenerate'])
                 ->name('apartments.bulk-generate');
-            Route::patch('apartments/{apartment}/status', [\App\Http\Controllers\ApartmentController::class, 'updateStatus'])
+            Route::patch('apartments/{apartment}/status', [\App\Http\Controllers\PM\ApartmentController::class, 'updateStatus'])
                 ->name('apartments.update-status');
-            Route::patch('apartments/{apartment}/assign-manager', [\App\Http\Controllers\ApartmentController::class, 'assignManager'])
+            Route::patch('apartments/{apartment}/assign-manager', [\App\Http\Controllers\PM\ApartmentController::class, 'assignManager'])
                 ->name('apartments.assign-manager');
-            Route::resource('apartments', \App\Http\Controllers\ApartmentController::class)
+            Route::resource('apartments', \App\Http\Controllers\PM\ApartmentController::class)
                 ->only(['store', 'update', 'destroy']);
 
             // Building floor-plan API (consumed by FloorPlan component)
-            Route::get('buildings/{building}/floor-plan', [\App\Http\Controllers\ApartmentController::class, 'floorPlan'])
+            Route::get('buildings/{building}/floor-plan', [\App\Http\Controllers\PM\ApartmentController::class, 'floorPlan'])
                 ->name('buildings.floor-plan');
         });
 

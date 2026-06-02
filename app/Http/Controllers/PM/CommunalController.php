@@ -4,7 +4,7 @@ namespace App\Http\Controllers\PM;
 
 use App\Http\Controllers\Controller;
 use App\Models\CommunalAsset;
-use App\Models\Project;
+use App\Models\PM\Project;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -16,7 +16,7 @@ class CommunalController extends Controller
     public function index(Request $request)
     {
         if (($request->wantsJson() || $request->ajax()) && !$request->header('X-Inertia')) {
-            $buildingId = $request->query('building_id');
+            $buildingId = $request->query('pm_building_id');
             if (!$buildingId) {
                 return response()->json(['assets' => []]);
             }
@@ -27,7 +27,7 @@ class CommunalController extends Controller
                 ->get()
                 ->map(fn($a) => [
                     'id'                   => $a->id,
-                    'building_id'          => $a->building_id,
+                    'pm_building_id'          => $a->building_id,
                     'asset_type'           => $a->asset_type,
                     'name'                 => $a->name,
                     'description'          => $a->description,
@@ -47,7 +47,7 @@ class CommunalController extends Controller
             'buildings' => $p->buildings->map(fn($b) => [
                 'id' => $b->id,
                 'name' => $b->name,
-                'project_id' => $b->project_id,
+                'pm_project_id' => $b->pm_project_id,
             ]),
         ]);
 
@@ -62,7 +62,7 @@ class CommunalController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'building_id'          => 'required|exists:buildings,id',
+            'pm_building_id'          => 'required|exists:pm_buildings,id',
             'name'                 => 'required|string|max:255',
             'asset_type'           => 'required|in:elevator,entrance,parking,playground,common_area,roof,facade,other',
             'description'          => 'nullable|string',
@@ -71,6 +71,8 @@ class CommunalController extends Controller
             'next_inspection_date' => 'nullable|date',
         ]);
 
+        $data['building_id'] = $data['pm_building_id'];
+        unset($data['pm_building_id']);
         $data['company_id'] = auth()->user()->company_id;
 
         $asset = CommunalAsset::create($data);
@@ -110,3 +112,5 @@ class CommunalController extends Controller
         return response()->json(['success' => true]);
     }
 }
+
+

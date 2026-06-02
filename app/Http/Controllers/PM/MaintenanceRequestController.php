@@ -4,8 +4,8 @@ namespace App\Http\Controllers\PM;
 
 use App\Http\Controllers\Controller;
 use App\Models\MaintenanceRequest;
-use App\Models\Apartment;
-use App\Models\Building;
+use App\Models\PM\Apartment;
+use App\Models\PM\Building;
 use App\Models\Resident;
 use App\Models\Vendor;
 use App\Services\ClaudeService;
@@ -15,7 +15,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
-use App\Models\Project;
+use App\Models\PM\Project;
 
 class MaintenanceRequestController extends Controller
 {
@@ -76,7 +76,7 @@ class MaintenanceRequestController extends Controller
         $apartments = Apartment::orderBy('number')->get()->map(fn($a) => [
             'id'          => $a->id,
             'number'      => $a->number,
-            'building_id' => $a->building_id,
+            'pm_building_id' => $a->pm_building_id,
             'floor'       => $a->floor,
         ]);
 
@@ -88,7 +88,7 @@ class MaintenanceRequestController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'apartment_id'       => ['required', 'exists:apartments,id'],
+            'apartment_id'       => ['required', 'exists:pm_apartments,id'],
             'resident_id'        => ['nullable', 'exists:residents,id'],
             'assigned_vendor_id' => ['nullable', 'exists:vendors,id'],
             'category'           => ['nullable', 'string'],
@@ -98,7 +98,7 @@ class MaintenanceRequestController extends Controller
         ]);
 
         $apt = Apartment::find($data['apartment_id']);
-        $data['building_id'] = $apt?->building_id;
+        $data['building_id'] = $apt?->pm_building_id;
         $data['company_id']  = auth()->user()->company_id;
 
         if (!empty($data['assigned_vendor_id'])) {
@@ -163,3 +163,5 @@ class MaintenanceRequestController extends Controller
         return response()->json($result);
     }
 }
+
+

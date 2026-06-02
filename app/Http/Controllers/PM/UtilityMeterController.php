@@ -5,7 +5,7 @@ namespace App\Http\Controllers\PM;
 use App\Http\Controllers\Controller;
 use App\Models\UtilityMeter;
 use App\Models\MeterReading;
-use App\Models\Apartment;
+use App\Models\PM\Apartment;
 use App\Services\ClaudeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -45,7 +45,7 @@ class UtilityMeterController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'apartment_id'   => ['required', 'exists:apartments,id'],
+            'apartment_id'   => ['required', 'exists:pm_apartments,id'],
             'meter_type'     => ['required', 'in:electricity,gas,water_cold,water_hot,heating'],
             'serial_number'  => ['nullable', 'string', 'max:100'],
             'unit'           => ['required', 'string', 'max:20'],
@@ -113,3 +113,5 @@ class UtilityMeterController extends Controller
         return back()->with('success', 'Hisoblagich arxivlandi.');
     }
 }
+
+

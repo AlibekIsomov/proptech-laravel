@@ -4,7 +4,7 @@ namespace App\Http\Controllers\PM;
 
 use App\Http\Controllers\Controller;
 use App\Models\PMInvoice;
-use App\Models\Apartment;
+use App\Models\PM\Apartment;
 use App\Models\Resident;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
@@ -54,7 +54,7 @@ class InvoiceController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'apartment_id'         => ['required', 'exists:apartments,id'],
+            'apartment_id'         => ['required', 'exists:pm_apartments,id'],
             'resident_id'          => ['nullable', 'exists:residents,id'],
             'billing_period_start' => ['required', 'date'],
             'billing_period_end'   => ['required', 'date', 'after:billing_period_start'],
@@ -112,3 +112,5 @@ class InvoiceController extends Controller
         return $pdf->download("invoice-{$invoice->invoice_number}.pdf");
     }
 }
+
+

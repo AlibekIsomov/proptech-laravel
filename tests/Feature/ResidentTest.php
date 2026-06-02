@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Models\Apartment;
-use App\Models\Building;
 use App\Models\Company;
-use App\Models\Project;
+use App\Models\PM\Apartment;
+use App\Models\PM\Building;
+use App\Models\PM\Project;
 use App\Models\Resident;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -44,27 +44,28 @@ class ResidentTest extends TestCase
 
         $project = Project::create([
             'company_id' => $this->company->id,
-            'name'       => 'Test Project',
-            'city'       => 'Tashkent',
+            'name'       => 'Test PM Project',
+            'status'     => 'active',
         ]);
 
         $building = Building::create([
-            'project_id' => $project->id,
-            'name'       => 'Block A',
+            'pm_project_id'       => $project->id,
+            'name'                => 'Block A',
+            'monthly_fee_per_sqm' => 1.50,
         ]);
 
         $this->apartment = Apartment::create([
-            'building_id' => $building->id,
-            'floor'       => 1,
-            'number'      => '1A',
-            'status'      => 'available',
+            'pm_building_id' => $building->id,
+            'floor'          => 1,
+            'number'         => '1A',
+            'rooms'          => 2,
         ]);
 
         $this->secondApartment = Apartment::create([
-            'building_id' => $building->id,
-            'floor'       => 1,
-            'number'      => '1B',
-            'status'      => 'available',
+            'pm_building_id' => $building->id,
+            'floor'          => 1,
+            'number'         => '1B',
+            'rooms'          => 2,
         ]);
     }
 
@@ -92,12 +93,25 @@ class ResidentTest extends TestCase
             ->post(route('pm.residents.store'), $payload);
 
         $response->assertRedirect();
-        
+
         $this->assertDatabaseHas('residents', [
             'full_name'    => 'Eshmat Toshmatov',
             'apartment_id' => $this->apartment->id,
             'company_id'   => $this->company->id,
         ]);
+    }
+
+    public function test_resident_store_validates_against_pm_apartments_table(): void
+    {
+        // A random UUID that does not exist in pm_apartments should fail
+        $response = $this->actingAs($this->user)
+            ->post(route('pm.residents.store'), [
+                'apartment_id'  => '00000000-0000-0000-0000-000000000000',
+                'full_name'     => 'Ghost Resident',
+                'resident_type' => 'owner',
+            ]);
+
+        $response->assertSessionHasErrors(['apartment_id']);
     }
 
     public function test_resident_can_be_updated_including_apartment(): void
@@ -150,44 +164,37 @@ class ResidentTest extends TestCase
 
     public function test_resident_can_be_linked_to_correct_apartment_with_duplicate_number(): void
     {
-        // Create another project and building to host a duplicate apartment number
         $secondProject = Project::create([
             'company_id' => $this->company->id,
-            'name'       => 'Second Project',
-            'city'       => 'Samarkand',
+            'name'       => 'Second PM Project',
+            'status'     => 'active',
         ]);
 
         $secondBuilding = Building::create([
-            'project_id' => $secondProject->id,
-            'name'       => 'Block B',
+            'pm_project_id'       => $secondProject->id,
+            'name'                => 'Block B',
+            'monthly_fee_per_sqm' => 2.00,
         ]);
 
-        // Create an apartment with the SAME number '1A' as $this->apartment, but in the second building
         $duplicateApartment = Apartment::create([
-            'building_id' => $secondBuilding->id,
-            'floor'       => 1,
-            'number'      => '1A', // Same number as $this->apartment!
-            'status'      => 'available',
+            'pm_building_id' => $secondBuilding->id,
+            'floor'          => 1,
+            'number'         => '1A', // same number as $this->apartment
+            'rooms'          => 3,
         ]);
 
-        // Assert they have different IDs but same number
         $this->assertNotEquals($this->apartment->id, $duplicateApartment->id);
-        $this->assertEquals($this->apartment->number, $duplicateApartment->number);
-
-        // Create resident linked to the duplicate apartment
-        $payload = [
-            'apartment_id'      => $duplicateApartment->id,
-            'full_name'         => 'Duplicate Number Resident',
-            'resident_type'     => 'owner',
-            'move_in_date'      => '2026-05-29',
-        ];
 
         $response = $this->actingAs($this->user)
-            ->post(route('pm.residents.store'), $payload);
+            ->post(route('pm.residents.store'), [
+                'apartment_id'  => $duplicateApartment->id,
+                'full_name'     => 'Duplicate Number Resident',
+                'resident_type' => 'owner',
+                'move_in_date'  => '2026-05-29',
+            ]);
 
         $response->assertRedirect();
 
-        // Assert the resident in the database is linked specifically to the duplicate apartment, NOT the original one
         $this->assertDatabaseHas('residents', [
             'full_name'    => 'Duplicate Number Resident',
             'apartment_id' => $duplicateApartment->id,

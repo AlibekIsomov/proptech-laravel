@@ -4,8 +4,8 @@ namespace App\Http\Controllers\PM;
 
 use App\Http\Controllers\Controller;
 use App\Models\Poll;
-use App\Models\Apartment;
-use App\Models\Project;
+use App\Models\PM\Apartment;
+use App\Models\PM\Project;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -17,12 +17,12 @@ class PollController extends Controller
     public function index(Request $request)
     {
         if (($request->wantsJson() || $request->ajax()) && !$request->header('X-Inertia')) {
-            $buildingId = $request->query('building_id');
+            $buildingId = $request->query('pm_building_id');
             if (!$buildingId) {
                 return response()->json(['polls' => [], 'apartment_count' => 0]);
             }
 
-            $apartmentCount = Apartment::where('building_id', $buildingId)->count();
+            $apartmentCount = Apartment::where('pm_building_id', $buildingId)->count();
 
             $polls = Poll::where('building_id', $buildingId)
                 ->with('votes')
@@ -46,7 +46,7 @@ class PollController extends Controller
 
                     return [
                         'id' => $poll->id,
-                        'building_id' => $poll->building_id,
+                        'pm_building_id' => $poll->building_id,
                         'title' => $poll->title,
                         'description' => $poll->description,
                         'options' => $poll->options,
@@ -74,7 +74,7 @@ class PollController extends Controller
             'buildings' => $p->buildings->map(fn($b) => [
                 'id' => $b->id,
                 'name' => $b->name,
-                'project_id' => $b->project_id,
+                'pm_project_id' => $b->pm_project_id,
             ]),
         ]);
 
@@ -89,7 +89,7 @@ class PollController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'building_id' => 'required|exists:buildings,id',
+            'pm_building_id' => 'required|exists:pm_buildings,id',
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'options' => 'required|array|min:2',
@@ -99,6 +99,8 @@ class PollController extends Controller
             'closes_at' => 'nullable|date',
         ]);
 
+        $data['building_id'] = $data['pm_building_id'];
+        unset($data['pm_building_id']);
         $data['created_by'] = auth()->id();
         $data['status'] = 'open';
 
@@ -134,3 +136,5 @@ class PollController extends Controller
         return response()->json(['success' => true]);
     }
 }
+
+
