@@ -54,6 +54,12 @@ COPY docker/php.ini /usr/local/etc/php/conf.d/custom.ini
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
+# public/ papkasini backup sifatida saqlap qo'yamiz.
+# Sabab: docker-compose da public_data volume mount qilinganda,
+# Docker image ichidagi public/ fayllarini yashiradi.
+# entrypoint.sh bu backup dan fayllarni volume ga ko'chiradi.
+RUN cp -r /var/www/html/public /var/www/html/public.bak
+
 EXPOSE 9000
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

@@ -12,6 +12,14 @@ mkdir -p /var/www/html/bootstrap/cache
 chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
+# public_data volume bo'sh bo'lsa (yangi deploy), image dan public/ fayllarni ko'chiramiz
+# Docker named volume image ichidagi fayllarni yashiradi, shu sababli bu qadam kerak.
+if [ ! -f /var/www/html/public/index.php ]; then
+    echo "📦  Populating public/ volume from image..."
+    cp -r /var/www/html/public.bak/. /var/www/html/public/
+    echo "✅  public/ volume populated."
+fi
+
 # Wait a moment for DB to be ready (if needed)
 echo "⏳ Waiting for services..."
 sleep 2

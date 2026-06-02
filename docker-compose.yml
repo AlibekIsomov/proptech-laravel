@@ -19,7 +19,7 @@ services:
     volumes:
       # Production-da kodni bog'lamaymiz, faqat o'zgaruvchan papkalarni bog'laymiz:
       - storage_data:/var/www/html/storage
-      - build_data:/var/www/html/public/build
+      - public_data:/var/www/html/public   # nginx bilan umumiy public/ papka
     depends_on:
       db:
         condition: service_healthy
@@ -34,8 +34,8 @@ services:
     ports:
       - "80:80" # Production uchun 8080 emas, to'g'ridan-to'g'ri 80-portni ochdik
     volumes:
-      # Nginx assetlarni o'qishi uchun faqat build papkasini ulash kifoya
-      - build_data:/var/www/html/public/build
+      # Nginx assetlarni o'qishi uchun public papkasini ulash
+      - public_data:/var/www/html/public:ro  # read-only: nginx faqat o'qiydi
       - ./docker/nginx.prod.conf:/etc/nginx/nginx.conf:ro # Production nginx config
     depends_on:
       - app
@@ -69,6 +69,6 @@ networks:
     driver: bridge
 
 volumes:
-  build_data:
+  public_data:   # app va nginx o'rtasida umumiy public/ papka
   storage_data:
   db_data:

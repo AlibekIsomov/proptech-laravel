@@ -209,15 +209,22 @@ jobs:
             echo "IMAGE_TAG=${{ env.IMAGE_TAG }}" >> .env
 
             # 1️⃣  Avval db va web ni ishga tushiramiz (agar ishlamayotgan bo'lsa)
-            #     --no-deps: ular bir-birini qayta ishga tushirmasin
             echo "🗄️  Ensuring db & web services are running..."
             docker compose up -d --no-deps db web
 
-            # 2️⃣  App ni yangi image bilan restart qilamiz (faqat app, db tegmasin)
-            #     --no-deps: db ni qayta ishga tushirmasin
-            #     --build olib tashlandi: image registry dan keladi, local build kerak emas
-            echo "🔄 Restarting app container..."
+            # 2️⃣  public_data volume ni tozalaymiz — entrypoint yangi image dan qayta to'ldiradi
+            #     (db_data va storage_data saqlanadi!)
+            echo "🗑️  Refreshing public_data volume..."
+            docker compose stop app web 2>/dev/null || true
+            docker volume rm proptech-laravel_public_data 2>/dev/null || true
+
+            # 3️⃣  App ni yangi image bilan ishga tushiramiz
+            #     (depends_on: db → db tayyor bo'lguncha kutadi)
+            echo "🔄 Starting app with new image..."
             docker compose up -d --no-deps app
+
+            # web ni ham qayta ishga tushiramiz (public_data volume yangilandi)
+            docker compose up -d --no-deps web
 
             # 3️⃣  DB tayyor bo'lguncha kutamiz (healthcheck o'tmaguncha migrate qilmaymiz)
             echo "⏳ Waiting for PostgreSQL to be ready..."
