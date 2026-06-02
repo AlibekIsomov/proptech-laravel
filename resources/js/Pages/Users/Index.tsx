@@ -47,7 +47,10 @@ export default function UsersIndex({ users, roles, companies }: Props) {
 
     function openCreate() {
         setEditing(null);
-        setForm({ ...emptyForm, company_id: String(auth.user?.company_id ?? '') });
+        const defaultCompanyId = isSuperAdmin
+            ? (companies[0]?.id ? String(companies[0].id) : '')
+            : String(auth.user?.company_id ?? '');
+        setForm({ ...emptyForm, company_id: defaultCompanyId });
         setShowModal(true);
     }
 

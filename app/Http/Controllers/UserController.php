@@ -33,7 +33,12 @@ class UserController extends Controller
             'created_at'   => $u->created_at->format('Y-m-d'),
         ]);
 
-        $roles     = Role::all(['id', 'name']);
+        $rolesQuery = Role::query();
+        if (!auth()->user()->hasRole('super_admin')) {
+            $rolesQuery->where('name', '!=', 'super_admin');
+        }
+        $roles = $rolesQuery->get(['id', 'name']);
+
         $companies = auth()->user()->hasRole('super_admin')
             ? Company::where('is_active', true)->get(['id', 'name'])
             : Company::where('id', auth()->user()->company_id)->get(['id', 'name']);
@@ -43,25 +48,34 @@ class UserController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $data = $request->validate([
+        $rules = [
             'full_name'  => ['required', 'string', 'max:255'],
             'email'      => ['required', 'email', 'unique:users,email'],
             'password'   => ['required', 'string', 'min:8'],
             'role'       => ['required', 'exists:roles,name'],
             'pm_role'    => ['nullable', 'in:property_manager,dispatcher,vendor,resident'],
-            'company_id' => ['required', 'exists:companies,id'],
-        ]);
+        ];
 
-        // company_admin faqat o'z kompaniyasiga qo'sha oladi
-        if (!auth()->user()->hasRole('super_admin')) {
-            $data['company_id'] = auth()->user()->company_id;
+        if (auth()->user()->hasRole('super_admin')) {
+            $rules['company_id'] = ['required', 'exists:companies,id'];
         }
+
+        $data = $request->validate($rules);
+
+        // Security check: non-super_admin cannot assign super_admin role
+        if (!auth()->user()->hasRole('super_admin') && $data['role'] === 'super_admin') {
+            abort(403, 'Unauthorized role assignment');
+        }
+
+        $companyId = auth()->user()->hasRole('super_admin')
+            ? $data['company_id']
+            : auth()->user()->company_id;
 
         $user = User::create([
             'full_name'  => $data['full_name'],
             'email'      => $data['email'],
             'password'   => Hash::make($data['password']),
-            'company_id' => $data['company_id'],
+            'company_id' => $companyId,
             'pm_role'    => $data['pm_role'] ?? null,
         ]);
 
@@ -72,13 +86,29 @@ class UserController extends Controller
 
     public function update(Request $request, User $user): RedirectResponse
     {
-        $data = $request->validate([
+        // Security check: non-super_admin can only manage users within their own company
+        if (!auth()->user()->hasRole('super_admin') && $user->company_id !== auth()->user()->company_id) {
+            abort(403, 'Unauthorized');
+        }
+
+        $rules = [
             'full_name'  => ['required', 'string', 'max:255'],
             'email'      => ['required', 'email', 'unique:users,email,' . $user->id],
             'role'       => ['required', 'exists:roles,name'],
             'pm_role'    => ['nullable', 'in:property_manager,dispatcher,vendor,resident'],
             'password'   => ['nullable', 'string', 'min:8'],
-        ]);
+        ];
+
+        if (auth()->user()->hasRole('super_admin')) {
+            $rules['company_id'] = ['required', 'exists:companies,id'];
+        }
+
+        $data = $request->validate($rules);
+
+        // Security check: non-super_admin cannot assign super_admin role
+        if (!auth()->user()->hasRole('super_admin') && $data['role'] === 'super_admin') {
+            abort(403, 'Unauthorized role assignment');
+        }
 
         $updateData = [
             'full_name' => $data['full_name'],
@@ -88,6 +118,10 @@ class UserController extends Controller
 
         if (!empty($data['password'])) {
             $updateData['password'] = Hash::make($data['password']);
+        }
+
+        if (auth()->user()->hasRole('super_admin')) {
+            $updateData['company_id'] = $data['company_id'];
         }
 
         $user->update($updateData);
@@ -100,6 +134,16 @@ class UserController extends Controller
     {
         if ($user->id === auth()->id()) {
             return back()->withErrors(['error' => 'O\'z hisobingizni o\'chira olmaysiz.']);
+        }
+
+        // Security check: non-super_admin can only manage users within their own company
+        if (!auth()->user()->hasRole('super_admin') && $user->company_id !== auth()->user()->company_id) {
+            abort(403, 'Unauthorized');
+        }
+
+        // Security check: non-super_admin cannot delete super_admin users
+        if ($user->hasRole('super_admin') && !auth()->user()->hasRole('super_admin')) {
+            abort(403, 'Unauthorized');
         }
 
         $user->delete();
