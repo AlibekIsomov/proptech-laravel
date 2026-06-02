@@ -208,12 +208,24 @@ jobs:
             # Environment o'zgaruvchilarini yangilash
             echo "IMAGE_TAG=${{ env.IMAGE_TAG }}" >> .env
 
-            # Zero-downtime restart: app container ni almashtirish
-            echo "🔄 Restarting app container..."
-            docker compose pull app
-            docker compose up -d --no-deps --build app
+            # 1️⃣  Avval db va web ni ishga tushiramiz (agar ishlamayotgan bo'lsa)
+            #     --no-deps: ular bir-birini qayta ishga tushirmasin
+            echo "🗄️  Ensuring db & web services are running..."
+            docker compose up -d --no-deps db web
 
-            # Migration va optimize
+            # 2️⃣  App ni yangi image bilan restart qilamiz (faqat app, db tegmasin)
+            #     --no-deps: db ni qayta ishga tushirmasin
+            #     --build olib tashlandi: image registry dan keladi, local build kerak emas
+            echo "🔄 Restarting app container..."
+            docker compose up -d --no-deps app
+
+            # 3️⃣  DB tayyor bo'lguncha kutamiz (healthcheck o'tmaguncha migrate qilmaymiz)
+            echo "⏳ Waiting for PostgreSQL to be ready..."
+            timeout 60 sh -c \
+              'until docker compose exec -T db pg_isready -U ${DB_USERNAME:-postgres} -d ${DB_DATABASE:-proptech} 2>/dev/null; do sleep 2; done' \
+              || { echo "❌ PostgreSQL did not become ready in time"; exit 1; }
+
+            # 4️⃣  Migration va optimize
             echo "🗄️  Running migrations..."
             docker compose exec -T app php artisan migrate --force
 
