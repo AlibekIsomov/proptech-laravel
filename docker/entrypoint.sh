@@ -30,14 +30,22 @@ php artisan storage:link --force 2>/dev/null || echo "⚠️  storage:link warni
 echo "⏳ Waiting for services..."
 sleep 2
 
-# APP_KEY tekshiruv — yo'q bo'lsa avtomatik generate qilamiz
-# Bu bo'lmasa "No application encryption key" xatosi chiqadi (500 error)
-if [ -z "${APP_KEY}" ] || [ "${APP_KEY}" = "" ]; then
-    echo "🔑  APP_KEY topilmadi — yangi kalit generatsiya qilinmoqda..."
+# APP_KEY tekshiruv
+# Agar docker-compose env_file orqali APP_KEY berilgan bo'lsa — hech narsa qilmaymiz.
+# Agar umuman yo'q bo'lsa — .env.example dan .env yaratib, key generate qilamiz.
+if [ -z "${APP_KEY}" ]; then
+    echo "🔑  APP_KEY topilmadi — .env yaratib, kalit generatsiya qilinmoqda..."
+    if [ ! -f /var/www/html/.env ]; then
+        cp /var/www/html/.env.example /var/www/html/.env
+        echo "📝  .env.example dan .env yaratildi."
+    fi
     php artisan key:generate --force
+    # Yangi kalitni joriy jarayonga yuklaymiz
+    APP_KEY=$(grep '^APP_KEY=' /var/www/html/.env | cut -d '=' -f2-)
+    export APP_KEY
     echo "✅  APP_KEY muvaffaqiyatli yaratildi."
 else
-    echo "🔑  APP_KEY mavjud."
+    echo "🔑  APP_KEY docker-compose env dan o'qildi."
 fi
 
 # Cache Laravel configurations
