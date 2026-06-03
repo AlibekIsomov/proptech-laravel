@@ -37,7 +37,7 @@ class DashboardController extends Controller
         $selectedBldg = $request->input('pm_building_id');
         if ($selectedProj && !$selectedBldg) {
             $firstBldg = $buildings->where('pm_project_id', $selectedProj)->first();
-            $selectedBldg = $firstBldg ? $firstBldg->id : null;
+            $selectedBldg = $firstBldg ? $firstBldg['id'] : null;
         }
 
         // ── Load Chessboard & Specific Metrics ──────────────────────────────
