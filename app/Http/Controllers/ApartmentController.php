@@ -95,45 +95,56 @@ class ApartmentController extends Controller
     }
 
     /**
-     * Ommaviy kvartiralar yaratish (floor plan generator)
+     * Ommaviy kvartiralar yaratish — har xona turi uchun alohida sozlash
+     *
+     * apartment_types[] massiv qabul qiladi:
+     *   { rooms: int, count_per_floor: int, area: float, price: float }
      */
     public function bulkGenerate(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'building_id'          => ['required', 'exists:buildings,id'],
-            'floors'               => ['required', 'integer', 'min:1', 'max:100'],
-            'apartments_per_floor' => ['required', 'integer', 'min:1', 'max:20'],
-            'rooms'                => ['required', 'integer', 'min:0'],
-            'area'                 => ['nullable', 'numeric', 'min:0'],
-            'base_price'           => ['nullable', 'numeric', 'min:0'],
-            'price_per_floor'      => ['nullable', 'numeric'], // har qavat uchun qo'shimcha narx
-            'start_floor'          => ['nullable', 'integer', 'min:1'],
+            'building_id'                    => ['required', 'exists:buildings,id'],
+            'floors'                         => ['required', 'integer', 'min:1', 'max:100'],
+            'start_floor'                    => ['nullable', 'integer', 'min:1'],
+            'apartment_types'                => ['required', 'array', 'min:1'],
+            'apartment_types.*.rooms'        => ['required', 'integer', 'min:1', 'max:10'],
+            'apartment_types.*.count_per_floor' => ['required', 'integer', 'min:1', 'max:20'],
+            'apartment_types.*.area'         => ['required', 'numeric', 'min:1'],
+            'apartment_types.*.price'        => ['nullable', 'numeric', 'min:0'],
         ]);
 
-        $building          = Building::findOrFail($data['building_id']);
-        $floors            = (int) $data['floors'];
-        $aptsPerFloor      = (int) $data['apartments_per_floor'];
-        $startFloor        = (int) ($data['start_floor'] ?? 1);
-        $basePrice         = (float) ($data['base_price'] ?? 0);
-        $pricePerFloor     = (float) ($data['price_per_floor'] ?? 0);
+        $building   = Building::findOrFail($data['building_id']);
+        $floors     = (int) $data['floors'];
+        $startFloor = (int) ($data['start_floor'] ?? 1);
+        $types      = $data['apartment_types'];
 
         $apartments = [];
         for ($floor = $startFloor; $floor < $startFloor + $floors; $floor++) {
-            for ($apt = 1; $apt <= $aptsPerFloor; $apt++) {
-                $number = sprintf('%d%02d', $floor, $apt); // e.g. 101, 102, 201
-                $price  = $basePrice > 0 ? $basePrice + ($floor - $startFloor) * $pricePerFloor : null;
+            // Har etajda xona turlari ketma-ket raqamlanadi: 101, 102, 103 ...
+            $aptSeq = 1;
+            foreach ($types as $type) {
+                $rooms        = (int)   $type['rooms'];
+                $countPerFloor = (int)  $type['count_per_floor'];
+                $area         = (float) $type['area'];
+                $price        = isset($type['price']) && $type['price'] > 0
+                                ? (float) $type['price']
+                                : null;
 
-                $apartments[] = [
-                    'building_id' => $building->id,
-                    'floor'       => $floor,
-                    'number'      => $number,
-                    'rooms'       => $data['rooms'],
-                    'area'        => $data['area'] ?? null,
-                    'price'       => $price > 0 ? $price : null,
-                    'status'      => 'available',
-                    'created_at'  => now(),
-                    'updated_at'  => now(),
-                ];
+                for ($i = 0; $i < $countPerFloor; $i++) {
+                    $number = sprintf('%d%02d', $floor, $aptSeq);
+                    $apartments[] = [
+                        'building_id' => $building->id,
+                        'floor'       => $floor,
+                        'number'      => $number,
+                        'rooms'       => $rooms,
+                        'area'        => $area,
+                        'price'       => $price,
+                        'status'      => 'available',
+                        'created_at'  => now(),
+                        'updated_at'  => now(),
+                    ];
+                    $aptSeq++;
+                }
             }
         }
 
@@ -143,7 +154,7 @@ class ApartmentController extends Controller
         }
 
         $count = count($apartments);
-        return back()->with('success', "{$count} ta kvartira muvaffaqiyatli yaratildi.");
+        return back()->with('success', "{$count} ta kvartira ({$floors} qavat) muvaffaqiyatli yaratildi.");
     }
 
     /**

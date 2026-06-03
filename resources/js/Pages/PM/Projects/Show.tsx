@@ -76,16 +76,29 @@ export default function PMProjectShow({ project, buildings, aptStats }: Props) {
     const [addingBuilding,  setAddingBuilding]  = useState(false);
 
     // ── Bulk generate ───────────────────────────────────────────────────────
-    const [showBulkGen,       setShowBulkGen]       = useState(false);
-    const [bulkBuildingId,    setBulkBuildingId]    = useState('');
-    const [bulkFloors,        setBulkFloors]        = useState('9');
-    const [bulkAptsPerFloor,  setBulkAptsPerFloor]  = useState('4');
-    const [bulkRooms,         setBulkRooms]         = useState('2');
-    const [bulkArea,          setBulkArea]          = useState('60');
-    const [bulkBasePrice,     setBulkBasePrice]     = useState('75000');
-    const [bulkPricePerFloor, setBulkPricePerFloor] = useState('0');
-    const [generating,        setGenerating]        = useState(false);
-    const [genError,          setGenError]          = useState<string | null>(null);
+    const [showBulkGen,    setShowBulkGen]    = useState(false);
+    const [bulkBuildingId, setBulkBuildingId] = useState('');
+    const [bulkFloors,     setBulkFloors]     = useState('9');
+    const [generating,     setGenerating]     = useState(false);
+    const [genError,       setGenError]       = useState<string | null>(null);
+
+    // Xona turlari: 1-xonali dan 5-xonalikacha
+    const DEFAULT_TYPES = [
+        { rooms: 1, enabled: true,  count: '1', area: '45',  price: '62000'  },
+        { rooms: 2, enabled: true,  count: '2', area: '65',  price: '85000'  },
+        { rooms: 3, enabled: true,  count: '1', area: '90',  price: '115000' },
+        { rooms: 4, enabled: false, count: '1', area: '120', price: '150000' },
+        { rooms: 5, enabled: false, count: '1', area: '150', price: '190000' },
+    ];
+    const [aptTypes, setAptTypes] = useState(DEFAULT_TYPES);
+
+    const updateType = (rooms: number, field: string, value: string | boolean) =>
+        setAptTypes(prev => prev.map(t => t.rooms === rooms ? { ...t, [field]: value } : t));
+
+    const enabledTypes = aptTypes.filter(t => t.enabled);
+    const totalApts    = enabledTypes.reduce((s, t) => s + (parseInt(t.count) || 0), 0);
+    const totalFloors  = parseInt(bulkFloors) || 0;
+    const grandTotal   = totalApts * totalFloors;
 
     // ── Single apartment modal ──────────────────────────────────────────────
     const [showAptModal, setShowAptModal] = useState(false);
@@ -115,9 +128,8 @@ export default function PMProjectShow({ project, buildings, aptStats }: Props) {
 
     function openBulkGen(b: Building) {
         setBulkBuildingId(b.id);
-        setBulkFloors('9'); setBulkAptsPerFloor('4');
-        setBulkRooms('2');  setBulkArea('60');
-        setBulkBasePrice('75000'); setBulkPricePerFloor('0');
+        setBulkFloors('9');
+        setAptTypes(DEFAULT_TYPES);
         setGenError(null);
         setShowBulkGen(true);
     }
@@ -126,19 +138,20 @@ export default function PMProjectShow({ project, buildings, aptStats }: Props) {
         e.preventDefault();
         setGenError(null);
         const floorsNum = parseInt(bulkFloors);
-        const aptsNum   = parseInt(bulkAptsPerFloor);
         if (isNaN(floorsNum) || floorsNum < 1) { setGenError('Qavatlar sonini kiriting.'); return; }
-        if (isNaN(aptsNum)   || aptsNum   < 1) { setGenError('Har qavatdagi kvartiralar sonini kiriting.'); return; }
+        if (enabledTypes.length === 0) { setGenError("Kamida bitta xona turini yoqing."); return; }
+
+        const types = enabledTypes.map(t => ({
+            rooms:           t.rooms,
+            count_per_floor: parseInt(t.count) || 1,
+            area:            parseFloat(t.area)  || 0,
+        }));
 
         setGenerating(true);
         router.post('/pm/apartments/bulk-generate', {
-            pm_building_id:          bulkBuildingId,
-            floors:               floorsNum,
-            apartments_per_floor: aptsNum,
-            rooms:                parseInt(bulkRooms) || 1,
-            area:                 parseFloat(bulkArea) || 0,
-            base_price:           parseFloat(bulkBasePrice) || 0,
-            price_per_floor:      parseFloat(bulkPricePerFloor) || 0,
+            pm_building_id:  bulkBuildingId,
+            floors:          floorsNum,
+            apartment_types: types,
         }, {
             onSuccess: () => { setGenerating(false); setShowBulkGen(false); setFpRefreshKey(k => k + 1); },
             onError:   () => { setGenerating(false); setGenError('Xatolik yuz berdi.'); },
@@ -377,12 +390,14 @@ export default function PMProjectShow({ project, buildings, aptStats }: Props) {
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
                     style={{ backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)' }}
                     onClick={e => e.target === e.currentTarget && setShowBulkGen(false)}>
-                    <div className="w-full max-w-sm rounded-2xl p-6"
+                    <div className="w-full max-w-lg rounded-2xl p-6 max-h-[90vh] overflow-y-auto"
                         style={{ backgroundColor: 'var(--card)', border: '1px solid rgba(16,185,129,0.15)' }}>
+
+                        {/* Header */}
                         <div className="flex items-center justify-between mb-5">
                             <div className="flex items-center gap-2">
                                 <Zap className="w-4 h-4" style={{ color: '#10b981' }} />
-                                <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Bulk yaratish</h2>
+                                <h2 className="text-sm font-bold text-slate-800">Massovoe sozdanie kvartir</h2>
                             </div>
                             <button onClick={() => setShowBulkGen(false)} style={{ color: '#475569' }}
                                 className="hover:text-white transition-colors">
@@ -390,54 +405,108 @@ export default function PMProjectShow({ project, buildings, aptStats }: Props) {
                             </button>
                         </div>
 
-                        <form onSubmit={handleBulkGenerate} className="space-y-4">
-                            <div className="grid grid-cols-2 gap-3">
-                                {[
-                                    { label: 'Qavatlar soni',     val: bulkFloors,       set: setBulkFloors       },
-                                    { label: 'Har qavatda',        val: bulkAptsPerFloor, set: setBulkAptsPerFloor },
-                                ].map(({ label, val, set }) => (
-                                    <div key={label}>
-                                        <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--muted)' }}>{label}</label>
-                                        <input type="number" min={1} required value={val} onChange={e => set(e.target.value)}
-                                            className="w-full rounded-xl px-3 py-2 text-xs text-slate-800 outline-none"
-                                            style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.12)' }} />
-                                    </div>
-                                ))}
+                        <form onSubmit={handleBulkGenerate} className="space-y-5">
+                            {/* Etajlar soni */}
+                            <div>
+                                <label className="block text-xs font-semibold mb-2" style={{ color: 'var(--muted)' }}>Qavatlar soni</label>
+                                <input
+                                    type="number" min={1} max={100} required
+                                    value={bulkFloors}
+                                    onChange={e => setBulkFloors(e.target.value)}
+                                    className="w-full rounded-xl px-4 py-2.5 text-sm text-slate-800 outline-none font-semibold"
+                                    style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.2)' }}
+                                />
                             </div>
-                            <div className="grid grid-cols-2 gap-3">
-                                {[
-                                    { label: 'Xonalar soni',    val: bulkRooms, set: setBulkRooms },
-                                    { label: 'Maydon, m²',       val: bulkArea,  set: setBulkArea  },
-                                ].map(({ label, val, set }) => (
-                                    <div key={label}>
-                                        <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--muted)' }}>{label}</label>
-                                        <input type="number" min={1} required value={val} onChange={e => set(e.target.value)}
-                                            className="w-full rounded-xl px-3 py-2 text-xs text-slate-800 outline-none"
-                                            style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.12)' }} />
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--muted)' }}>Boshlang'ich narx, $</label>
-                                    <input type="number" min={0} required value={bulkBasePrice} onChange={e => setBulkBasePrice(e.target.value)}
-                                        className="w-full rounded-xl px-3 py-2 text-xs text-slate-800 outline-none"
-                                        style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.12)' }} />
+
+                            {/* Xona turlari jadvali */}
+                            <div>
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className="text-xs font-semibold" style={{ color: 'var(--muted)' }}>Kvartira turlari</label>
                                 </div>
-                                <div>
-                                    <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--muted)' }}>Qavat uchun qo'shimcha $</label>
-                                    <input type="number" min={0} value={bulkPricePerFloor} onChange={e => setBulkPricePerFloor(e.target.value)}
-                                        className="w-full rounded-xl px-3 py-2 text-xs text-slate-800 outline-none"
-                                        style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.12)' }} />
+
+                                <div className="rounded-xl overflow-hidden"
+                                    style={{ border: '1px solid rgba(16,185,129,0.12)', backgroundColor: '#f8fcfb' }}>
+                                    <div className="grid text-[10px] font-bold uppercase tracking-wider px-3 py-2 border-b"
+                                        style={{ gridTemplateColumns: '44px 1fr 80px 90px', borderColor: 'rgba(16,185,129,0.12)', color: '#64748b' }}>
+                                        <span></span>
+                                        <span>Tur</span>
+                                        <span className="text-center">Har qavatda</span>
+                                        <span className="text-center">Maydon m²</span>
+                                    </div>
+
+                                    {aptTypes.map((t, idx) => (
+                                        <div key={t.rooms}
+                                            className="grid items-center px-3 py-2.5"
+                                            style={{
+                                                gridTemplateColumns: '44px 1fr 80px 90px',
+                                                borderBottom: idx < aptTypes.length - 1 ? '1px solid rgba(16,185,129,0.08)' : 'none',
+                                                opacity: t.enabled ? 1 : 0.45,
+                                            }}>
+
+                                            {/* Toggle */}
+                                            <button
+                                                type="button"
+                                                onClick={() => updateType(t.rooms, 'enabled', !t.enabled)}
+                                                className="w-9 h-5 rounded-full transition-all relative flex-shrink-0"
+                                                style={{ backgroundColor: t.enabled ? '#10b981' : '#cbd5e1' }}>
+                                                <span
+                                                    className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all"
+                                                    style={{ left: t.enabled ? '18px' : '2px' }}
+                                                />
+                                            </button>
+
+                                            <span className="text-xs font-semibold text-slate-700">{t.rooms}-xonali</span>
+
+                                            <input
+                                                type="number" min={1} max={20}
+                                                value={t.count}
+                                                disabled={!t.enabled}
+                                                onChange={e => updateType(t.rooms, 'count', e.target.value)}
+                                                className="w-14 text-center rounded-lg px-2 py-1 text-xs text-slate-800 outline-none disabled:cursor-not-allowed mx-auto block"
+                                                style={{ backgroundColor: t.enabled ? 'white' : 'transparent', border: `1px solid ${t.enabled ? 'rgba(16,185,129,0.25)' : 'transparent'}` }}
+                                            />
+
+                                            <input
+                                                type="number" min={1} step="0.1"
+                                                value={t.area}
+                                                disabled={!t.enabled}
+                                                onChange={e => updateType(t.rooms, 'area', e.target.value)}
+                                                className="w-16 text-center rounded-lg px-2 py-1 text-xs text-slate-800 outline-none disabled:cursor-not-allowed mx-auto block"
+                                                style={{ backgroundColor: t.enabled ? 'white' : 'transparent', border: `1px solid ${t.enabled ? 'rgba(16,185,129,0.25)' : 'transparent'}` }}
+                                            />
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
+
+                            {/* Summary */}
+                            <div className="flex items-center gap-2.5 rounded-xl px-4 py-3"
+                                style={{ backgroundColor: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.15)' }}>
+                                <Zap className="w-4 h-4 shrink-0" style={{ color: '#10b981' }} />
+                                <span className="text-xs" style={{ color: '#475569' }}>Yaratiladi:</span>
+                                <span className="ml-auto text-xs font-bold" style={{ color: '#10b981' }}>
+                                    {grandTotal > 0
+                                        ? `${totalFloors} qavat × ${totalApts} kvartira = ${grandTotal} ta`
+                                        : '—'}
+                                </span>
+                            </div>
+
                             {genError && <p className="text-xs font-semibold" style={{ color: '#f87171' }}>{genError}</p>}
-                            <button type="submit" disabled={generating}
-                                className="w-full py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50 flex items-center justify-center gap-2"
-                                style={{ backgroundColor: '#10b981' }}>
-                                {generating && <Loader2 className="w-4 h-4 animate-spin" />}
-                                Yaratish
-                            </button>
+
+                            <div className="flex gap-3">
+                                <button type="button" onClick={() => setShowBulkGen(false)}
+                                    className="flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all"
+                                    style={{ border: '1px solid rgba(16,185,129,0.12)', color: '#64748b' }}>
+                                    Bekor qilish
+                                </button>
+                                <button type="submit" disabled={generating || grandTotal === 0}
+                                    className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold text-white disabled:opacity-50"
+                                    style={{ backgroundColor: '#10b981' }}>
+                                    {generating && <Loader2 className="w-4 h-4 animate-spin" />}
+                                    <Zap className="w-3.5 h-3.5" />
+                                    Yaratish
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>

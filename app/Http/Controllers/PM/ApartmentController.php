@@ -48,30 +48,39 @@ class ApartmentController extends Controller
     public function bulkGenerate(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'pm_building_id'       => ['required', 'exists:pm_buildings,id'],
-            'floors'               => ['required', 'integer', 'min:1', 'max:100'],
-            'apartments_per_floor' => ['required', 'integer', 'min:1', 'max:20'],
-            'rooms'                => ['required', 'integer', 'min:0'],
-            'area'                 => ['nullable', 'numeric', 'min:0'],
-            'start_floor'          => ['nullable', 'integer', 'min:1'],
+            'pm_building_id'                    => ['required', 'exists:pm_buildings,id'],
+            'floors'                            => ['required', 'integer', 'min:1', 'max:100'],
+            'start_floor'                       => ['nullable', 'integer', 'min:1'],
+            'apartment_types'                   => ['required', 'array', 'min:1'],
+            'apartment_types.*.rooms'           => ['required', 'integer', 'min:1', 'max:10'],
+            'apartment_types.*.count_per_floor' => ['required', 'integer', 'min:1', 'max:20'],
+            'apartment_types.*.area'            => ['required', 'numeric', 'min:1'],
         ]);
 
-        $floors      = (int) $data['floors'];
-        $aptsPerFloor = (int) $data['apartments_per_floor'];
-        $startFloor  = (int) ($data['start_floor'] ?? 1);
+        $floors     = (int) $data['floors'];
+        $startFloor = (int) ($data['start_floor'] ?? 1);
+        $types      = $data['apartment_types'];
 
         $apartments = [];
         for ($floor = $startFloor; $floor < $startFloor + $floors; $floor++) {
-            for ($apt = 1; $apt <= $aptsPerFloor; $apt++) {
-                $apartments[] = [
-                    'pm_building_id' => $data['pm_building_id'],
-                    'floor'          => $floor,
-                    'number'         => sprintf('%d%02d', $floor, $apt),
-                    'rooms'          => $data['rooms'],
-                    'area'           => $data['area'] ?? null,
-                    'created_at'     => now(),
-                    'updated_at'     => now(),
-                ];
+            $aptSeq = 1;
+            foreach ($types as $type) {
+                $rooms         = (int)   $type['rooms'];
+                $countPerFloor = (int)   $type['count_per_floor'];
+                $area          = (float) $type['area'];
+
+                for ($i = 0; $i < $countPerFloor; $i++) {
+                    $apartments[] = [
+                        'pm_building_id' => $data['pm_building_id'],
+                        'floor'          => $floor,
+                        'number'         => sprintf('%d%02d', $floor, $aptSeq),
+                        'rooms'          => $rooms,
+                        'area'           => $area,
+                        'created_at'     => now(),
+                        'updated_at'     => now(),
+                    ];
+                    $aptSeq++;
+                }
             }
         }
 
@@ -79,7 +88,7 @@ class ApartmentController extends Controller
             Apartment::insert($chunk);
         }
 
-        return back()->with('success', count($apartments) . ' ta kvartira muvaffaqiyatli yaratildi.');
+        return back()->with('success', count($apartments) . " ta kvartira ({$floors} qavat) muvaffaqiyatli yaratildi.");
     }
 
     public function updateStatus(Request $request, Apartment $apartment): \Illuminate\Http\JsonResponse
