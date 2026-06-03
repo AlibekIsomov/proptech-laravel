@@ -136,14 +136,12 @@ class SalesApartmentTest extends TestCase
     public function test_apartments_can_be_bulk_generated(): void
     {
         $payload = [
-            'building_id'          => $this->building->id,
-            'floors'               => 3,
-            'apartments_per_floor' => 2,
-            'rooms'                => 1,
-            'area'                 => 45.00,
-            'base_price'           => 30000.00,
-            'price_per_floor'      => 1000.00,
-            'start_floor'          => 3,
+            'building_id'     => $this->building->id,
+            'floors'          => 3,
+            'start_floor'     => 3,
+            'apartment_types' => [
+                ['rooms' => 1, 'count_per_floor' => 2, 'area' => 45.00, 'price' => 30000.00],
+            ],
         ];
 
         $response = $this->actingAs($this->user)

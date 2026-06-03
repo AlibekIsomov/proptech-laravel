@@ -185,11 +185,11 @@ class ApartmentTest extends TestCase
     {
         $response = $this->actingAs($this->user)
             ->post(route('pm.apartments.bulk-generate'), [
-                'pm_building_id'       => $this->building->id,
-                'floors'               => 3,
-                'apartments_per_floor' => 4,
-                'rooms'                => 2,
-                'area'                 => 60.00,
+                'pm_building_id'  => $this->building->id,
+                'floors'          => 3,
+                'apartment_types' => [
+                    ['rooms' => 2, 'count_per_floor' => 4, 'area' => 60.00],
+                ],
             ]);
 
         $response->assertRedirect();
