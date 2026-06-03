@@ -111,6 +111,14 @@ Route::middleware('auth')->group(function () {
             // Building floor-plan API (consumed by FloorPlan component)
             Route::get('buildings/{building}/floor-plan', [\App\Http\Controllers\PM\ApartmentController::class, 'floorPlan'])
                 ->name('buildings.floor-plan');
+
+            // Monthly fees
+            Route::get('monthly-fees', [\App\Http\Controllers\PM\MonthlyFeeController::class, 'index'])
+                ->name('monthly-fees.index');
+            Route::post('monthly-fees/generate', [\App\Http\Controllers\PM\MonthlyFeeController::class, 'generate'])
+                ->name('monthly-fees.generate');
+            Route::patch('monthly-fees/{invoice}', [\App\Http\Controllers\PM\MonthlyFeeController::class, 'updateStatus'])
+                ->name('monthly-fees.update');
         });
 
     // ── Dispatcher Portal ──────────────────────────────────────────────────

@@ -3,7 +3,9 @@
     "allow": [
       "Bash(npx tsc *)",
       "Bash(php artisan *)",
-      "Bash(grep *)"
+      "Bash(grep *)",
+      "Bash(Get-ChildItem *)",
+      "Bash(del *)"
     ]
   }
 }

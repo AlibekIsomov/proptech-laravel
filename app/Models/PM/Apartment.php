@@ -2,6 +2,7 @@
 
 namespace App\Models\PM;
 
+use App\Models\MaintenanceRequest;
 use App\Models\Resident;
 use App\Models\UtilityMeter;
 use Illuminate\Database\Eloquent\Model;

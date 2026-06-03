@@ -5,15 +5,17 @@ namespace App\Http\Controllers\PM;
 use App\Http\Controllers\Controller;
 use App\Models\PM\Apartment;
 use App\Models\PM\Building;
+use App\Models\PMInvoice;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class ApartmentController extends Controller
 {
     public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'pm_building_id' => ['required', 'exists:pm_buildings,id'],
+            'pm_building_id' => ['required', 'uuid', 'exists:pm_buildings,id'],
             'floor'          => ['required', 'integer', 'min:1'],
             'number'         => ['required', 'string', 'max:20'],
             'rooms'          => ['required', 'integer', 'min:0'],
@@ -48,7 +50,7 @@ class ApartmentController extends Controller
     public function bulkGenerate(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'pm_building_id'                    => ['required', 'exists:pm_buildings,id'],
+            'pm_building_id'                    => ['required', 'uuid', 'exists:pm_buildings,id'],
             'floors'                            => ['required', 'integer', 'min:1', 'max:100'],
             'start_floor'                       => ['nullable', 'integer', 'min:1'],
             'apartment_types'                   => ['required', 'array', 'min:1'],
@@ -71,6 +73,7 @@ class ApartmentController extends Controller
 
                 for ($i = 0; $i < $countPerFloor; $i++) {
                     $apartments[] = [
+                        'id'             => (string) Str::uuid(),
                         'pm_building_id' => $data['pm_building_id'],
                         'floor'          => $floor,
                         'number'         => sprintf('%d%02d', $floor, $aptSeq),
@@ -188,25 +191,50 @@ class ApartmentController extends Controller
     {
         $building = Building::findOrFail($buildingId);
 
-        $apartments = Apartment::where('pm_building_id', $buildingId)->get()->map(function ($a) use ($building) {
-            $resident = $a->residents()->where('is_active', true)->first();
+        $apts = Apartment::with(['residents' => fn($q) => $q->where('is_active', true)])
+            ->where('pm_building_id', $buildingId)
+            ->get();
+
+        // Fetch current month invoices for this building in one query
+        $startOfMonth = now()->startOfMonth()->toDateString();
+        $aptIds = $apts->pluck('id');
+        $currentInvoices = PMInvoice::where('billing_period_start', $startOfMonth)
+            ->whereIn('apartment_id', $aptIds)
+            ->get()
+            ->keyBy('apartment_id');
+
+        $apartments = $apts->map(function ($a) use ($building, $currentInvoices) {
+            $resident   = $a->residents->first();
+            $feePerSqm  = (float) $building->monthly_fee_per_sqm;
+            $area       = (float) $a->area;
+            $monthlyFee = $feePerSqm > 0 && $area > 0 ? round($feePerSqm * $area, 2) : 0;
+
+            $inv = $currentInvoices->get($a->id);
+
             return [
                 'id'                  => $a->id,
                 'floor_id'            => $a->floor,
                 'number'              => $a->number,
                 'rooms_count'         => $a->rooms,
-                'size_m2'             => (float) $a->area,
+                'size_m2'             => $area,
                 'price'               => 0,
                 'status'              => $resident ? 'sold' : 'available',
                 'client_id'           => $resident?->id ?? null,
                 'assigned_manager_id' => null,
                 'client'              => $resident ? [
-                    'id'        => $resident->id,
-                    'full_name' => $resident->full_name,
-                    'phone'     => $resident->phone,
-                    'assigned_to' => null,
+                    'id'         => $resident->id,
+                    'full_name'  => $resident->full_name,
+                    'phone'      => $resident->phone,
+                    'assigned_to'=> null,
                 ] : null,
-                'monthly_fee_per_sqm' => (float) $building->monthly_fee_per_sqm,
+                'monthly_fee_per_sqm' => $feePerSqm,
+                'monthly_fee'         => $monthlyFee,
+                'current_invoice'     => $inv ? [
+                    'id'     => $inv->id,
+                    'status' => $inv->status,
+                    'amount' => (float) $inv->total_amount,
+                    'period' => now()->format('Y-m'),
+                ] : null,
             ];
         });
 

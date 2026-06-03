@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\PM;
 
 use App\Http\Controllers\Controller;
+use App\Models\MaintenanceRequest;
 use App\Models\Vendor;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -19,7 +21,7 @@ class VendorController extends Controller
             'phone'          => $v->phone,
             'email'          => $v->email,
             'telegram_username' => $v->telegram_username,
-            'specializations'   => $v->specializations,
+            'specializations'   => $v->specializations ?? [],
             'rating'            => $v->rating,
             'total_jobs'        => $v->total_jobs,
             'completed_jobs'    => $v->completed_jobs,
@@ -28,6 +30,57 @@ class VendorController extends Controller
         ]);
 
         return Inertia::render('PM/Vendors/Index', compact('vendors'));
+    }
+
+    public function show(Vendor $vendor): JsonResponse
+    {
+        $requests = MaintenanceRequest::where('assigned_vendor_id', $vendor->id)
+            ->with(['apartment.building'])
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(fn($r) => [
+                'id'              => $r->id,
+                'title'           => $r->title,
+                'category'        => $r->category,
+                'priority'        => $r->priority,
+                'status'          => $r->status,
+                'apartment'       => $r->apartment?->number,
+                'building'        => $r->apartment?->building?->name,
+                'cost_amount'     => $r->cost_amount,
+                'resident_rating' => $r->resident_rating,
+                'created_at'      => $r->created_at->format('Y-m-d'),
+                'completed_at'    => $r->completed_at?->format('Y-m-d'),
+            ]);
+
+        $completed   = $requests->where('status', 'completed')->count();
+        $inProgress  = $requests->whereIn('status', ['assigned', 'in_progress'])->count();
+        $totalEarned = $requests->sum(fn($r) => (float) ($r['cost_amount'] ?? 0));
+        $avgRating   = $requests->where('resident_rating', '>', 0)->avg('resident_rating');
+
+        return response()->json([
+            'vendor'   => [
+                'id'                => $vendor->id,
+                'name'              => $vendor->name,
+                'phone'             => $vendor->phone,
+                'email'             => $vendor->email,
+                'telegram_username' => $vendor->telegram_username,
+                'specializations'   => $vendor->specializations ?? [],
+                'rating'            => (float) $vendor->rating,
+                'total_jobs'        => $vendor->total_jobs,
+                'completed_jobs'    => $vendor->completed_jobs,
+                'is_active'         => $vendor->is_active,
+                'notes'             => $vendor->notes,
+            ],
+            'requests' => $requests->values(),
+            'stats'    => [
+                'total'       => $requests->count(),
+                'completed'   => $completed,
+                'in_progress' => $inProgress,
+                'open'        => $requests->where('status', 'open')->count(),
+                'total_earned'=> round($totalEarned, 2),
+                'avg_rating'  => $avgRating ? round($avgRating, 1) : null,
+            ],
+        ]);
     }
 
     public function store(Request $request): RedirectResponse

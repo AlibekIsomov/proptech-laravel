@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
 import {
   Wrench, HardHat, UserCheck, Gauge, Receipt, Vote, Boxes, Building,
-  LayoutDashboard, LogOut, ArrowLeftRight, Building2, FolderKanban,
+  LayoutDashboard, LogOut, ArrowLeftRight, Building2, FolderKanban, DollarSign,
 } from 'lucide-react';
 
 interface NavItem {
@@ -17,8 +17,9 @@ const PM_NAV: NavItem[] = [
   { href: '/pm/residents', label: 'Aholilar',            icon: UserCheck       },
   { href: '/pm/requests',  label: 'Arizalar',            icon: Wrench          },
   { href: '/pm/vendors',   label: 'Pudratchilar',         icon: HardHat         },
-  { href: '/pm/invoices',  label: 'Hisoblar',            icon: Receipt         },
-  { href: '/pm/inventory', label: 'Omborxona',           icon: Boxes           },
+  { href: '/pm/invoices',      label: 'Hisoblar',         icon: Receipt      },
+  { href: '/pm/monthly-fees', label: "Oylik to'lovlar",  icon: DollarSign   },
+  { href: '/pm/inventory',    label: 'Omborxona',        icon: Boxes        },
 ];
 
 function initials(name: string): string {

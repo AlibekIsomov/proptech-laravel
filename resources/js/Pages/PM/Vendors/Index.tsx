@@ -1,6 +1,10 @@
 import { useState, useMemo } from 'react';
 import { Head, router } from '@inertiajs/react';
-import { Plus, Search, Star, Phone, Mail, MessageCircle, Loader2, HardHat, Edit2, ToggleRight, X } from 'lucide-react';
+import {
+    Plus, Search, Star, Phone, Mail, MessageCircle, Loader2, HardHat,
+    Edit2, ToggleRight, X, Eye, CheckCircle2, Clock, AlertCircle,
+    DollarSign, Wrench, ChevronRight,
+} from 'lucide-react';
 import AppShell from '@/Components/AppShell';
 
 interface Vendor {
@@ -15,6 +19,33 @@ interface Vendor {
   completed_jobs:    number;
   is_active:         boolean;
   notes:             string | null;
+}
+
+interface VendorRequest {
+  id:              string;
+  title:           string;
+  category:        string | null;
+  priority:        string;
+  status:          string;
+  apartment:       string | null;
+  building:        string | null;
+  cost_amount:     number | null;
+  resident_rating: number | null;
+  created_at:      string;
+  completed_at:    string | null;
+}
+
+interface VendorDetail {
+  vendor:   Vendor;
+  requests: VendorRequest[];
+  stats: {
+    total:        number;
+    completed:    number;
+    in_progress:  number;
+    open:         number;
+    total_earned: number;
+    avg_rating:   number | null;
+  };
 }
 
 interface Props {
@@ -51,6 +82,24 @@ export default function Index({ vendors }: Props) {
   const [specializations, setSpecializations] = useState<string[]>([]);
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  // Detail modal
+  const [detailData,    setDetailData]    = useState<VendorDetail | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+
+  const openDetail = async (v: Vendor) => {
+    setDetailData(null);
+    setDetailLoading(true);
+    try {
+      const res  = await fetch(`/pm/vendors/${v.id}`, { headers: { Accept: 'application/json' } });
+      const data = await res.json();
+      setDetailData(data);
+    } catch {
+      /* silent */
+    } finally {
+      setDetailLoading(false);
+    }
+  };
 
   const openCreateModal = () => {
     setEditingVendor(null);
@@ -125,7 +174,7 @@ export default function Index({ vendors }: Props) {
     const q = search.trim().toLowerCase();
     return vendors.filter((v) => {
       if (showActive ? !v.is_active : v.is_active) return false;
-      if (specFilter !== 'all' && !v.specializations.includes(specFilter)) return false;
+      if (specFilter !== 'all' && !(v.specializations ?? []).includes(specFilter)) return false;
       if (q && !v.name.toLowerCase().includes(q) && !v.phone.includes(q)) return false;
       return true;
     });
@@ -244,12 +293,13 @@ export default function Index({ vendors }: Props) {
             {filtered.map((v) => (
               <div
                 key={v.id}
-                className="rounded-2xl p-5"
+                className="rounded-2xl p-5 cursor-pointer transition-all hover:shadow-md"
                 style={{
                   backgroundColor: 'var(--card)',
                   border:          '1px solid var(--border)',
                   opacity:         v.is_active ? 1 : 0.55,
                 }}
+                onClick={() => openDetail(v)}
               >
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div className="min-w-0 flex-1">
@@ -262,27 +312,34 @@ export default function Index({ vendors }: Props) {
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-2 shrink-0" onClick={e => e.stopPropagation()}>
+                    <button
+                      onClick={() => openDetail(v)}
+                      className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 transition-colors"
+                      title="Ko'rish"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </button>
                     <button
                       onClick={() => openEditModal(v)}
-                      className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-white transition-colors"
-                      title="Edit Vendor"
+                      className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 transition-colors"
+                      title="Tahrirlash"
                     >
                       <Edit2 className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => handleToggleActive(v)}
-                      className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-white transition-colors"
-                      title={v.is_active ? 'Archive Vendor' : 'Restore Vendor'}
+                      className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 transition-colors"
+                      title={v.is_active ? 'Arxivlash' : 'Faollashtirish'}
                     >
                       <ToggleRight className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
 
-                {v.specializations.length > 0 && (
+                {(v.specializations?.length ?? 0) > 0 && (
                   <div className="flex flex-wrap gap-1 mb-3">
-                    {v.specializations.map((s) => (
+                    {(v.specializations ?? []).map((s) => (
                       <span
                         key={s}
                         className="text-[9px] px-2 py-0.5 rounded font-semibold"
@@ -326,6 +383,191 @@ export default function Index({ vendors }: Props) {
           </div>
         )}
       </div>
+
+      {/* ── Vendor Detail Modal ── */}
+      {(detailLoading || detailData) && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ backgroundColor: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}
+          onClick={() => { setDetailData(null); setDetailLoading(false); }}>
+          <div className="w-full max-w-2xl rounded-2xl border max-h-[90vh] flex flex-col"
+            style={{ backgroundColor: 'var(--card)', borderColor: 'rgba(16,185,129,0.15)' }}
+            onClick={e => e.stopPropagation()}>
+
+            {detailLoading ? (
+              <div className="flex items-center justify-center py-20">
+                <Loader2 className="w-6 h-6 animate-spin" style={{ color: '#10b981' }} />
+              </div>
+            ) : detailData && (
+              <>
+                {/* Header */}
+                <div className="flex items-start justify-between gap-4 px-6 py-5 border-b"
+                  style={{ borderColor: 'rgba(16,185,129,0.10)' }}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-xl flex items-center justify-center font-bold text-lg"
+                      style={{ backgroundColor: 'rgba(16,185,129,0.12)', color: '#10b981' }}>
+                      {detailData.vendor.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-bold text-slate-800">{detailData.vendor.name}</h2>
+                      <div className="flex flex-wrap items-center gap-3 mt-0.5 text-[11px]" style={{ color: 'var(--muted)' }}>
+                        <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{detailData.vendor.phone}</span>
+                        {detailData.vendor.email && <span className="flex items-center gap-1"><Mail className="w-3 h-3" />{detailData.vendor.email}</span>}
+                        {detailData.vendor.telegram_username && <span className="flex items-center gap-1"><MessageCircle className="w-3 h-3" />@{detailData.vendor.telegram_username}</span>}
+                      </div>
+                    </div>
+                  </div>
+                  <button onClick={() => { setDetailData(null); setDetailLoading(false); }}
+                    className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 shrink-0">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="overflow-y-auto flex-1">
+                  {/* Stats */}
+                  <div className="grid grid-cols-4 gap-3 px-6 py-4 border-b"
+                    style={{ borderColor: 'rgba(16,185,129,0.08)' }}>
+                    {[
+                      { label: "Jami ish",      value: detailData.stats.total,        color: '#6366f1', icon: Wrench         },
+                      { label: "Bajarilgan",    value: detailData.stats.completed,    color: '#10b981', icon: CheckCircle2   },
+                      { label: "Jarayonda",     value: detailData.stats.in_progress,  color: '#f59e0b', icon: Clock          },
+                      { label: "Kutilmoqda",    value: detailData.stats.open,         color: '#94a3b8', icon: AlertCircle    },
+                    ].map(({ label, value, color, icon: Icon }) => (
+                      <div key={label} className="rounded-xl p-3 text-center"
+                        style={{ backgroundColor: `${color}0F`, border: `1px solid ${color}25` }}>
+                        <Icon className="w-4 h-4 mx-auto mb-1" style={{ color }} />
+                        <p className="text-xl font-bold text-slate-800">{value}</p>
+                        <p className="text-[10px] mt-0.5" style={{ color: 'var(--muted)' }}>{label}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Earnings + Rating + Specializations */}
+                  <div className="flex flex-wrap items-center gap-4 px-6 py-3 border-b"
+                    style={{ borderColor: 'rgba(16,185,129,0.08)' }}>
+                    {detailData.stats.total_earned > 0 && (
+                      <div className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: '#10b981' }}>
+                        <DollarSign className="w-3.5 h-3.5" />
+                        Umumiy: {detailData.stats.total_earned.toLocaleString()} UZS
+                      </div>
+                    )}
+                    <div className="flex items-center gap-1">
+                      {[1,2,3,4,5].map(r => (
+                        <Star key={r} className="w-3.5 h-3.5"
+                          style={{ color: r <= Math.round(detailData.vendor.rating) ? '#fbbf24' : 'var(--border)', fill: r <= Math.round(detailData.vendor.rating) ? '#fbbf24' : 'transparent' }} />
+                      ))}
+                      <span className="text-xs ml-1 text-slate-500">{Number(detailData.vendor.rating).toFixed(1)}</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1 ml-auto">
+                      {(detailData.vendor.specializations ?? []).map(s => (
+                        <span key={s} className="text-[9px] px-2 py-0.5 rounded font-semibold"
+                          style={{ backgroundColor: 'rgba(16,185,129,0.08)', color: '#6ee7b7', border: '1px solid rgba(16,185,129,0.2)' }}>
+                          {SPEC_RU[s] ?? s}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Notes */}
+                  {detailData.vendor.notes && (
+                    <div className="px-6 py-3 border-b text-xs text-slate-500"
+                      style={{ borderColor: 'rgba(16,185,129,0.08)' }}>
+                      {detailData.vendor.notes}
+                    </div>
+                  )}
+
+                  {/* Request history */}
+                  <div className="px-6 py-4">
+                    <p className="text-[10px] uppercase tracking-widest font-semibold mb-3" style={{ color: '#94a3b8' }}>
+                      Ishlar tarixi ({detailData.requests.length} ta)
+                    </p>
+                    {detailData.requests.length === 0 ? (
+                      <div className="text-center py-8 text-sm text-slate-400">
+                        Hali birorta ish tayinlanmagan
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {detailData.requests.map(req => {
+                          const statusCfg = {
+                            open:        { label: 'Kutilmoqda',  color: '#f59e0b' },
+                            assigned:    { label: 'Tayinlangan', color: '#a78bfa' },
+                            in_progress: { label: 'Jarayonda',   color: '#60a5fa' },
+                            completed:   { label: 'Bajarildi',   color: '#10b981' },
+                            cancelled:   { label: 'Bekor',       color: '#94a3b8' },
+                          }[req.status] ?? { label: req.status, color: '#94a3b8' };
+
+                          const priorityCfg = {
+                            emergency: { label: 'Emergency', color: '#ef4444' },
+                            high:      { label: 'Yuqori',    color: '#f97316' },
+                            medium:    { label: "O'rta",     color: '#3b82f6' },
+                            low:       { label: 'Past',      color: '#94a3b8' },
+                          }[req.priority] ?? { label: req.priority, color: '#94a3b8' };
+
+                          return (
+                            <div key={req.id} className="rounded-xl px-4 py-3 flex items-start gap-3"
+                              style={{ backgroundColor: 'var(--bg)', border: '1px solid rgba(16,185,129,0.08)' }}>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-semibold text-slate-800 truncate">{req.title}</p>
+                                <div className="flex flex-wrap items-center gap-2 mt-1">
+                                  {req.building && (
+                                    <span className="text-[10px] text-slate-400 flex items-center gap-0.5">
+                                      <ChevronRight className="w-3 h-3" />
+                                      {req.building} {req.apartment && `№${req.apartment}`}
+                                    </span>
+                                  )}
+                                  {req.category && (
+                                    <span className="text-[10px] text-slate-400">{SPEC_RU[req.category] ?? req.category}</span>
+                                  )}
+                                  <span className="text-[10px]" style={{ color: 'var(--muted)' }}>{req.created_at}</span>
+                                  {req.completed_at && (
+                                    <span className="text-[10px]" style={{ color: '#10b981' }}>✓ {req.completed_at}</span>
+                                  )}
+                                </div>
+                                {req.cost_amount && req.cost_amount > 0 && (
+                                  <p className="text-[10px] mt-1 font-semibold" style={{ color: '#10b981' }}>
+                                    {Number(req.cost_amount).toLocaleString()} UZS
+                                  </p>
+                                )}
+                              </div>
+                              <div className="shrink-0 flex flex-col items-end gap-1.5">
+                                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                                  style={{ backgroundColor: `${statusCfg.color}18`, color: statusCfg.color }}>
+                                  {statusCfg.label}
+                                </span>
+                                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                                  style={{ backgroundColor: `${priorityCfg.color}18`, color: priorityCfg.color }}>
+                                  {priorityCfg.label}
+                                </span>
+                                {req.resident_rating && req.resident_rating > 0 && (
+                                  <div className="flex items-center gap-0.5">
+                                    {[1,2,3,4,5].map(r => (
+                                      <Star key={r} className="w-2.5 h-2.5"
+                                        style={{ color: r <= req.resident_rating! ? '#fbbf24' : '#e2e8f0', fill: r <= req.resident_rating! ? '#fbbf24' : 'transparent' }} />
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Footer */}
+                <div className="px-6 py-4 border-t" style={{ borderColor: 'rgba(16,185,129,0.08)' }}>
+                  <button
+                    onClick={() => { openEditModal(detailData.vendor); setDetailData(null); }}
+                    className="w-full py-2.5 rounded-xl text-sm font-semibold transition-all"
+                    style={{ backgroundColor: 'rgba(16,185,129,0.10)', color: '#10b981', border: '1px solid rgba(16,185,129,0.20)' }}>
+                    Tahrirlash
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Add / Edit Modal */}
       {showModal && (

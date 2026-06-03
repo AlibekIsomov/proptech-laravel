@@ -22,7 +22,11 @@ class DashboardController extends Controller
     {
         // ── Load Selector Lists ──────────────────────────────────────────────
         $projects = Project::orderBy('name')->get(['id', 'name']);
-        $buildings = Building::orderBy('name')->get(['id', 'name', 'pm_project_id']);
+        $buildings = Building::orderBy('name')->get()->map(fn($b) => [
+            'id'             => $b->id,
+            'name'           => $b->name,
+            'pm_project_id'  => $b->pm_project_id,
+        ])->values();
 
         // Determine selected project and building
         $selectedProj = $request->input('pm_project_id');

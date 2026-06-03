@@ -16,6 +16,13 @@ interface LinkedBuyer {
     assigned_to: string | null;
 }
 
+interface MonthlyInvoice {
+    id: string;
+    status: 'draft' | 'paid' | 'overdue' | 'sent' | 'cancelled';
+    amount: number;
+    period: string;
+}
+
 interface Apartment {
     id: string;
     floor_id: string | null;
@@ -26,6 +33,9 @@ interface Apartment {
     status: "available" | "reserved" | "sold";
     client_id: string | null;
     client?: LinkedBuyer | null;
+    monthly_fee?: number;
+    monthly_fee_per_sqm?: number;
+    current_invoice?: MonthlyInvoice | null;
 }
 
 interface Manager {
@@ -40,6 +50,8 @@ interface FloorPlanProps {
     refreshKey?: number;
     /** API route prefix — pass "/pm" when used inside the PM portal */
     apiBase?: string;
+    /** 'pm' mode: hides sales fields, shows resident + monthly fee info */
+    mode?: 'sales' | 'pm';
 }
 
 // ── Status config ──────────────────────────────────────────────────────────────
@@ -52,14 +64,16 @@ const S = {
 
 // ── Component ──────────────────────────────────────────────────────────────────
 
-export default function FloorPlan({ building_id, refreshKey, apiBase = '' }: FloorPlanProps) {
+export default function FloorPlan({ building_id, refreshKey, apiBase = '', mode = 'sales' }: FloorPlanProps) {
     const [floors,     setFloors]     = useState<Floor[]>([]);
     const [apartments, setApartments] = useState<Apartment[]>([]);
     const [managers,   setManagers]   = useState<Manager[]>([]);
     const [loading,    setLoading]    = useState(true);
 
-    const [selected,     setSelected]     = useState<Apartment | null>(null);
-    const [saving,       setSaving]       = useState(false);
+    const [selected,       setSelected]       = useState<Apartment | null>(null);
+    const [saving,         setSaving]         = useState(false);
+    const [invoiceStatuses, setInvoiceStatuses] = useState<Record<string, MonthlyInvoice>>({});
+    const [feeUpdating,    setFeeUpdating]    = useState(false);
 
     // ── Fetch all data ─────────────────────────────────────────────────────────
 
@@ -163,6 +177,43 @@ export default function FloorPlan({ building_id, refreshKey, apiBase = '' }: Flo
         }
     }
 
+    // ── PM: mark monthly fee as paid/unpaid ──────────────────────────────────
+
+    async function updateFeeStatus(invoiceId: string, newStatus: 'paid' | 'draft') {
+        setFeeUpdating(true);
+        try {
+            const res = await fetch(`${apiBase}/monthly-fees/${invoiceId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '',
+                },
+                body: JSON.stringify({ status: newStatus }),
+            });
+            if (res.ok) {
+                setInvoiceStatuses(prev => ({
+                    ...prev,
+                    [invoiceId]: { ...(prev[invoiceId] ?? selected?.current_invoice ?? {} as MonthlyInvoice), id: invoiceId, status: newStatus as any },
+                }));
+                setSelected(prev => {
+                    if (!prev?.current_invoice) return prev;
+                    return { ...prev, current_invoice: { ...prev.current_invoice, status: newStatus as any } };
+                });
+                setApartments(prev => prev.map(a => {
+                    if (a.current_invoice?.id === invoiceId) {
+                        return { ...a, current_invoice: { ...a.current_invoice, status: newStatus as any } };
+                    }
+                    return a;
+                }));
+            }
+        } catch (err) {
+            console.error('Failed to update fee status:', err);
+        } finally {
+            setFeeUpdating(false);
+        }
+    }
+
     // ── Loading state ─────────────────────────────────────────────────────────
 
     if (loading) {
@@ -182,10 +233,10 @@ export default function FloorPlan({ building_id, refreshKey, apiBase = '' }: Flo
             <div className="rounded-xl border p-4" style={{ backgroundColor: 'var(--card)', borderColor: "var(--border)" }}>
                 <div className="flex items-center gap-6 mb-3 flex-wrap">
                     {[
-                        { label: "Всего",         value: total,     color: "white"   },
-                        { label: "Продано",       value: sold,      color: "#34d399" },
-                        { label: "Забронировано", value: reserved,  color: "#fbbf24" },
-                        { label: "Свободно",      value: available, color: "#a5b4fc" },
+                        { label: "Jami",                        value: total,     color: "white"   },
+                        { label: mode === 'pm' ? "Egali"      : "Продано",       value: sold,      color: "#34d399" },
+                        { label: mode === 'pm' ? "Bron"       : "Забронировано", value: reserved,  color: "#fbbf24" },
+                        { label: mode === 'pm' ? "Bo'sh"      : "Свободно",      value: available, color: "#a5b4fc" },
                     ].map(({ label, value, color }) => (
                         <div key={label} className="text-center">
                             <p className="text-lg font-bold" style={{ color }}>{value}</p>
@@ -272,8 +323,8 @@ export default function FloorPlan({ building_id, refreshKey, apiBase = '' }: Flo
                                             {floor.floor_number}
                                         </div>
                                         <span className="text-xs" style={{ color: "#475569" }}>
-                                            Этаж {floor.floor_number}
-                                            {fTotal > 0 && ` · ${fSold}/${fTotal} продано`}
+                                            {mode === 'pm' ? 'Qavat' : 'Этаж'} {floor.floor_number}
+                                            {fTotal > 0 && ` · ${fSold}/${fTotal} ${mode === 'pm' ? 'egali' : 'продано'}`}
                                         </span>
                                     </div>
                                     {/* Floor mini progress */}
@@ -358,7 +409,7 @@ export default function FloorPlan({ building_id, refreshKey, apiBase = '' }: Flo
                     style={{ backgroundColor: "rgba(0,0,0,0.8)" }}
                 >
                     <div
-                        className="w-full max-w-sm rounded-2xl border overflow-y-auto max-h-[90vh]"
+                        className={`w-full rounded-2xl border overflow-y-auto max-h-[90vh] ${mode === 'pm' ? 'max-w-2xl' : 'max-w-sm'}`}
                         style={{ backgroundColor: 'var(--card)', borderColor: "var(--border)" }}
                     >
                         {/* Header */}
@@ -383,143 +434,248 @@ export default function FloorPlan({ building_id, refreshKey, apiBase = '' }: Flo
                             </button>
                         </div>
 
-                        {/* Details */}
-                        <div className="px-5 py-4 space-y-0">
-                            {[
-                                {
-                                    label: "Цена",
-                                    value: selected.price > 0 ? `$${selected.price.toLocaleString()}` : "—",
-                                },
-                                {
-                                    label: "Цена за м²",
-                                    value: selected.size_m2 > 0 && selected.price > 0
-                                        ? `$${Math.round(selected.price / selected.size_m2).toLocaleString()}`
-                                        : "—",
-                                },
-                                {
-                                    label: "Площадь",
-                                    value: selected.size_m2 > 0 ? `${selected.size_m2} м²` : "—",
-                                },
-                            ].map(({ label, value }, i, arr) => (
-                                <div
-                                    key={label}
-                                    className="flex justify-between items-center py-2.5"
-                                    style={{ borderBottom: i < arr.length - 1 ? "1px solid var(--border)" : undefined }}
-                                >
-                                    <span className="text-xs" style={{ color: "#64748b" }}>{label}</span>
-                                    <span className="text-sm font-medium text-slate-800">{value}</span>
+                        {mode === 'pm' ? (
+                            /* ── PM modal body (wide, full info) ── */
+                            <div className="px-6 py-5 space-y-5">
+
+                                {/* Two-column info grid */}
+                                <div className="grid grid-cols-2 gap-3">
+                                    {[
+                                        { label: "Kvartira raqami", value: `#${selected.number}` },
+                                        { label: "Qavat",           value: selected.floor_id != null ? `${selected.floor_id}-qavat` : "—" },
+                                        { label: "Xonalar soni",    value: selected.rooms_count != null ? `${selected.rooms_count} xona` : "—" },
+                                        { label: "Maydon",          value: selected.size_m2 > 0 ? `${selected.size_m2} m²` : "—" },
+                                        { label: "Oylik to'lov (m²)", value: selected.monthly_fee_per_sqm && selected.monthly_fee_per_sqm > 0
+                                            ? `${selected.monthly_fee_per_sqm.toLocaleString()} UZS/m²` : "—" },
+                                        { label: "Oylik to'lov (jami)", value: selected.monthly_fee && selected.monthly_fee > 0
+                                            ? `${selected.monthly_fee.toLocaleString()} UZS` : "—" },
+                                    ].map(({ label, value }) => (
+                                        <div key={label} className="rounded-xl px-3 py-2.5"
+                                            style={{ backgroundColor: 'rgba(16,185,129,0.03)', border: '1px solid rgba(16,185,129,0.08)' }}>
+                                            <p className="text-[10px] font-semibold uppercase tracking-widest mb-0.5" style={{ color: '#94a3b8' }}>{label}</p>
+                                            <p className="text-sm font-bold text-slate-800">{value}</p>
+                                        </div>
+                                    ))}
                                 </div>
-                            ))}
-                        </div>
 
-                        {/* Status buttons */}
-                        <div className="px-5 pb-4">
-                            <p className="text-xs font-medium mb-2" style={{ color: "#94a3b8" }}>Статус</p>
-                            <div className="grid grid-cols-3 gap-2">
-                                {(["available", "reserved", "sold"] as const).map((s) => {
-                                    const cfg    = S[s];
-                                    const active = selected.status === s;
-                                    return (
-                                        <button
-                                            key={s}
-                                            disabled={saving}
-                                            onClick={() => updateStatus(selected.id, s)}
-                                            className="py-2 rounded-lg text-xs font-semibold border transition-colors disabled:opacity-50"
-                                            style={{
-                                                backgroundColor: active ? cfg.bg     : "var(--bg)",
-                                                borderColor:     active ? cfg.border : "var(--border)",
-                                                color:           active ? cfg.text   : "#475569",
-                                            }}
-                                        >
-                                            {cfg.label}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
-
-                        {/* Linked buyer */}
-                        {(selected.status === "sold" || selected.status === "reserved") && (
-                            <div className="px-5 pb-4 border-t pt-4" style={{ borderColor: "var(--border)" }}>
-                                <p className="text-xs font-medium mb-2.5" style={{ color: "#94a3b8" }}>Покупатель</p>
-                                {selected.client ? (
-                                    <div className="space-y-2">
-                                        <div
-                                            className="flex items-center gap-2.5 rounded-lg px-3 py-2.5"
-                                            style={{ backgroundColor: 'var(--bg)', border: "1px solid var(--border)" }}
-                                        >
-                                            <div
-                                                className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
-                                                style={{ backgroundColor: "#1e1b4b", color: "#a5b4fc" }}
-                                            >
+                                {/* Resident section */}
+                                <div>
+                                    <p className="text-[10px] uppercase tracking-widest font-semibold mb-2" style={{ color: "#94a3b8" }}>
+                                        Aholi
+                                    </p>
+                                    {selected.client ? (
+                                        <div className="flex items-center gap-3 rounded-xl px-4 py-3"
+                                            style={{ backgroundColor: 'rgba(16,185,129,0.06)', border: "1px solid rgba(16,185,129,0.15)" }}>
+                                            <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
+                                                style={{ backgroundColor: "rgba(16,185,129,0.15)", color: "#10b981" }}>
                                                 {selected.client.full_name.charAt(0).toUpperCase()}
                                             </div>
                                             <div className="min-w-0 flex-1">
-                                                <p className="text-sm font-medium text-slate-800 truncate">{selected.client.full_name}</p>
+                                                <p className="text-sm font-semibold text-slate-800 truncate">{selected.client.full_name}</p>
                                                 {selected.client.phone && (
                                                     <p className="text-xs truncate" style={{ color: "#64748b" }}>{selected.client.phone}</p>
                                                 )}
-                                                {selected.client.assigned_to && (() => {
-                                                    const mgr = managers.find((m) => m.id === selected.client?.assigned_to);
-                                                    return mgr ? (
-                                                        <p className="text-xs truncate" style={{ color: "#475569" }}>
-                                                            Менеджер: {mgr.full_name ?? mgr.email}
-                                                        </p>
-                                                    ) : null;
-                                                })()}
+                                            </div>
+                                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0"
+                                                style={{ backgroundColor: 'rgba(16,185,129,0.12)', color: '#10b981' }}>
+                                                Egali
+                                            </span>
+                                        </div>
+                                    ) : (
+                                        <div className="rounded-xl px-4 py-3 text-xs text-slate-400"
+                                            style={{ backgroundColor: 'var(--bg)', border: "1px solid var(--border)" }}>
+                                            Hozirda aholi yo'q
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Current month fee — shown for ALL apartments */}
+                                <div>
+                                    <p className="text-[10px] uppercase tracking-widest font-semibold mb-2" style={{ color: "#94a3b8" }}>
+                                        Joriy oy to'lovi &mdash; {new Date().toLocaleDateString('uz-UZ', { year: 'numeric', month: 'long' })}
+                                    </p>
+                                    {selected.current_invoice ? (
+                                        <div className="space-y-2">
+                                            <div className="flex items-center justify-between rounded-xl px-4 py-3"
+                                                style={{ backgroundColor: 'var(--bg)', border: "1px solid var(--border)" }}>
+                                                <div>
+                                                    <p className="text-base font-bold text-slate-800">
+                                                        {selected.current_invoice.amount.toLocaleString()} UZS
+                                                    </p>
+                                                    <p className="text-xs mt-0.5" style={{ color: "#64748b" }}>
+                                                        Hisob-faktura: {selected.current_invoice.period}
+                                                    </p>
+                                                </div>
+                                                <span className="text-xs font-semibold px-3 py-1 rounded-full"
+                                                    style={selected.current_invoice.status === 'paid'
+                                                        ? { backgroundColor: 'rgba(16,185,129,0.12)', color: '#10b981' }
+                                                        : selected.current_invoice.status === 'overdue'
+                                                        ? { backgroundColor: 'rgba(239,68,68,0.10)', color: '#ef4444' }
+                                                        : { backgroundColor: 'rgba(245,158,11,0.10)', color: '#f59e0b' }}>
+                                                    {selected.current_invoice.status === 'paid' ? "✓ To'langan"
+                                                        : selected.current_invoice.status === 'overdue' ? "⚠ Kechikkan"
+                                                        : "✕ To'lanmagan"}
+                                                </span>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                {selected.current_invoice.status !== 'paid' ? (
+                                                    <button
+                                                        disabled={feeUpdating}
+                                                        onClick={() => updateFeeStatus(selected.current_invoice!.id, 'paid')}
+                                                        className="col-span-2 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all disabled:opacity-50"
+                                                        style={{ backgroundColor: 'rgba(16,185,129,0.12)', color: '#10b981', border: '1px solid rgba(16,185,129,0.20)' }}>
+                                                        ✓ To'langan deb belgilash
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        disabled={feeUpdating}
+                                                        onClick={() => updateFeeStatus(selected.current_invoice!.id, 'draft')}
+                                                        className="col-span-2 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all disabled:opacity-50"
+                                                        style={{ backgroundColor: 'rgba(239,68,68,0.06)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.15)' }}>
+                                                        ✕ To'lanmagan deb qaytarish
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
-                                        <button
-                                            onClick={() => router.visit(`/clients/${selected.client?.id}`)}
-                                            className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium border transition-colors hover:border-indigo-500/40"
-                                            style={{ borderColor: "var(--border)", color: "#a5b4fc", backgroundColor: "#0f0a30" }}
-                                        >
-                                            <User className="w-3 h-3" />
-                                            Открыть профиль клиента
-                                            <ArrowRight className="w-3 h-3" />
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <p className="text-xs" style={{ color: "#334155" }}>
-                                        {selected.client_id ? "Клиент не найден" : "Клиент не привязан"}
-                                    </p>
-                                )}
-                            </div>
-                        )}
-
-                        {/* Assign manager */}
-                        {managers.length > 0 && selected.client && (
-                            <div className="px-5 pb-4">
-                                <p className="text-xs font-medium mb-2" style={{ color: "#94a3b8" }}>Назначить менеджеру</p>
-                                <div className="relative">
-                                    <select
-                                        value={selected.client?.assigned_to || ""}
-                                        onChange={(e) => e.target.value && assignManager(selected.id, e.target.value)}
-                                        className="w-full appearance-none rounded-lg px-3 py-2.5 pr-8 text-xs text-slate-800 outline-none"
-                                        style={{ backgroundColor: 'var(--bg)', border: "1px solid var(--border)" }}
-                                    >
-                                        <option value="" style={{ backgroundColor: 'var(--card)' }}>Выбрать менеджера…</option>
-                                        {managers.map((m) => (
-                                            <option key={m.id} value={m.id} style={{ backgroundColor: 'var(--card)' }}>
-                                                {m.full_name ?? m.email ?? m.id}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <ChevronDown
-                                        className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none w-3.5 h-3.5"
-                                        style={{ color: "#475569" }}
-                                    />
+                                    ) : (
+                                        <div className="rounded-xl px-4 py-3 text-center space-y-1.5"
+                                            style={{ backgroundColor: 'var(--bg)', border: "1px solid var(--border)" }}>
+                                            <p className="text-xs text-slate-400">Bu oy uchun hisob-faktura yaratilmagan</p>
+                                            <a href="/pm/monthly-fees"
+                                                className="text-xs font-semibold underline"
+                                                style={{ color: '#10b981' }}>
+                                                To'lovlar sahifasiga o'tish →
+                                            </a>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
+                        ) : (
+                            /* ── Sales modal body ── */
+                            <>
+                                {/* Details */}
+                                <div className="px-5 py-4 space-y-0">
+                                    {[
+                                        {
+                                            label: "Цена",
+                                            value: selected.price > 0 ? `$${selected.price.toLocaleString()}` : "—",
+                                        },
+                                        {
+                                            label: "Цена за м²",
+                                            value: selected.size_m2 > 0 && selected.price > 0
+                                                ? `$${Math.round(selected.price / selected.size_m2).toLocaleString()}`
+                                                : "—",
+                                        },
+                                        {
+                                            label: "Площадь",
+                                            value: selected.size_m2 > 0 ? `${selected.size_m2} м²` : "—",
+                                        },
+                                    ].map(({ label, value }, i, arr) => (
+                                        <div key={label} className="flex justify-between items-center py-2.5"
+                                            style={{ borderBottom: i < arr.length - 1 ? "1px solid var(--border)" : undefined }}>
+                                            <span className="text-xs" style={{ color: "#64748b" }}>{label}</span>
+                                            <span className="text-sm font-medium text-slate-800">{value}</span>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Status buttons */}
+                                <div className="px-5 pb-4">
+                                    <p className="text-xs font-medium mb-2" style={{ color: "#94a3b8" }}>Статус</p>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {(["available", "reserved", "sold"] as const).map((s) => {
+                                            const cfg    = S[s];
+                                            const active = selected.status === s;
+                                            return (
+                                                <button key={s} disabled={saving}
+                                                    onClick={() => updateStatus(selected.id, s)}
+                                                    className="py-2 rounded-lg text-xs font-semibold border transition-colors disabled:opacity-50"
+                                                    style={{
+                                                        backgroundColor: active ? cfg.bg     : "var(--bg)",
+                                                        borderColor:     active ? cfg.border : "var(--border)",
+                                                        color:           active ? cfg.text   : "#475569",
+                                                    }}>
+                                                    {cfg.label}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
+                                {/* Linked buyer */}
+                                {(selected.status === "sold" || selected.status === "reserved") && (
+                                    <div className="px-5 pb-4 border-t pt-4" style={{ borderColor: "var(--border)" }}>
+                                        <p className="text-xs font-medium mb-2.5" style={{ color: "#94a3b8" }}>Покупатель</p>
+                                        {selected.client ? (
+                                            <div className="space-y-2">
+                                                <div className="flex items-center gap-2.5 rounded-lg px-3 py-2.5"
+                                                    style={{ backgroundColor: 'var(--bg)', border: "1px solid var(--border)" }}>
+                                                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+                                                        style={{ backgroundColor: "#1e1b4b", color: "#a5b4fc" }}>
+                                                        {selected.client.full_name.charAt(0).toUpperCase()}
+                                                    </div>
+                                                    <div className="min-w-0 flex-1">
+                                                        <p className="text-sm font-medium text-slate-800 truncate">{selected.client.full_name}</p>
+                                                        {selected.client.phone && (
+                                                            <p className="text-xs truncate" style={{ color: "#64748b" }}>{selected.client.phone}</p>
+                                                        )}
+                                                        {selected.client.assigned_to && (() => {
+                                                            const mgr = managers.find((m) => m.id === selected.client?.assigned_to);
+                                                            return mgr ? (
+                                                                <p className="text-xs truncate" style={{ color: "#475569" }}>
+                                                                    Менеджер: {mgr.full_name ?? mgr.email}
+                                                                </p>
+                                                            ) : null;
+                                                        })()}
+                                                    </div>
+                                                </div>
+                                                <button onClick={() => router.visit(`/clients/${selected.client?.id}`)}
+                                                    className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium border transition-colors hover:border-indigo-500/40"
+                                                    style={{ borderColor: "var(--border)", color: "#a5b4fc", backgroundColor: "#0f0a30" }}>
+                                                    <User className="w-3 h-3" />
+                                                    Открыть профиль клиента
+                                                    <ArrowRight className="w-3 h-3" />
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <p className="text-xs" style={{ color: "#334155" }}>
+                                                {selected.client_id ? "Клиент не найден" : "Клиент не привязан"}
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Assign manager */}
+                                {managers.length > 0 && selected.client && (
+                                    <div className="px-5 pb-4">
+                                        <p className="text-xs font-medium mb-2" style={{ color: "#94a3b8" }}>Назначить менеджеру</p>
+                                        <div className="relative">
+                                            <select value={selected.client?.assigned_to || ""}
+                                                onChange={(e) => e.target.value && assignManager(selected.id, e.target.value)}
+                                                className="w-full appearance-none rounded-lg px-3 py-2.5 pr-8 text-xs text-slate-800 outline-none"
+                                                style={{ backgroundColor: 'var(--bg)', border: "1px solid var(--border)" }}>
+                                                <option value="" style={{ backgroundColor: 'var(--card)' }}>Выбрать менеджера…</option>
+                                                {managers.map((m) => (
+                                                    <option key={m.id} value={m.id} style={{ backgroundColor: 'var(--card)' }}>
+                                                        {m.full_name ?? m.email ?? m.id}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none w-3.5 h-3.5"
+                                                style={{ color: "#475569" }} />
+                                        </div>
+                                    </div>
+                                )}
+                            </>
                         )}
 
-                        <div className="px-5 pb-5">
+                        <div className={mode === 'pm' ? "px-6 pb-6" : "px-5 pb-5"}>
                             <button
                                 onClick={() => setSelected(null)}
-                                className="w-full py-2.5 rounded-lg text-sm font-medium hover:bg-slate-100"
+                                className="w-full py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-100 transition-colors"
                                 style={{ border: "1px solid var(--border)", color: "#64748b" }}
                             >
-                                Закрыть
+                                Yopish
                             </button>
                         </div>
                     </div>

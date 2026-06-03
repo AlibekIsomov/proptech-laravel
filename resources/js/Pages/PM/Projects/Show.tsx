@@ -337,9 +337,10 @@ export default function PMProjectShow({ project, buildings, aptStats }: Props) {
                             </h2>
                         </div>
                         <FloorPlan
-                            pm_building_id={selectedBuilding.id}
+                            building_id={selectedBuilding.id}
                             refreshKey={fpRefreshKey}
                             apiBase="/pm"
+                            mode="pm"
                         />
                     </div>
                 )}

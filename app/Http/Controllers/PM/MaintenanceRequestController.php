@@ -73,12 +73,16 @@ class MaintenanceRequestController extends Controller
             ]),
         ]);
 
-        $apartments = Apartment::orderBy('number')->get()->map(fn($a) => [
-            'id'          => $a->id,
-            'number'      => $a->number,
-            'pm_building_id' => $a->pm_building_id,
-            'floor'       => $a->floor,
-        ]);
+        $apartments = Apartment::orderBy('floor')->orderBy('number')
+            ->get()
+            ->unique(fn($a) => $a->pm_building_id . '-' . $a->number)
+            ->map(fn($a) => [
+                'id'             => $a->id,
+                'number'         => $a->number,
+                'pm_building_id' => $a->pm_building_id,
+                'floor'          => $a->floor,
+            ])
+            ->values();
 
         $residents = Resident::where('is_active', true)->get(['id', 'full_name', 'apartment_id']);
 
