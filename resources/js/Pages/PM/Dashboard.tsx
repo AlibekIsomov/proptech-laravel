@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Head, router } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
 import { Home, Users, Wrench, AlertCircle, Sparkles } from 'lucide-react';
 import AppShell from '@/Components/AppShell';
 import ResidentsChessboard, { ChessboardApartment } from '@/Components/pm/ResidentsChessboard';
@@ -40,6 +41,7 @@ export default function PMDashboard({
   apartments,
   metrics,
 }: Props) {
+  const { t } = useTranslation();
   const [selectedProj, setSelectedProj] = useState(initialProj || '');
   const [selectedBldg, setSelectedBldg] = useState(initialBldg || '');
   const [openDrawerId, setOpenDrawerId] = useState<string | null>(null);
@@ -72,18 +74,18 @@ export default function PMDashboard({
 
   return (
     <AppShell>
-      <Head title="Mulk boshqaruvi — 1Mahalla" />
+      <Head title="1Mahalla PM" />
 
       <div className="space-y-6">
         <header>
           <p className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: '#10b981' }}>
-            Mulk boshqaruvi
+            {t('common.propertyMgmt')}
           </p>
           <h1 className="text-3xl font-bold text-slate-800 mt-1" style={{ fontFamily: 'var(--font-display)' }}>
-            Umumiy ko'rinish
+            {t('pmDash.title')}
           </h1>
           <p className="text-sm mt-1 text-slate-500">
-            Aholilar, arizalar, hisob-fakturalar va kommunal aktivlarni boshqarish
+            {t('pmDash.subtitle')}
           </p>
         </header>
 
@@ -91,7 +93,7 @@ export default function PMDashboard({
         <div className="flex flex-wrap gap-4 p-4 rounded-2xl bg-white" style={{ border: '1px solid rgba(16,185,129,0.12)' }}>
           <label className="flex flex-col gap-1.5 min-w-[200px]">
             <span className="text-[10px] uppercase tracking-widest font-semibold text-slate-400">
-              Loyiha
+              {t('common.project')}
             </span>
             <select
               value={selectedProj}
@@ -101,7 +103,7 @@ export default function PMDashboard({
                 border:          '1px solid rgba(16,185,129,0.15)',
               }}
             >
-              {projects.length === 0 && <option value="">Loyihalar mavjud emas</option>}
+              {projects.length === 0 && <option value="">{t('pmDash.noProjects')}</option>}
               {projects.map((p) => (
                 <option key={p.id} value={p.id} style={{ backgroundColor: '#ffffff' }}>
                   {p.name}
@@ -112,7 +114,7 @@ export default function PMDashboard({
 
           <label className="flex flex-col gap-1.5 min-w-[200px]">
             <span className="text-[10px] uppercase tracking-widest font-semibold text-slate-400">
-              Bino
+              {t('common.building')}
             </span>
             <select
               value={selectedBldg}
@@ -123,7 +125,7 @@ export default function PMDashboard({
                 border:          '1px solid rgba(16,185,129,0.15)',
               }}
             >
-              {filteredBuildings.length === 0 && <option value="">Binolar mavjud emas</option>}
+              {filteredBuildings.length === 0 && <option value="">{t('pmDash.noBuildings')}</option>}
               {filteredBuildings.map((b) => (
                 <option key={b.id} value={b.id} style={{ backgroundColor: '#ffffff' }}>
                   {b.name}
@@ -135,16 +137,16 @@ export default function PMDashboard({
 
         {/* Metrics */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <MetricCard icon={Home}        label="Jami kvartiralar"  value={metrics.total_apartments.toString()}       accent="#10b981" />
-          <MetricCard icon={Users}       label="Faol aholi"  value={metrics.active_residents.toString()}       accent="#14b8a6" />
-          <MetricCard icon={Wrench}      label="Faol arizalar"     value={metrics.open_requests.toString()}          accent="#fbbf24" />
-          <MetricCard icon={AlertCircle} label="To'lov qarzdorligi"  value={`${metrics.overdue_amount.toLocaleString()} UZS`} accent="#ef4444" />
+          <MetricCard icon={Home}        label={t('pmDash.totalApts')}       value={metrics.total_apartments.toString()}                   accent="#10b981" />
+          <MetricCard icon={Users}       label={t('pmDash.activeResidents')} value={metrics.active_residents.toString()}                   accent="#14b8a6" />
+          <MetricCard icon={Wrench}      label={t('pmDash.openRequests')}    value={metrics.open_requests.toString()}                      accent="#fbbf24" />
+          <MetricCard icon={AlertCircle} label={t('pmDash.overdueAmount')}   value={`${metrics.overdue_amount.toLocaleString()} UZS`}     accent="#ef4444" />
         </div>
 
         {/* Chessboard */}
         <section className="space-y-4">
           <h2 className="text-lg font-semibold text-slate-800" style={{ fontFamily: 'var(--font-display)' }}>
-            Uylar shaxmatkasi
+            {t('pmDash.chessboard')}
           </h2>
           <ResidentsChessboard apartments={apartments} onSelect={setOpenDrawerId} />
         </section>
