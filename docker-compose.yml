@@ -64,14 +64,11 @@ services:
     networks:
       - proptech-network
 
-  # Queue Worker — kerak bo'lganda yoqiladi
-  # Yoqish: VPS da `docker compose --profile queue up -d` yoki
-  #          VPS .env ga `COMPOSE_PROFILES=queue` qo'shing
+  # Queue Worker — Supabase sync va boshqa async joblar uchun
   queue:
     image: ${IMAGE_NAME:-ghcr.io/alibekisomov/proptech-laravel}:${IMAGE_TAG:-latest}
     container_name: proptech_queue
     restart: unless-stopped
-    profiles: ["queue"]   # default: o'chiq. Yoqish uchun yuqoridagi kommentni o'qing
     command: ["php", "artisan", "queue:work", "--sleep=3", "--tries=3", "--max-time=3600"]
     env_file:
       - .env
