@@ -74,5 +74,9 @@ php artisan db:seed-from-supabase || echo "ℹ️  Supabase seed skipped (Supaba
 echo "📋 Laravel log (last 30 lines):"
 tail -n 30 /var/www/html/storage/logs/laravel.log 2>/dev/null || echo "(log empty or not found)"
 
-echo "✅ Starting PHP-FPM..."
-exec php-fpm
+echo "✅ Starting process..."
+if [ $# -gt 0 ]; then
+    exec "$@"
+else
+    exec php-fpm
+fi
