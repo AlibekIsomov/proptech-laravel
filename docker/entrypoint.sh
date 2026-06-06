@@ -21,6 +21,13 @@ if [ ! -f /var/www/html/public/index.php ]; then
     echo "✅  public/ volume populated."
 fi
 
+# Har deploy da Vite build fayllarini yangilaymiz (JS/CSS o'zgarishlar ko'rinsin)
+echo "🔄  Refreshing public/build from new image..."
+rm -rf /var/www/html/public/build
+cp -r /var/www/html/public.bak/build /var/www/html/public/build
+chown -R www-data:www-data /var/www/html/public/build
+echo "✅  public/build refreshed."
+
 # Storage symlink — public/storage → storage/app/public
 # Bu bo'lmasa fayl yuklash va media xizmat 500 xato beradi
 echo "🔗  Creating storage symlink..."
