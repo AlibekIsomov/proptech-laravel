@@ -9,7 +9,9 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Services\TelegramAlert;
 use Exception;
+use Throwable;
 
 class SyncModelToSupabase implements ShouldQueue
 {
@@ -60,11 +62,31 @@ class SyncModelToSupabase implements ShouldQueue
             }
         } catch (Exception $e) {
             Log::error("Supabase replication failed for {$this->modelClass}: " . $e->getMessage(), [
-                'model' => $this->modelClass,
-                'action' => $this->action,
-                'attributes' => $this->attributes
+                'model'      => $this->modelClass,
+                'action'     => $this->action,
+                'attributes' => $this->attributes,
             ]);
             throw $e;
         }
+    }
+
+    /**
+     * Barcha urinishlar tugab, job hali ham muvaffaqiyatsiz bo'lganda chaqiriladi.
+     */
+    public function failed(Throwable $exception): void
+    {
+        $model  = class_basename($this->modelClass);
+        $action = strtoupper($this->action);
+        $error  = substr($exception->getMessage(), 0, 300);
+
+        Log::critical("Supabase sync FAILED permanently for {$this->modelClass}", [
+            'action' => $action,
+            'error'  => $error,
+        ]);
+
+        TelegramAlert::error(
+            "Supabase Sync Muvaffaqiyatsiz!",
+            "Model: <b>{$model}</b> ({$action})\nXato: {$error}"
+        );
     }
 }
