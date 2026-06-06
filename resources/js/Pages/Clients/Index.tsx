@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Head, router } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
 import { Plus, X, Loader2, Search, Users, Mail, Phone, ChevronDown, Sparkles, Copy, Check, Home, Edit, Trash2 } from 'lucide-react';
 import AppShell from '@/Components/AppShell';
 
@@ -40,17 +41,18 @@ interface Props {
   apartments: ApartmentOption[];
 }
 
-const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; dot: string }> = {
-  new:       { label: 'New',       bg: 'var(--border)', text: '#64748b', dot: '#475569' },
-  contacted: { label: 'Contacted', bg: '#1e1b4b', text: '#a5b4fc', dot: '#6366f1' },
-  viewing:   { label: 'Viewing',   bg: '#1c1003', text: '#fbbf24', dot: '#f59e0b' },
-  reserved:  { label: 'Reserved',  bg: '#052e16', text: '#34d399', dot: '#10b981' },
-  bought:    { label: 'Bought',    bg: '#14532d', text: '#86efac', dot: '#22c55e' },
+const STATUS_CONFIG: Record<string, { labelKey: string; bg: string; text: string; dot: string }> = {
+  new:       { labelKey: 'clients.statusNew',       bg: 'var(--border)', text: '#64748b', dot: '#475569' },
+  contacted: { labelKey: 'clients.statusContacted', bg: '#1e1b4b',      text: '#a5b4fc', dot: '#6366f1' },
+  viewing:   { labelKey: 'clients.statusViewing',   bg: '#1c1003',      text: '#fbbf24', dot: '#f59e0b' },
+  reserved:  { labelKey: 'clients.statusReserved',  bg: '#052e16',      text: '#34d399', dot: '#10b981' },
+  bought:    { labelKey: 'clients.statusBought',    bg: '#14532d',      text: '#86efac', dot: '#22c55e' },
 };
 
 const ALL_STATUSES = ['new', 'contacted', 'viewing', 'reserved', 'bought'];
 
 export default function Index({ clients, managers, apartments }: Props) {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'new' | 'contacted' | 'viewing' | 'reserved' | 'bought'>('all');
 
@@ -252,9 +254,9 @@ export default function Index({ clients, managers, apartments }: Props) {
       {/* Header bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b" style={{ borderColor: 'var(--border)' }}>
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Clients</h1>
+          <h1 className="text-2xl font-bold text-slate-800">{t('clients.title')}</h1>
           <p className="text-xs mt-1" style={{ color: 'var(--muted)' }}>
-            Showing {filtered.length} of {clients.length} total leads
+            {filtered.length} {t('clients.of')} {clients.length} {t('clients.totalLeads')}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -264,7 +266,7 @@ export default function Index({ clients, managers, apartments }: Props) {
             <Search className="w-4 h-4" style={{ color: 'var(--muted)' }} />
             <input
               type="text"
-              placeholder="Search name, phone, email..."
+              placeholder={t('clients.searchPlaceholder')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="bg-transparent text-xs text-slate-800 outline-none placeholder:text-slate-400 w-44 md:w-56"
@@ -276,7 +278,7 @@ export default function Index({ clients, managers, apartments }: Props) {
             style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' }}
           >
             <Plus className="w-4 h-4" />
-            New Lead
+            {t('clients.newLead')}
           </button>
         </div>
       </div>
@@ -314,14 +316,14 @@ export default function Index({ clients, managers, apartments }: Props) {
           {filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 gap-3">
               <Users className="w-10 h-10" style={{ color: 'var(--border)' }} />
-              <p className="text-sm" style={{ color: 'var(--muted)' }}>No clients found matching your filters.</p>
+              <p className="text-sm" style={{ color: 'var(--muted)' }}>{t('clients.noClientsFound')}</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                    {['Name', 'Contact Info', 'Budget', 'Apartment', 'Status', 'Assignee', 'AI Actions', 'Actions'].map((h) => (
+                    {[t('clients.colName'), t('clients.colContact'), t('clients.colBudget'), t('clients.colApartment'), t('clients.colStatus'), t('clients.colAssignee'), t('clients.colAiActions'), t('clients.colActions')].map((h) => (
                       <th key={h} className="px-6 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--muted)' }}>
                         {h}
                       </th>
@@ -363,7 +365,7 @@ export default function Index({ clients, managers, apartments }: Props) {
                             <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-semibold"
                               style={{ backgroundColor: cfg.bg, color: cfg.text }}>
                               <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: cfg.dot }} />
-                              {cfg.label}
+                              {t(cfg.labelKey)}
                             </span>
                             <div className="relative inline-flex items-center">
                               <select value={client.status}
@@ -371,7 +373,7 @@ export default function Index({ clients, managers, apartments }: Props) {
                                 className="appearance-none text-[10px] pr-5 pl-1 py-0.5 rounded-md outline-none cursor-pointer"
                                 style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--muted)' }}>
                                 {ALL_STATUSES.map((s) => (
-                                  <option key={s} value={s}>{STATUS_CONFIG[s].label}</option>
+                                  <option key={s} value={s}>{t(STATUS_CONFIG[s].labelKey)}</option>
                                 ))}
                               </select>
                               <ChevronDown className="absolute right-1 pointer-events-none w-2.5 h-2.5" style={{ color: 'var(--muted)' }} />
@@ -422,7 +424,7 @@ export default function Index({ clients, managers, apartments }: Props) {
             style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-bold text-slate-800">
-                {editingClient ? 'Edit Lead' : 'New Lead'}
+                {editingClient ? t('clients.editLeadTitle') : t('clients.newLeadTitle')}
               </h2>
               <button
                 onClick={() => setShowModal(false)}
@@ -435,7 +437,7 @@ export default function Index({ clients, managers, apartments }: Props) {
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Full name */}
               <div>
-                <label className="block text-xs font-semibold mb-1.5 text-slate-400">Full Name *</label>
+                <label className="block text-xs font-semibold mb-1.5 text-slate-400">{t('clients.fullName')} *</label>
                 <input
                   type="text"
                   required
@@ -450,7 +452,7 @@ export default function Index({ clients, managers, apartments }: Props) {
               <div className="grid grid-cols-2 gap-4">
                 {/* Phone */}
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">Phone</label>
+                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">{t('clients.phone')}</label>
                   <input
                     type="text"
                     value={phone}
@@ -463,7 +465,7 @@ export default function Index({ clients, managers, apartments }: Props) {
 
                 {/* Email */}
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">Email</label>
+                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">{t('clients.emailLabel')}</label>
                   <input
                     type="email"
                     value={email}
@@ -478,7 +480,7 @@ export default function Index({ clients, managers, apartments }: Props) {
               <div className="grid grid-cols-2 gap-4">
                 {/* Budget */}
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">Budget (USD)</label>
+                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">{t('clients.budget')}</label>
                   <input
                     type="number"
                     value={budgetUsd}
@@ -491,7 +493,7 @@ export default function Index({ clients, managers, apartments }: Props) {
 
                 {/* Status */}
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">Status</label>
+                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">{t('clients.statusLabel')}</label>
                   <select
                     value={status}
                     onChange={(e) => setStatus(e.target.value as any)}
@@ -499,7 +501,7 @@ export default function Index({ clients, managers, apartments }: Props) {
                     style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
                   >
                     {ALL_STATUSES.map((s) => (
-                      <option key={s} value={s}>{STATUS_CONFIG[s].label}</option>
+                      <option key={s} value={s}>{t(STATUS_CONFIG[s].labelKey)}</option>
                     ))}
                   </select>
                 </div>
@@ -508,7 +510,7 @@ export default function Index({ clients, managers, apartments }: Props) {
               <div className="grid grid-cols-2 gap-4">
                 {/* Source */}
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">Lead Source</label>
+                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">{t('clients.leadSource')}</label>
                   <input
                     type="text"
                     value={source}
@@ -521,14 +523,14 @@ export default function Index({ clients, managers, apartments }: Props) {
 
                 {/* Apartment selector */}
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">Apartment</label>
+                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">{t('clients.apartment')}</label>
                   <select
                     value={apartmentId}
                     onChange={(e) => setApartmentId(e.target.value)}
                     className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
                     style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
                   >
-                    <option value="">No Apartment</option>
+                    <option value="">{t('clients.noApartment')}</option>
                     {apartments.map((a) => (
                       <option key={a.id} value={a.id}>{a.label}</option>
                     ))}
@@ -569,14 +571,14 @@ export default function Index({ clients, managers, apartments }: Props) {
 
               {/* Assignee */}
               <div>
-                <label className="block text-xs font-semibold mb-1.5 text-slate-400">Assigned Manager</label>
+                <label className="block text-xs font-semibold mb-1.5 text-slate-400">{t('clients.assignedManager')}</label>
                 <select
                   value={assignedTo}
                   onChange={(e) => setAssignedTo(e.target.value)}
                   className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
                   style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
                 >
-                  <option value="">Select manager...</option>
+                  <option value="">{t('clients.selectManager')}</option>
                   {managers.map((m) => (
                     <option key={m.id} value={m.id}>{m.full_name}</option>
                   ))}
@@ -585,7 +587,7 @@ export default function Index({ clients, managers, apartments }: Props) {
 
               {/* Notes */}
               <div>
-                <label className="block text-xs font-semibold mb-1.5 text-slate-400">Notes</label>
+                <label className="block text-xs font-semibold mb-1.5 text-slate-400">{t('clients.notes')}</label>
                 <textarea
                   rows={3}
                   value={notes}
@@ -603,7 +605,7 @@ export default function Index({ clients, managers, apartments }: Props) {
                   className="flex-1 py-3 rounded-xl text-xs font-semibold hover:bg-slate-100 transition-all text-slate-400"
                   style={{ border: '1px solid var(--border)' }}
                 >
-                  Cancel
+                  {t('clients.cancel')}
                 </button>
                 <button
                   type="submit"
@@ -612,7 +614,7 @@ export default function Index({ clients, managers, apartments }: Props) {
                   style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' }}
                 >
                   {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                  {editingClient ? 'Save Lead' : 'Create Lead'}
+                  {editingClient ? t('clients.save') : t('clients.createLead')}
                 </button>
               </div>
             </form>
@@ -632,8 +634,8 @@ export default function Index({ clients, managers, apartments }: Props) {
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-indigo-400" />
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-800">AI Email Generator</h3>
-                  {emailClient && <p className="text-[10px] text-slate-400">For {emailClient.full_name}</p>}
+                  <h3 className="text-sm font-semibold text-slate-800">{t('clients.aiEmailTitle')}</h3>
+                  {emailClient && <p className="text-[10px] text-slate-400">{t('clients.aiEmailFor')} {emailClient.full_name}</p>}
                 </div>
               </div>
               <button onClick={closeEmailModal}
@@ -660,7 +662,7 @@ export default function Index({ clients, managers, apartments }: Props) {
 
               {generatedEmail && !emailLoading && (
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">Generated Message</label>
+                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">{t('clients.generatedMessage')}</label>
                   <div className="rounded-xl p-4 text-xs leading-relaxed whitespace-pre-wrap"
                     style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', color: '#cbd5e1' }}>
                     {generatedEmail}
@@ -676,13 +678,13 @@ export default function Index({ clients, managers, apartments }: Props) {
                 <button onClick={closeEmailModal}
                   className="flex-1 py-2.5 rounded-xl text-xs font-semibold hover:bg-slate-100 text-slate-400"
                   style={{ border: '1px solid var(--border)' }}>
-                  Close
+                  {t('clients.close')}
                 </button>
                 <button onClick={handleCopy}
                   className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold text-white transition-all"
                   style={{ backgroundColor: copied ? '#052e16' : '#6366f1',
                            color: copied ? '#34d399' : 'white' }}>
-                  {copied ? <><Check className="w-4 h-4" />Copied!</> : <><Copy className="w-4 h-4" />Copy Email</>}
+                  {copied ? <><Check className="w-4 h-4" />{t('clients.copied')}</> : <><Copy className="w-4 h-4" />{t('clients.copy')}</>}
                 </button>
               </div>
             )}

@@ -5,7 +5,15 @@
       "Bash(php artisan *)",
       "Bash(grep *)",
       "Bash(Get-ChildItem *)",
-      "Bash(del *)"
+      "Bash(del *)",
+      "Bash(npx vite *)",
+      "Bash(npm run *)",
+      "Bash(.\\\\node_modules\\\\.bin\\\\vite build *)",
+      "Bash(docker exec *)",
+      "Bash(xargs cat)",
+      "Bash(config\")",
+      "PowerShell(docker exec proptech_app *)",
+      "PowerShell(docker cp \"G:\\\\my-laravel-projects\\\\proptech-laravel\\\\public\\\\build\" proptech_app:/var/www/html/public/ 2>&1)"
     ]
   }
 }

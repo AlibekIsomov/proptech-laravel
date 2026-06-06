@@ -1,5 +1,7 @@
 import { FormEvent, useState } from 'react';
 import { router, usePage } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from '@/Components/LanguageSwitcher';
 
 interface Props {
     portal: 'sales' | 'pm';
@@ -52,6 +54,7 @@ function MahallаLogo({ size = 48 }: { size?: number }) {
 }
 
 export default function Login({ portal, errors }: Props) {
+    const { t } = useTranslation();
     const page = usePage<SharedProps>();
     const brand = page?.props?.brand || { name: '1Mahalla', tagline: 'Heritage + Tech', legalName: '1Mahalla' };
 
@@ -110,7 +113,7 @@ export default function Login({ portal, errors }: Props) {
                     </h1>
                     <p className="text-xs font-semibold uppercase tracking-widest mt-1.5"
                         style={{ color: '#1e7e34', letterSpacing: '0.15em' }}>
-                        {portal === 'pm' ? 'Mulk boshqaruvi portali' : (brand?.tagline ?? 'Meros + Texnologiya')}
+                        {portal === 'pm' ? t('login.pmPortal') : (brand?.tagline ?? t('login.salesTagline'))}
                     </p>
                 </div>
 
@@ -119,7 +122,7 @@ export default function Login({ portal, errors }: Props) {
                     <div>
                         <label htmlFor="email" className="block text-sm font-medium mb-1.5"
                             style={{ color: 'rgba(26,46,34,0.7)' }}>
-                            Email manzil
+                            {t('login.emailLabel')}
                         </label>
                         <input
                             id="email"
@@ -128,7 +131,7 @@ export default function Login({ portal, errors }: Props) {
                             required
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            placeholder="siz@kompaniya.uz"
+                            placeholder={t('login.emailPlaceholder')}
                             className="w-full rounded-xl px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 transition-all bg-white"
                             style={{ border: '1px solid rgba(39,162,71,0.15)' }}
                             onFocus={(e) => (e.currentTarget.style.borderColor = '#27A247')}
@@ -141,7 +144,7 @@ export default function Login({ portal, errors }: Props) {
                     <div>
                         <label htmlFor="password" className="block text-sm font-medium mb-1.5"
                             style={{ color: 'rgba(26,46,34,0.7)' }}>
-                            Parol
+                            {t('login.passwordLabel')}
                         </label>
                         <div className="relative">
                             <input
@@ -184,28 +187,31 @@ export default function Login({ portal, errors }: Props) {
                         }}
                     >
                         {loading
-                            ? <><Icons.Loader className="w-4 h-4 animate-spin text-white" />Kirilmoqda…</>
-                            : 'Kirish'}
+                            ? <><Icons.Loader className="w-4 h-4 animate-spin text-white" />{t('login.signingIn')}</>
+                            : t('login.submit')}
                     </button>
                 </form>
 
-                {/* Portal switch */}
-                <div className="mt-6 pt-6 text-center" style={{ borderTop: '1px solid rgba(39,162,71,0.08)' }}>
-                    {portal === 'sales' ? (
-                        <a href="/pm/login" className="text-xs font-semibold transition-colors hover:underline"
-                            style={{ color: '#1a7a34' }}>
-                            Mulk boshqaruvi portali →
-                        </a>
-                    ) : (
-                        <a href="/login" className="text-xs font-semibold transition-colors hover:underline"
-                            style={{ color: '#1a7a34' }}>
-                            ← Savdo portali
-                        </a>
-                    )}
+                {/* Portal switch + Language */}
+                <div className="mt-6 pt-6 space-y-3" style={{ borderTop: '1px solid rgba(39,162,71,0.08)' }}>
+                    <div className="text-center">
+                        {portal === 'sales' ? (
+                            <a href="/pm/login" className="text-xs font-semibold transition-colors hover:underline"
+                                style={{ color: '#1a7a34' }}>
+                                {t('login.goToPm')}
+                            </a>
+                        ) : (
+                            <a href="/login" className="text-xs font-semibold transition-colors hover:underline"
+                                style={{ color: '#1a7a34' }}>
+                                {t('login.goToSales')}
+                            </a>
+                        )}
+                    </div>
+                    <LanguageSwitcher variant="login" />
                 </div>
 
-                <p className="text-center text-xs mt-6" style={{ color: 'rgba(26,46,34,0.4)' }}>
-                    © {new Date().getFullYear()} {brand?.legalName ?? '1Mahalla'} · Barcha huquqlar himoyalangan
+                <p className="text-center text-xs mt-4" style={{ color: 'rgba(26,46,34,0.4)' }}>
+                    © {new Date().getFullYear()} {brand?.legalName ?? '1Mahalla'} · {t('login.allRights')}
                 </p>
             </div>
         </div>

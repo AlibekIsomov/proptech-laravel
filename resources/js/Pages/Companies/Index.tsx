@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Head, router } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
 import { Search, Building, Plus, X, Loader2, Edit, Trash2, ShieldAlert } from 'lucide-react';
 import AppShell from '@/Components/AppShell';
 
@@ -18,6 +19,7 @@ interface Props {
 }
 
 export default function Index({ companies }: Props) {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
 
   // Modal State
@@ -99,10 +101,10 @@ export default function Index({ companies }: Props) {
         <div>
           <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
             <Building className="w-6 h-6 text-indigo-400" />
-            Companies
+            {t('companies.title')}
           </h1>
           <p className="text-xs mt-1" style={{ color: 'var(--muted)' }}>
-            Super Admin View: {filtered.length} registered tenants
+            {filtered.length} {t('companies.subtitle')}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -112,7 +114,7 @@ export default function Index({ companies }: Props) {
             <Search className="w-4 h-4" style={{ color: 'var(--muted)' }} />
             <input
               type="text"
-              placeholder="Search companies..."
+              placeholder={t('companies.searchPlaceholder')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="bg-transparent text-xs text-slate-800 outline-none placeholder:text-slate-400 w-44 md:w-56"
@@ -124,7 +126,7 @@ export default function Index({ companies }: Props) {
             style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' }}
           >
             <Plus className="w-4 h-4" />
-            New Tenant
+            {t('companies.newTenant')}
           </button>
         </div>
       </div>
@@ -136,14 +138,14 @@ export default function Index({ companies }: Props) {
           {filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 gap-3">
               <Building className="w-10 h-10" style={{ color: 'var(--border)' }} />
-              <p className="text-sm" style={{ color: 'var(--muted)' }}>No companies registered yet.</p>
+              <p className="text-sm" style={{ color: 'var(--muted)' }}>{t('companies.noCompanies')}</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                    {['Name', 'Slug', 'Users Count', 'Projects', 'Status', 'Registered At', 'Actions'].map((h) => (
+                    {[t('companies.colName'), t('companies.colSlug'), t('companies.colUsers'), t('companies.colProjects'), t('companies.colStatus'), t('companies.colRegistered'), t('companies.colActions')].map((h) => (
                       <th key={h} className="px-6 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--muted)' }}>
                         {h}
                       </th>
@@ -164,15 +166,15 @@ export default function Index({ companies }: Props) {
                           </div>
                         </td>
                         <td className="px-6 py-4 text-xs text-slate-400 font-mono">{c.slug}</td>
-                        <td className="px-6 py-4 text-xs text-slate-800">{c.users_count} users</td>
-                        <td className="px-6 py-4 text-xs text-slate-800">{c.projects_count} projects</td>
+                        <td className="px-6 py-4 text-xs text-slate-800">{c.users_count} {t('companies.users')}</td>
+                        <td className="px-6 py-4 text-xs text-slate-800">{c.projects_count} {t('companies.projectsCount')}</td>
                         <td className="px-6 py-4 text-xs">
                           <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold"
                             style={{
                               backgroundColor: c.is_active ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)',
                               color:           c.is_active ? '#34d399' : '#fca5a5',
                             }}>
-                            {c.is_active ? 'Active' : 'Inactive'}
+                            {c.is_active ? t('companies.statusActive') : t('companies.statusInactive')}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-xs text-slate-400">{c.created_at}</td>
@@ -210,7 +212,7 @@ export default function Index({ companies }: Props) {
             style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-bold text-slate-800">
-                {editingCompany ? 'Edit Company' : 'New Company'}
+                {editingCompany ? t('companies.editCompany') : t('companies.newCompany')}
               </h2>
               <button
                 onClick={() => setShowModal(false)}
@@ -223,7 +225,7 @@ export default function Index({ companies }: Props) {
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Company Name */}
               <div>
-                <label className="block text-xs font-semibold mb-1.5 text-slate-400">Company Name *</label>
+                <label className="block text-xs font-semibold mb-1.5 text-slate-400">{t('companies.companyName')} *</label>
                 <input
                   type="text"
                   required
@@ -237,7 +239,7 @@ export default function Index({ companies }: Props) {
 
               {/* Company Slug */}
               <div>
-                <label className="block text-xs font-semibold mb-1.5 text-slate-400">Slug (Tenant domain prefix)</label>
+                <label className="block text-xs font-semibold mb-1.5 text-slate-400">{t('companies.slugLabel')}</label>
                 <input
                   type="text"
                   value={slug}
@@ -250,15 +252,15 @@ export default function Index({ companies }: Props) {
 
               {/* Status */}
               <div>
-                <label className="block text-xs font-semibold mb-1.5 text-slate-400">Status</label>
+                <label className="block text-xs font-semibold mb-1.5 text-slate-400">{t('companies.statusLabel')}</label>
                 <select
                   value={isActive ? '1' : '0'}
                   onChange={(e) => setIsActive(e.target.value === '1')}
                   className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
                   style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
                 >
-                  <option value="1">Active</option>
-                  <option value="0">Inactive</option>
+                  <option value="1">{t('companies.statusActive')}</option>
+                  <option value="0">{t('companies.statusInactive')}</option>
                 </select>
               </div>
 
@@ -269,7 +271,7 @@ export default function Index({ companies }: Props) {
                   className="flex-1 py-3 rounded-xl text-xs font-semibold hover:bg-slate-100 transition-all text-slate-400"
                   style={{ border: '1px solid var(--border)' }}
                 >
-                  Cancel
+                  {t('companies.cancel')}
                 </button>
                 <button
                   type="submit"
@@ -278,7 +280,7 @@ export default function Index({ companies }: Props) {
                   style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' }}
                 >
                   {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                  {editingCompany ? 'Save Changes' : 'Create Tenant'}
+                  {editingCompany ? t('companies.save') : t('companies.create')}
                 </button>
               </div>
             </form>

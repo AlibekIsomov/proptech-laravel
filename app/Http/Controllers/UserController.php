@@ -13,11 +13,13 @@ use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
+    private const SALES_ROLES = ['super_admin', 'company_admin', 'manager', 'viewer'];
+    private const PM_ROLES    = ['property_manager', 'dispatcher', 'vendor', 'resident'];
+
     public function index(): Response
     {
         $query = User::with(['roles', 'company']);
 
-        // company_admin faqat o'z kompaniyasini ko'radi
         if (!auth()->user()->hasRole('super_admin')) {
             $query->where('company_id', auth()->user()->company_id);
         }
@@ -33,17 +35,22 @@ class UserController extends Controller
             'created_at'   => $u->created_at->format('Y-m-d'),
         ]);
 
-        $rolesQuery = Role::query();
+        $salesRolesQuery = Role::whereIn('name', self::SALES_ROLES);
         if (!auth()->user()->hasRole('super_admin')) {
-            $rolesQuery->where('name', '!=', 'super_admin');
+            $salesRolesQuery->where('name', '!=', 'super_admin');
         }
-        $roles = $rolesQuery->get(['id', 'name']);
+        $salesRoles = $salesRolesQuery->get(['id', 'name']);
 
         $companies = auth()->user()->hasRole('super_admin')
             ? Company::where('is_active', true)->get(['id', 'name'])
             : Company::where('id', auth()->user()->company_id)->get(['id', 'name']);
 
-        return Inertia::render('Users/Index', compact('users', 'roles', 'companies'));
+        return Inertia::render('Users/Index', [
+            'users'      => $users,
+            'salesRoles' => $salesRoles,
+            'pmRoles'    => self::PM_ROLES,
+            'companies'  => $companies,
+        ]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -52,8 +59,8 @@ class UserController extends Controller
             'full_name'  => ['required', 'string', 'max:255'],
             'email'      => ['required', 'email', 'unique:users,email'],
             'password'   => ['required', 'string', 'min:8'],
-            'role'       => ['required', 'exists:roles,name'],
-            'pm_role'    => ['nullable', 'in:property_manager,dispatcher,vendor,resident'],
+            'role'       => ['nullable', 'exists:roles,name', 'in:' . implode(',', self::SALES_ROLES)],
+            'pm_role'    => ['nullable', 'in:' . implode(',', self::PM_ROLES)],
         ];
 
         if (auth()->user()->hasRole('super_admin')) {
@@ -62,8 +69,11 @@ class UserController extends Controller
 
         $data = $request->validate($rules);
 
-        // Security check: non-super_admin cannot assign super_admin role
-        if (!auth()->user()->hasRole('super_admin') && $data['role'] === 'super_admin') {
+        if (empty($data['role']) && empty($data['pm_role'])) {
+            return back()->withErrors(['role' => 'Kamida bitta rol tanlang.']);
+        }
+
+        if (!auth()->user()->hasRole('super_admin') && ($data['role'] ?? '') === 'super_admin') {
             abort(403, 'Unauthorized role assignment');
         }
 
@@ -79,7 +89,9 @@ class UserController extends Controller
             'pm_role'    => $data['pm_role'] ?? null,
         ]);
 
-        $user->assignRole($data['role']);
+        if (!empty($data['role'])) {
+            $user->assignRole($data['role']);
+        }
 
         return back()->with('success', 'Foydalanuvchi yaratildi.');
     }
@@ -94,8 +106,8 @@ class UserController extends Controller
         $rules = [
             'full_name'  => ['required', 'string', 'max:255'],
             'email'      => ['required', 'email', 'unique:users,email,' . $user->id],
-            'role'       => ['required', 'exists:roles,name'],
-            'pm_role'    => ['nullable', 'in:property_manager,dispatcher,vendor,resident'],
+            'role'       => ['nullable', 'exists:roles,name', 'in:' . implode(',', self::SALES_ROLES)],
+            'pm_role'    => ['nullable', 'in:' . implode(',', self::PM_ROLES)],
             'password'   => ['nullable', 'string', 'min:8'],
         ];
 
@@ -105,8 +117,11 @@ class UserController extends Controller
 
         $data = $request->validate($rules);
 
-        // Security check: non-super_admin cannot assign super_admin role
-        if (!auth()->user()->hasRole('super_admin') && $data['role'] === 'super_admin') {
+        if (empty($data['role']) && empty($data['pm_role'])) {
+            return back()->withErrors(['role' => 'Kamida bitta rol tanlang.']);
+        }
+
+        if (!auth()->user()->hasRole('super_admin') && ($data['role'] ?? '') === 'super_admin') {
             abort(403, 'Unauthorized role assignment');
         }
 
@@ -125,7 +140,7 @@ class UserController extends Controller
         }
 
         $user->update($updateData);
-        $user->syncRoles([$data['role']]);
+        $user->syncRoles(!empty($data['role']) ? [$data['role']] : []);
 
         return back()->with('success', 'Foydalanuvchi yangilandi.');
     }

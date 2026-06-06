@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { router, usePage, Link } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
 import {
     AreaChart, Area, BarChart, Bar, XAxis, YAxis,
     CartesianGrid, Tooltip, ResponsiveContainer,
@@ -68,26 +69,29 @@ interface AuthUser {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-function timeAgo(iso: string): string {
-    const diff = Date.now() - new Date(iso).getTime();
-    const m = Math.floor(diff / 60000);
-    if (m < 1)  return 'hozirgina';
-    if (m < 60) return `${m} daqiqa oldin`;
-    const h = Math.floor(m / 60);
-    if (h < 24) return `${h} soat oldin`;
-    return `${Math.floor(h / 24)} kun oldin`;
+function useTimeAgo() {
+    const { t } = useTranslation();
+    return (iso: string): string => {
+        const diff = Date.now() - new Date(iso).getTime();
+        const m = Math.floor(diff / 60000);
+        if (m < 1)  return t('dashboard.justNow');
+        if (m < 60) return `${m} ${t('dashboard.minutesAgo')}`;
+        const h = Math.floor(m / 60);
+        if (h < 24) return `${h} ${t('dashboard.hoursAgo')}`;
+        return `${Math.floor(h / 24)} ${t('dashboard.daysAgo')}`;
+    };
 }
 
-const STATUS_STYLES: Record<string, { bg: string; text: string; label: string }> = {
-    completed: { bg: 'rgba(34,197,94,0.12)', text: '#15803d', label: 'Tugallangan' },
-    reserved:  { bg: 'rgba(39,162,71,0.12)', text: '#1a7a34', label: 'Bron qilingan' },
+const TX_STATUS_STYLES: Record<string, { bg: string; text: string; labelKey: string }> = {
+    completed: { bg: 'rgba(34,197,94,0.12)', text: '#15803d', labelKey: 'dashboard.completed' },
+    reserved:  { bg: 'rgba(39,162,71,0.12)', text: '#1a7a34', labelKey: 'dashboard.reserved'  },
 };
 
-const STATUS_NOTIF: Record<string, { label: string; color: string }> = {
-    contacted: { label: 'Kontakt',  color: '#27A247' },
-    viewing:   { label: 'Ko\'rik',  color: '#f59e0b' },
-    reserved:  { label: 'Bron',     color: '#4ade80' },
-    bought:    { label: 'Sotilgan', color: '#22c55e' },
+const STATUS_NOTIF_KEYS: Record<string, { labelKey: string; color: string }> = {
+    contacted: { labelKey: 'dashboard.contacted', color: '#27A247' },
+    viewing:   { labelKey: 'dashboard.viewing',   color: '#f59e0b' },
+    reserved:  { labelKey: 'dashboard.reserved',  color: '#4ade80' },
+    bought:    { labelKey: 'dashboard.bought',     color: '#22c55e' },
 };
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -151,6 +155,8 @@ function PMTile({ href, title, value, hint, accent, icon }: {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function DashboardIndex({ metrics, monthlySales, projectData, transactions, notifications, pmStats }: Props) {
+    const { t } = useTranslation();
+    const timeAgo = useTimeAgo();
     const { auth } = usePage<{ auth: { user: AuthUser } }>().props;
     const user = auth.user;
 
@@ -204,7 +210,7 @@ export default function DashboardIndex({ metrics, monthlySales, projectData, tra
     );
 
     const hour = new Date().getHours();
-    const greeting = hour < 12 ? 'Xayrli tong 👋' : hour < 17 ? 'Xayrli kun 👋' : 'Xayrli kech 👋';
+    const greeting = hour < 12 ? t('dashboard.greetingMorning') : hour < 17 ? t('dashboard.greetingDay') : t('dashboard.greetingEvening');
 
     return (
         <AppShell>
@@ -214,7 +220,7 @@ export default function DashboardIndex({ metrics, monthlySales, projectData, tra
                 <div>
                     <h1 className="text-sm font-semibold text-slate-800">{greeting}</h1>
                     <p className="text-xs text-slate-400">
-                        {user.company_name ?? 'Barcha loyihalar'} · Umumiy ko'rinish
+                        {user.company_name ?? t('dashboard.allProjects')} · {t('dashboard.overview')}
                     </p>
                 </div>
 
@@ -234,15 +240,15 @@ export default function DashboardIndex({ metrics, monthlySales, projectData, tra
                         <div className="absolute right-0 top-10 w-72 rounded-xl border shadow-2xl z-50 overflow-hidden bg-white"
                             style={{ borderColor: 'rgba(39,162,71,0.15)' }}>
                             <div className="px-4 py-3 border-b" style={{ borderColor: 'rgba(39,162,71,0.10)' }}>
-                                <p className="text-xs font-semibold text-slate-800">Bildirishnomalar</p>
+                                <p className="text-xs font-semibold text-slate-800">{t('dashboard.notifications')}</p>
                             </div>
                             {notifications.length === 0
                                 ? <div className="px-4 py-6 text-center">
-                                    <p className="text-xs text-slate-400">Bildirishnoma yo'q</p>
+                                    <p className="text-xs text-slate-400">{t('dashboard.noNotifications')}</p>
                                    </div>
                                 : <div className="divide-y divide-slate-100">
                                     {notifications.map(n => {
-                                        const cfg = STATUS_NOTIF[n.status];
+                                        const cfg = STATUS_NOTIF_KEYS[n.status];
                                         return (
                                             <div key={n.id} className="px-4 py-3 hover:bg-slate-50 transition-colors">
                                                 <div className="flex items-center justify-between gap-2">
@@ -252,7 +258,7 @@ export default function DashboardIndex({ metrics, monthlySales, projectData, tra
                                                     </span>
                                                 </div>
                                                 <p className="text-[10px] mt-0.5" style={{ color: cfg?.color ?? '#64748b' }}>
-                                                    → {cfg?.label ?? n.status}
+                                                    → {cfg ? t(cfg.labelKey) : n.status}
                                                 </p>
                                             </div>
                                         );
@@ -267,13 +273,13 @@ export default function DashboardIndex({ metrics, monthlySales, projectData, tra
             <main className="px-6 py-6 max-w-7xl mx-auto space-y-6 w-full">
                 {/* ── Metrics ── */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <MetricCard title="Jami kvartiralar" value={metrics.totalApts.toLocaleString()}
+                    <MetricCard title={t('dashboard.totalApts')} value={metrics.totalApts.toLocaleString()}
                         accent="#27A247" icon={<Building2 className="w-4 h-4" />} />
-                    <MetricCard title="Sotilgan" value={metrics.soldApts.toLocaleString()}
+                    <MetricCard title={t('dashboard.sold')} value={metrics.soldApts.toLocaleString()}
                         accent="#4ade80" icon={<TrendingUp className="w-4 h-4" />} />
-                    <MetricCard title="Bo'sh" value={metrics.availApts.toLocaleString()}
+                    <MetricCard title={t('dashboard.available')} value={metrics.availApts.toLocaleString()}
                         accent="#f59e0b" icon={<Home className="w-4 h-4" />} />
-                    <MetricCard title="Daromad" value={fmt(metrics.revenue)}
+                    <MetricCard title={t('dashboard.revenue')} value={fmt(metrics.revenue)}
                         accent="#27A247" icon={<DollarSign className="w-4 h-4" />} />
                 </div>
 
@@ -281,8 +287,8 @@ export default function DashboardIndex({ metrics, monthlySales, projectData, tra
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
                     <div className="lg:col-span-3 rounded-xl border p-5 bg-white"
                         style={{ borderColor: 'rgba(39,162,71,0.10)' }}>
-                        <h2 className="text-sm font-semibold text-slate-800 mb-1">Daromad trendi</h2>
-                        <p className="text-xs mb-4 text-slate-400">Oylik daromad (ming USD)</p>
+                        <h2 className="text-sm font-semibold text-slate-800 mb-1">{t('dashboard.revenueTrend')}</h2>
+                        <p className="text-xs mb-4 text-slate-400">{t('dashboard.monthlyRevenue')}</p>
                         <ResponsiveContainer width="100%" height={200}>
                             <AreaChart data={monthlySales} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
                                 <defs>
@@ -295,7 +301,7 @@ export default function DashboardIndex({ metrics, monthlySales, projectData, tra
                                 <XAxis dataKey="month" tick={{ fill: '#475569', fontSize: 11 }} axisLine={false} tickLine={false} />
                                 <YAxis tick={{ fill: '#475569', fontSize: 11 }} axisLine={false} tickLine={false} />
                                 <Tooltip contentStyle={{ backgroundColor: '#ffffff', border: '1px solid rgba(39,162,71,0.15)', borderRadius: 8, fontSize: 12, color: '#1a2e22' }}
-                                    formatter={(v) => [`$${v}K`, 'Daromad']} />
+                                    formatter={(v) => [`$${v}K`, t('dashboard.revenue')]} />
                                 <Area type="monotone" dataKey="revenue" stroke="#27A247" strokeWidth={2} fill="url(#revenueGrad)" dot={false} />
                             </AreaChart>
                         </ResponsiveContainer>
@@ -303,16 +309,16 @@ export default function DashboardIndex({ metrics, monthlySales, projectData, tra
 
                     <div className="lg:col-span-2 rounded-xl border p-5 bg-white"
                         style={{ borderColor: 'rgba(39,162,71,0.10)' }}>
-                        <h2 className="text-sm font-semibold text-slate-800 mb-1">Loyiha bo'yicha birliklar</h2>
-                        <p className="text-xs mb-4 text-slate-400">Sotilgan vs bo'sh</p>
+                        <h2 className="text-sm font-semibold text-slate-800 mb-1">{t('dashboard.unitsByProject')}</h2>
+                        <p className="text-xs mb-4 text-slate-400">{t('dashboard.soldVsAvailable')}</p>
                         <ResponsiveContainer width="100%" height={200}>
                             <BarChart data={projectData} layout="vertical" margin={{ top: 0, right: 4, left: 0, bottom: 0 }} barSize={8} barGap={3}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(39,162,71,0.12)" horizontal={false} />
                                 <XAxis type="number" tick={{ fill: '#475569', fontSize: 10 }} axisLine={false} tickLine={false} />
                                 <YAxis dataKey="name" type="category" width={90} tick={{ fill: '#475569', fontSize: 10 }} axisLine={false} tickLine={false} />
                                 <Tooltip contentStyle={{ backgroundColor: '#ffffff', border: '1px solid rgba(39,162,71,0.15)', borderRadius: 8, fontSize: 12, color: '#1a2e22' }} />
-                                <Bar dataKey="sold" fill="#27A247" radius={[0, 4, 4, 0]} name="Sotilgan" />
-                                <Bar dataKey="available" fill="#dcfce7" radius={[0, 4, 4, 0]} name="Bo'sh" />
+                                <Bar dataKey="sold" fill="#27A247" radius={[0, 4, 4, 0]} name={t('dashboard.sold')} />
+                                <Bar dataKey="available" fill="#dcfce7" radius={[0, 4, 4, 0]} name={t('dashboard.available')} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
@@ -322,13 +328,13 @@ export default function DashboardIndex({ metrics, monthlySales, projectData, tra
                 <div className="rounded-xl border bg-white" style={{ borderColor: 'rgba(39,162,71,0.10)' }}>
                     <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: 'rgba(39,162,71,0.08)' }}>
                         <div>
-                            <h2 className="text-sm font-semibold text-slate-800">So'nggi tranzaksiyalar</h2>
-                            <p className="text-xs mt-0.5 text-slate-400">Kvartira sotuv va bronlar</p>
+                            <h2 className="text-sm font-semibold text-slate-800">{t('dashboard.recentTx')}</h2>
+                            <p className="text-xs mt-0.5 text-slate-400">{t('dashboard.txSubtitle')}</p>
                         </div>
                         <div className="flex items-center gap-2 rounded-lg px-3 py-1.5 bg-slate-50"
                             style={{ border: '1px solid rgba(39,162,71,0.12)' }}>
                             <Search className="w-3.5 h-3.5 text-slate-400" />
-                            <input type="text" id="tx-search" placeholder="Qidirish…" value={searchQuery}
+                            <input type="text" id="tx-search" placeholder={t('dashboard.search')} value={searchQuery}
                                 onChange={e => setSearchQuery(e.target.value)}
                                 className="bg-transparent text-xs text-slate-800 outline-none placeholder:text-slate-400 w-32 border-none p-0 focus:ring-0 focus:outline-none" />
                         </div>
@@ -337,14 +343,14 @@ export default function DashboardIndex({ metrics, monthlySales, projectData, tra
                         <table className="w-full">
                             <thead>
                                 <tr style={{ borderBottom: '1px solid rgba(39,162,71,0.08)' }}>
-                                    {['ID', 'Mijoz', 'Kvartira', 'Summa', 'Sana', 'Holat'].map(h => (
+                                    {[t('dashboard.id'), t('dashboard.client'), t('dashboard.apartment'), t('dashboard.amount'), t('dashboard.date'), t('dashboard.status')].map(h => (
                                         <th key={h} className="px-5 py-3 text-left text-xs font-medium text-slate-500">{h}</th>
                                     ))}
                                 </tr>
                             </thead>
                             <tbody>
                                 {filteredTx.map((t, i) => {
-                                    const s = STATUS_STYLES[t.status];
+                                    const s = TX_STATUS_STYLES[t.status];
                                     return (
                                         <tr key={t.id} className="transition-colors hover:bg-slate-50"
                                             style={{ borderBottom: i < filteredTx.length - 1 ? '1px solid rgba(39,162,71,0.07)' : undefined }}>
@@ -355,7 +361,7 @@ export default function DashboardIndex({ metrics, monthlySales, projectData, tra
                                             <td className="px-5 py-3.5 text-sm text-slate-500">{t.date}</td>
                                             <td className="px-5 py-3.5">
                                                 <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-                                                    style={{ backgroundColor: s.bg, color: s.text }}>{s.label}</span>
+                                                    style={{ backgroundColor: s.bg, color: s.text }}>{t(s.labelKey)}</span>
                                             </td>
                                         </tr>
                                     );
@@ -370,19 +376,19 @@ export default function DashboardIndex({ metrics, monthlySales, projectData, tra
                     <div className="rounded-xl border bg-white" style={{ borderColor: 'rgba(39,162,71,0.10)' }}>
                         <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: 'rgba(39,162,71,0.08)' }}>
                             <div>
-                                <h2 className="text-sm font-semibold text-slate-800">Property Management</h2>
-                                <p className="text-xs mt-0.5 text-slate-400">Bino ekspluatatsiyasi va xizmat ko'rsatish</p>
+                                <h2 className="text-sm font-semibold text-slate-800">{t('dashboard.pmSection')}</h2>
+                                <p className="text-xs mt-0.5 text-slate-400">{t('dashboard.pmSubtitle')}</p>
                             </div>
                         </div>
                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 p-5">
-                            <PMTile href="/pm/requests" title="Faol arizalar" value={pmStats.open_requests}
-                                hint="Nosozlik arizalari" accent="#f59e0b" icon={<Wrench className="w-4 h-4" />} />
-                            <PMTile href="/pm/vendors" title="Vendor baza" value={pmStats.vendors}
-                                hint="Pudratchi va reyting" accent="#27A247" icon={<UsersIcon className="w-4 h-4" />} />
-                            <PMTile href="/pm/invoices" title="PM To'lovlar" value="—"
-                                hint="Hisob-fakturalar" accent="#4ade80" icon={<Receipt className="w-4 h-4" />} />
-                            <PMTile href="/pm/meters" title="Kommunal" value="—"
-                                hint="Elektr · Gaz · Suv" accent="#86efac" icon={<Gauge className="w-4 h-4" />} />
+                            <PMTile href="/pm/requests" title={t('dashboard.activeRequests')} value={pmStats.open_requests}
+                                hint={t('dashboard.requestsHint')} accent="#f59e0b" icon={<Wrench className="w-4 h-4" />} />
+                            <PMTile href="/pm/vendors" title={t('dashboard.vendorBase')} value={pmStats.vendors}
+                                hint={t('dashboard.vendorHint')} accent="#27A247" icon={<UsersIcon className="w-4 h-4" />} />
+                            <PMTile href="/pm/invoices" title={t('dashboard.pmPayments')} value="—"
+                                hint={t('dashboard.paymentsHint')} accent="#4ade80" icon={<Receipt className="w-4 h-4" />} />
+                            <PMTile href="/pm/meters" title={t('dashboard.communal')} value="—"
+                                hint={t('dashboard.communalHint')} accent="#86efac" icon={<Gauge className="w-4 h-4" />} />
                         </div>
                     </div>
                 )}
@@ -393,18 +399,18 @@ export default function DashboardIndex({ metrics, monthlySales, projectData, tra
                         <div>
                             <div className="flex items-center gap-2">
                                 <Sparkles className="w-4 h-4" style={{ color: '#27A247' }} />
-                                <h2 className="text-sm font-semibold text-slate-800">AI Insights</h2>
+                                <h2 className="text-sm font-semibold text-slate-800">{t('dashboard.aiInsights')}</h2>
                             </div>
                             <p className="text-xs mt-0.5 text-slate-400">
-                                AI savdo ma'lumotlarini tahlil qiladi
+                                {t('dashboard.aiSubtitle')}
                             </p>
                         </div>
                         <button id="ai-insights-btn" onClick={fetchInsights} disabled={aiLoading}
                             className="flex items-center gap-2 text-sm font-medium text-slate-800 px-4 py-2 rounded-lg transition-opacity hover:opacity-80 disabled:opacity-50 cursor-pointer"
                             style={{ background: 'linear-gradient(135deg, #27A247, #1a7a34)', boxShadow: '0 4px 16px rgba(39,162,71,0.3)' }}>
                             {aiLoading
-                                ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />Tahlil qilinmoqda…</>
-                                : <><Sparkles className="w-3.5 h-3.5" />AI tahlil</>
+                                ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />{t('dashboard.aiAnalyzing')}</>
+                                : <><Sparkles className="w-3.5 h-3.5" />{t('dashboard.aiAnalyze')}</>
                             }
                         </button>
                     </div>
@@ -443,10 +449,8 @@ export default function DashboardIndex({ metrics, monthlySales, projectData, tra
                                     <Sparkles className="w-5 h-5" style={{ color: '#27A247' }} />
                                 </div>
                                 <div className="text-center">
-                                    <p className="text-sm font-medium text-slate-800">Hali tahlil yo'q</p>
-                                    <p className="text-xs mt-1 text-slate-400">
-                                        "AI tahlil" tugmasini bosing
-                                    </p>
+                                    <p className="text-sm font-medium text-slate-800">{t('dashboard.noInsights')}</p>
+                                    <p className="text-xs mt-1 text-slate-400">{t('dashboard.noInsightsHint')}</p>
                                 </div>
                             </div>
                         )}

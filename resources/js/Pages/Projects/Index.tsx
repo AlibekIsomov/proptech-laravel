@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { router, usePage, Link } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
 import { FolderKanban, Plus, Pencil, Trash2, Building2, Home, MapPin, X, Loader2 } from 'lucide-react';
 import AppShell from '@/Components/AppShell';
 
@@ -17,15 +18,16 @@ interface Props {
     projects: Project[];
 }
 
-const STATUS_COLORS: Record<string, { bg: string; text: string; label: string }> = {
-    active:    { bg: 'rgba(16,185,129,0.12)',  text: '#34d399', label: 'Faol' },
-    paused:    { bg: 'rgba(245,158,11,0.12)',  text: '#fbbf24', label: 'To\'xtatilgan' },
-    completed: { bg: 'rgba(99,102,241,0.12)',  text: '#a5b4fc', label: 'Tugallangan' },
+const STATUS_COLORS: Record<string, { bg: string; text: string; labelKey: string }> = {
+    active:    { bg: 'rgba(16,185,129,0.12)',  text: '#34d399', labelKey: 'projects.statusActive'    },
+    paused:    { bg: 'rgba(245,158,11,0.12)',  text: '#fbbf24', labelKey: 'projects.statusPaused'    },
+    completed: { bg: 'rgba(99,102,241,0.12)',  text: '#a5b4fc', labelKey: 'projects.statusCompleted' },
 };
 
 const emptyForm = { name: '', location: '', status: 'active', description: '', total_area: '', total_floors: '' };
 
 export default function ProjectsIndex({ projects }: Props) {
+    const { t } = useTranslation();
     const { auth } = usePage<any>().props;
     const canEdit = ['super_admin', 'company_admin'].includes(auth.user?.role);
 
@@ -60,7 +62,7 @@ export default function ProjectsIndex({ projects }: Props) {
                 style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
                 <div className="flex items-center gap-2">
                     <FolderKanban className="w-4 h-4" style={{ color: '#6366f1' }} />
-                    <h1 className="text-sm font-semibold text-slate-800">Loyihalar</h1>
+                    <h1 className="text-sm font-semibold text-slate-800">{t('projects.title')}</h1>
                     <span className="text-xs px-2 py-0.5 rounded-full ml-1"
                         style={{ backgroundColor: 'rgba(99,102,241,0.12)', color: '#a5b4fc' }}>
                         {projects.length}
@@ -70,7 +72,7 @@ export default function ProjectsIndex({ projects }: Props) {
                     <button id="create-project-btn" onClick={openCreate}
                         className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-80"
                         style={{ backgroundColor: '#6366f1' }}>
-                        <Plus className="w-4 h-4" /> Yangi loyiha
+                        <Plus className="w-4 h-4" /> {t('projects.newProject')}
                     </button>
                 )}
             </header>
@@ -82,8 +84,8 @@ export default function ProjectsIndex({ projects }: Props) {
                             style={{ backgroundColor: 'rgba(99,102,241,0.12)' }}>
                             <FolderKanban className="w-6 h-6" style={{ color: '#6366f1' }} />
                         </div>
-                        <p className="text-sm font-medium text-slate-800">Loyihalar yo'q</p>
-                        <p className="text-xs" style={{ color: '#475569' }}>Birinchi loyihani yarating</p>
+                        <p className="text-sm font-medium text-slate-800">{t('projects.noProjects')}</p>
+                        <p className="text-xs" style={{ color: '#475569' }}>{t('projects.noProjectsHint')}</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -95,7 +97,7 @@ export default function ProjectsIndex({ projects }: Props) {
                                     <div className="flex items-start justify-between">
                                         <div>
                                             <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full mb-2"
-                                                style={{ backgroundColor: s.bg, color: s.text }}>{s.label}</span>
+                                                style={{ backgroundColor: s.bg, color: s.text }}>{t(s.labelKey)}</span>
                                             <h2 className="text-sm font-semibold text-slate-800">
                                                 <Link href={`/projects/${p.id}`} className="hover:text-indigo-400 transition-colors">
                                                     {p.name}
@@ -128,14 +130,14 @@ export default function ProjectsIndex({ projects }: Props) {
                                         <div className="rounded-xl p-3" style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}>
                                             <div className="flex items-center gap-1.5 mb-1">
                                                 <Building2 className="w-3 h-3" style={{ color: '#6366f1' }} />
-                                                <span className="text-[10px] uppercase tracking-wider" style={{ color: '#475569' }}>Binolar</span>
+                                                <span className="text-[10px] uppercase tracking-wider" style={{ color: '#475569' }}>{t('projects.buildings')}</span>
                                             </div>
                                             <p className="text-xl font-bold text-slate-800">{p.buildings_count}</p>
                                         </div>
                                         <div className="rounded-xl p-3" style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}>
                                             <div className="flex items-center gap-1.5 mb-1">
                                                 <Home className="w-3 h-3" style={{ color: '#10b981' }} />
-                                                <span className="text-[10px] uppercase tracking-wider" style={{ color: '#475569' }}>Kvartiralar</span>
+                                                <span className="text-[10px] uppercase tracking-wider" style={{ color: '#475569' }}>{t('projects.apartments')}</span>
                                             </div>
                                             <p className="text-xl font-bold text-slate-800">{p.apartments_count}</p>
                                         </div>
@@ -156,7 +158,7 @@ export default function ProjectsIndex({ projects }: Props) {
                         style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
                         <div className="flex items-center justify-between mb-6">
                             <h2 className="text-base font-semibold text-slate-800">
-                                {editing ? 'Loyihani tahrirlash' : 'Yangi loyiha'}
+                                {editing ? t('projects.editProject') : t('projects.newProject')}
                             </h2>
                             <button onClick={() => setShowModal(false)} style={{ color: '#475569' }}
                                 className="hover:text-white transition-colors">
@@ -166,8 +168,8 @@ export default function ProjectsIndex({ projects }: Props) {
 
                         <form onSubmit={handleSubmit} className="space-y-4">
                             {[
-                                { label: 'Loyiha nomi *', key: 'name', required: true },
-                                { label: 'Manzil', key: 'location', required: false },
+                                { label: t('projects.projectName') + ' *', key: 'name', required: true },
+                                { label: t('projects.address'), key: 'location', required: false },
                             ].map(({ label, key, required }) => (
                                 <div key={key}>
                                     <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>{label}</label>
@@ -179,13 +181,13 @@ export default function ProjectsIndex({ projects }: Props) {
                             ))}
 
                             <div>
-                                <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>Holat</label>
+                                <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>{t('projects.statusLabel')}</label>
                                 <select value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
                                     className="w-full rounded-xl px-4 py-2.5 text-sm text-slate-800 outline-none"
                                     style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}>
-                                    <option value="active">Faol</option>
-                                    <option value="paused">To'xtatilgan</option>
-                                    <option value="completed">Tugallangan</option>
+                                    <option value="active">{t('projects.statusActive')}</option>
+                                    <option value="paused">{t('projects.statusPaused')}</option>
+                                    <option value="completed">{t('projects.statusCompleted')}</option>
                                 </select>
                             </div>
 
@@ -193,7 +195,7 @@ export default function ProjectsIndex({ projects }: Props) {
                                 className="w-full py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50 flex items-center justify-center gap-2"
                                 style={{ backgroundColor: '#6366f1' }}>
                                 {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                                {editing ? 'Saqlash' : 'Yaratish'}
+                                {editing ? t('projects.save') : t('projects.create')}
                             </button>
                         </form>
                     </div>

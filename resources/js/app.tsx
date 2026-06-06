@@ -1,6 +1,7 @@
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
+import './i18n';
 
 createInertiaApp({
     title: (title) => title ? `${title} — 1Mahalla` : '1Mahalla',
