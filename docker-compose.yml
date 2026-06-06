@@ -16,6 +16,8 @@ services:
       DB_DATABASE: ${DB_DATABASE:-proptech}
       DB_USERNAME: ${DB_USERNAME:-postgres}
       DB_PASSWORD: ${DB_PASSWORD:-secret}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID}
     volumes:
       # Production-da kodni bog'lamaymiz, faqat o'zgaruvchan papkalarni bog'laymiz:
       - storage_data:/var/www/html/storage
@@ -69,7 +71,7 @@ services:
     image: ${IMAGE_NAME:-ghcr.io/alibekisomov/proptech-laravel}:${IMAGE_TAG:-latest}
     container_name: proptech_queue
     restart: unless-stopped
-    command: ["php", "artisan", "queue:work", "--sleep=3", "--tries=3", "--max-time=3600"]
+    entrypoint: ["/bin/sh", "-c", "exec php artisan queue:work --sleep=3 --tries=3 --max-time=3600"]
     env_file:
       - .env
     environment:
@@ -79,6 +81,8 @@ services:
       DB_DATABASE: ${DB_DATABASE:-proptech}
       DB_USERNAME: ${DB_USERNAME:-postgres}
       DB_PASSWORD: ${DB_PASSWORD:-secret}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID}
     volumes:
       - storage_data:/var/www/html/storage
     depends_on:
