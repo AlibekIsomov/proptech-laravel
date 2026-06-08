@@ -212,9 +212,15 @@ jobs:
               echo "IMAGE_TAG=${{ env.IMAGE_TAG }}" >> .env
             fi
 
-            # 1️⃣  Avval db va web ni ishga tushiramiz (agar ishlamayotgan bo'lsa)
-            echo "🗄️  Ensuring db & web services are running..."
-            docker compose up -d --no-deps db web
+            # 1️⃣  db ni force-recreate qilamiz — pg-ensure-password.sh ishlaydi va parol har deploy da yangilanadi
+            echo "🗄️  Recreating db service (enforcing password)..."
+            docker compose up -d --no-deps --force-recreate db
+
+            # DB tayyor bo'lguncha kutamiz
+            echo "⏳ Waiting for PostgreSQL healthcheck..."
+            timeout 60 sh -c \
+              'until docker compose ps db | grep -q "(healthy)"; do sleep 2; done' \
+              || { echo "❌ PostgreSQL did not become healthy in time"; exit 1; }
 
             # 2️⃣  public_data volume ni tozalaymiz — entrypoint yangi image dan qayta to'ldiradi
             #     (db_data va storage_data saqlanadi!)
@@ -243,6 +249,11 @@ jobs:
             echo "⚡ Optimizing..."
             docker compose exec -T app php artisan optimize
 
+            # 5️⃣  DB ulanishini tekshiramiz (kafolat)
+            echo "🔍 Verifying DB connection..."
+            docker compose exec -T app php artisan tinker --execute="DB::connection()->getPdo(); echo 'DB OK';" \
+              || { echo "❌ DB connection failed after deploy!"; exit 1; }
+
             # Laravel log — 500 xatoliklarni debugging uchun
             echo "📋 Laravel log (last 30 lines):"
             docker compose exec -T app tail -n 30 storage/logs/laravel.log 2>/dev/null || echo "(log empty or not found)"
@@ -257,12 +268,18 @@ jobs:
 
             echo "✅ Deploy muvaffaqiyatli yakunlandi!"
 
-      - name: 🔔 Notify on success
+      - name: 🔔 Telegram — Deploy Success
         if: success()
         run: |
-          echo "✅ Deploy muvaffaqiyatli! Commit: ${{ github.sha }}"
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d parse_mode="HTML" \
+            -d text="✅ <b>Deploy muvaffaqiyatli!</b>%0A%0A🔗 <b>Commit:</b> <code>${{ github.sha }}</code>%0A👤 <b>Kim:</b> ${{ github.actor }}%0A🌿 <b>Branch:</b> ${{ github.ref_name }}%0A🕐 <b>Vaqt:</b> $(date '+%d.%m.%Y %H:%M')" || true
 
-      - name: ❌ Notify on failure
+      - name: ❌ Telegram — Deploy Failed
         if: failure()
         run: |
-          echo "❌ Deploy muvaffaqiyatsiz tugadi! Log ni tekshiring."
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d parse_mode="HTML" \
+            -d text="❌ <b>Deploy MUVAFFAQIYATSIZ!</b>%0A%0A🔗 <b>Commit:</b> <code>${{ github.sha }}</code>%0A👤 <b>Kim:</b> ${{ github.actor }}%0A🌿 <b>Branch:</b> ${{ github.ref_name }}%0A📋 <b>Log:</b> https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" || true
