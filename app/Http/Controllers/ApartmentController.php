@@ -15,6 +15,7 @@ class ApartmentController extends Controller
 {
     public function index(Request $request): Response
     {
+        $user  = auth()->user();
         $query = Apartment::with(['building.project'])
             ->when($request->project_id, fn ($q, $id) =>
                 $q->whereHas('building', fn ($b) => $b->where('project_id', $id))
@@ -28,6 +29,13 @@ class ApartmentController extends Controller
             ->when($request->search, fn ($q, $s) =>
                 $q->where('number', 'like', "%{$s}%")
             );
+
+        // Company filtering: non-super_admin faqat o'z kompaniyasining kvartiralarini ko'radi
+        if (!$user->hasRole('super_admin')) {
+            $query->whereHas('building.project', fn ($q) =>
+                $q->where('company_id', $user->company_id)
+            );
+        }
 
         $apartments = $query->orderBy('floor')->orderBy('number')->get()
             ->map(fn ($a) => [
@@ -45,8 +53,14 @@ class ApartmentController extends Controller
                 'monthly_fee_per_sqm' => $a->building?->monthly_fee_per_sqm ?? 0,
             ]);
 
+        // Project va building ham company bo'yicha filter qilinadi (Project CompanyScope orqali)
         $projects  = Project::select('id', 'name')->get();
-        $buildings = Building::select('id', 'name', 'project_id')->get();
+        $buildings = Building::select('id', 'name', 'project_id')
+            ->whereHas('project', function ($q) use ($user) {
+                if (!$user->hasRole('super_admin')) {
+                    $q->where('company_id', $user->company_id);
+                }
+            })->get();
 
         return Inertia::render('Apartments/Index', compact('apartments', 'projects', 'buildings'));
     }

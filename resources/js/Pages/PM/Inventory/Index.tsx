@@ -64,7 +64,7 @@ const CAT_KEYS: Record<AssetCategory, string> = {
     security:   "pmInventory.catSecurity",
     other:      "pmInventory.catOther",
 };
-const ALL_CATS = Object.keys(CAT_RU) as AssetCategory[];
+const ALL_CATS = Object.keys(CAT_KEYS) as AssetCategory[];
 
 const STATUS_META: Record<AssetStatus, { labelKey: string; bg: string; fg: string; border: string; rank: number }> = {
     broken:        { labelKey: "pmInventory.statusBroken",        bg: "rgba(239,68,68,0.10)",  fg: "#f87171", border: "rgba(239,68,68,0.30)",  rank: 0 },
@@ -84,6 +84,8 @@ export default function InventoryIndex({ projects }: Props) {
     const [loading,      setLoading]      = useState(false);
     const [editing,      setEditing]      = useState<AssetRow | null>(null);
     const [showForm,     setShowForm]     = useState(false);
+    const [selectedAsset, setSelectedAsset] = useState<AssetRow | null>(null);
+    const [statusUpdating, setStatusUpdating] = useState(false);
 
     // Supplies state
     const [supplies,        setSupplies]        = useState<SupplyRow[]>([]);
@@ -210,6 +212,40 @@ export default function InventoryIndex({ projects }: Props) {
     function openEdit(a: AssetRow) {
         setEditing(a);
         setShowForm(true);
+    }
+
+    async function handleStatusUpdate(asset: AssetRow, newStatus: AssetStatus) {
+        setStatusUpdating(true);
+        try {
+            const body = {
+                name:     asset.name,
+                category: asset.category,
+                status:   newStatus,
+                serial_number:         asset.serial_number,
+                manufacturer:          asset.manufacturer,
+                location:              asset.location,
+                installed_at:          asset.installed_at,
+                warranty_until:        asset.warranty_until,
+                next_service_at:       asset.next_service_at,
+                service_interval_days: asset.service_interval_days,
+                notes:                 asset.notes,
+            };
+            await fetch(`/pm/inventory/${asset.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content || '',
+                },
+                body: JSON.stringify(body),
+            });
+            setSelectedAsset(null);
+            loadAssets();
+        } catch (err) {
+            console.error('Failed to update status:', err);
+        } finally {
+            setStatusUpdating(false);
+        }
     }
 
     async function handleDelete(id: string) {
@@ -383,7 +419,7 @@ export default function InventoryIndex({ projects }: Props) {
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
                                 {assets.map((a) => (
-                                    <AssetCard key={a.id} asset={a} onEdit={() => openEdit(a)} onDelete={() => handleDelete(a.id)} />
+                                    <AssetCard key={a.id} asset={a} onEdit={() => openEdit(a)} onDelete={() => handleDelete(a.id)} onClick={() => setSelectedAsset(a)} />
                                 ))}
                             </div>
                         )}
@@ -426,6 +462,160 @@ export default function InventoryIndex({ projects }: Props) {
                     </>
                 )}
             </div>
+        {/* Asset Status Side Panel */}
+        {selectedAsset && (
+            <>
+                {/* Backdrop */}
+                <div
+                    className="fixed inset-0 z-40"
+                    style={{ backgroundColor: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(3px)' }}
+                    onClick={() => setSelectedAsset(null)}
+                />
+                {/* Slide-in Panel */}
+                <aside
+                    className="fixed top-0 right-0 z-50 h-screen overflow-y-auto"
+                    style={{
+                        width: 'min(420px, 95vw)',
+                        backgroundColor: 'var(--card)',
+                        borderLeft: '1px solid var(--border)',
+                        boxShadow: '-16px 0 60px rgba(0,0,0,0.5)',
+                        animation: 'slideInRight 0.28s cubic-bezier(0.32,0.72,0,1)',
+                    }}
+                >
+                    <style>{`
+                        @keyframes slideInRight {
+                            from { transform: translateX(100%); opacity: 0; }
+                            to   { transform: translateX(0);    opacity: 1; }
+                        }
+                        .status-option-btn {
+                            transition: all 0.18s ease;
+                        }
+                        .status-option-btn:hover {
+                            transform: translateX(4px);
+                        }
+                    `}</style>
+
+                    {/* Header */}
+                    <div className="flex items-center justify-between p-6 border-b" style={{ borderColor: 'var(--border)' }}>
+                        <div>
+                            <p className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: '#34d399' }}>Omborxona</p>
+                            <h2 className="text-base font-bold text-slate-800 mt-0.5">{selectedAsset.name}</h2>
+                        </div>
+                        <button
+                            onClick={() => setSelectedAsset(null)}
+                            className="p-1.5 rounded-lg transition-colors"
+                            style={{ color: 'var(--muted)' }}
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                    </div>
+
+                    <div className="p-6 space-y-6">
+                        {/* Current Status */}
+                        <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}>
+                            <p className="text-[9px] uppercase tracking-widest text-slate-500 font-semibold mb-2">Joriy holat</p>
+                            <span
+                                className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-bold"
+                                style={{
+                                    backgroundColor: STATUS_META[selectedAsset.status]?.bg,
+                                    color:           STATUS_META[selectedAsset.status]?.fg,
+                                    border:          `1px solid ${STATUS_META[selectedAsset.status]?.border}`,
+                                }}
+                            >
+                                {t(STATUS_META[selectedAsset.status]?.labelKey)}
+                            </span>
+                        </div>
+
+                        {/* Asset info */}
+                        <div className="space-y-2">
+                            <p className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">Jihozlar haqida</p>
+                            <div className="grid grid-cols-2 gap-3">
+                                {selectedAsset.category && (
+                                    <div className="rounded-xl p-3" style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}>
+                                        <p className="text-[9px] text-slate-500 uppercase tracking-wider font-semibold mb-1">Kategoriya</p>
+                                        <p className="text-xs font-bold text-slate-800">{t(CAT_KEYS[selectedAsset.category] || 'pmInventory.catOther')}</p>
+                                    </div>
+                                )}
+                                {selectedAsset.location && (
+                                    <div className="rounded-xl p-3" style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}>
+                                        <p className="text-[9px] text-slate-500 uppercase tracking-wider font-semibold mb-1">Joylashuv</p>
+                                        <p className="text-xs font-bold text-slate-800">{selectedAsset.location}</p>
+                                    </div>
+                                )}
+                                {selectedAsset.manufacturer && (
+                                    <div className="rounded-xl p-3" style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}>
+                                        <p className="text-[9px] text-slate-500 uppercase tracking-wider font-semibold mb-1">Ishlab chiqaruvchi</p>
+                                        <p className="text-xs font-bold text-slate-800">{selectedAsset.manufacturer}</p>
+                                    </div>
+                                )}
+                                {selectedAsset.serial_number && (
+                                    <div className="rounded-xl p-3" style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}>
+                                        <p className="text-[9px] text-slate-500 uppercase tracking-wider font-semibold mb-1">Seriya №</p>
+                                        <p className="text-xs font-bold text-slate-800 font-mono">{selectedAsset.serial_number}</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Status change */}
+                        <div className="space-y-3">
+                            <p className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">Statusni o'zgartirish</p>
+                            <div className="space-y-2">
+                                {(['operational', 'needs_service', 'broken', 'retired'] as AssetStatus[]).map((st) => {
+                                    const meta = STATUS_META[st];
+                                    const isActive = selectedAsset.status === st;
+                                    return (
+                                        <button
+                                            key={st}
+                                            disabled={isActive || statusUpdating}
+                                            onClick={() => handleStatusUpdate(selectedAsset, st)}
+                                            className="status-option-btn w-full flex items-center justify-between px-4 py-3 rounded-xl text-left"
+                                            style={{
+                                                backgroundColor: isActive ? meta.bg : 'var(--bg)',
+                                                border: isActive ? `2px solid ${meta.border}` : '1px solid var(--border)',
+                                                opacity: isActive ? 1 : 0.8,
+                                                cursor: isActive ? 'default' : 'pointer',
+                                            }}
+                                        >
+                                            <span className="text-xs font-semibold" style={{ color: meta.fg }}>
+                                                {t(meta.labelKey)}
+                                            </span>
+                                            {isActive && (
+                                                <span className="text-[9px] uppercase tracking-widest font-bold px-2 py-0.5 rounded"
+                                                    style={{ backgroundColor: meta.border, color: meta.fg }}>
+                                                    Joriy
+                                                </span>
+                                            )}
+                                            {!isActive && statusUpdating && (
+                                                <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color: 'var(--muted)' }} />
+                                            )}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Edit + Delete actions */}
+                        <div className="flex gap-3 pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
+                            <button
+                                onClick={() => { setSelectedAsset(null); openEdit(selectedAsset); }}
+                                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold transition-all"
+                                style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--muted)' }}
+                            >
+                                <Edit2 className="w-3.5 h-3.5" /> Tahrirlash
+                            </button>
+                            <button
+                                onClick={() => { setSelectedAsset(null); handleDelete(selectedAsset.id); }}
+                                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold transition-all"
+                                style={{ backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', color: '#f87171' }}
+                            >
+                                <Trash2 className="w-3.5 h-3.5" /> O'chirish
+                            </button>
+                        </div>
+                    </div>
+                </aside>
+            </>
+        )}
         </AppShell>
     );
 }
@@ -712,9 +902,10 @@ interface AssetCardProps {
     asset: AssetRow;
     onEdit: () => void;
     onDelete: () => void;
+    onClick?: () => void;
 }
 
-function AssetCard({ asset, onEdit, onDelete }: AssetCardProps) {
+function AssetCard({ asset, onEdit, onDelete, onClick }: AssetCardProps) {
     const { t } = useTranslation();
     const meta = STATUS_META[asset.status] || STATUS_META.operational;
 
@@ -726,7 +917,11 @@ function AssetCard({ asset, onEdit, onDelete }: AssetCardProps) {
         : null;
 
     return (
-        <div className="rounded-2xl p-5 space-y-4" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
+        <div
+            className="rounded-2xl p-5 space-y-4 cursor-pointer transition-all hover:shadow-lg"
+            style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
+            onClick={onClick}
+        >
             <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
@@ -746,16 +941,16 @@ function AssetCard({ asset, onEdit, onDelete }: AssetCardProps) {
                         {t(meta.labelKey)}
                     </span>
                     <button
-                        onClick={onEdit}
+                        onClick={(e) => { e.stopPropagation(); onEdit(); }}
                         className="p-1 rounded hover:bg-slate-100 text-slate-500 hover:text-white transition-colors"
-                        title="Редактировать"
+                        title="Tahrirlash"
                     >
                         <Edit2 className="w-3.5 h-3.5" />
                     </button>
                     <button
-                        onClick={onDelete}
+                        onClick={(e) => { e.stopPropagation(); onDelete(); }}
                         className="p-1 rounded hover:bg-red-500/10 text-slate-500 hover:text-red-400 transition-colors"
-                        title="Удалить"
+                        title="O'chirish"
                     >
                         <Trash2 className="w-3.5 h-3.5" />
                     </button>

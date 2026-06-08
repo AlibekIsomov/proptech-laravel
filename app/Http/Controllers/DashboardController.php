@@ -18,14 +18,28 @@ class DashboardController extends Controller
 {
     public function index(): Response
     {
+        $user      = auth()->user();
+        $isSuperAdmin = $user->hasRole('super_admin');
+        $companyId = $user->company_id;
+
+        // Company filter helper
+        $aptQuery = function() use ($isSuperAdmin, $companyId) {
+            $q = Apartment::query();
+            if (!$isSuperAdmin) {
+                $q->whereHas('building.project', fn($p) => $p->where('company_id', $companyId));
+            }
+            return $q;
+        };
+
         // ── Metrics ────────────────────────────────────────────────────────────
-        $totalApts = Apartment::count();
-        $soldApts  = Apartment::where('status', 'sold')->count();
-        $availApts = Apartment::where('status', 'available')->count();
-        $revenue   = Apartment::where('status', 'sold')->sum('price');
+        $totalApts = $aptQuery()->count();
+        $soldApts  = $aptQuery()->where('status', 'sold')->count();
+        $availApts = $aptQuery()->where('status', 'available')->count();
+        $revenue   = $aptQuery()->where('status', 'sold')->sum('price');
 
         // ── Oylik savdo trendi (so'nggi 7 oy) ─────────────────────────────────
-        $monthlySales = Apartment::select(
+        $monthlySales = $aptQuery()
+            ->select(
                 DB::raw("TO_CHAR(updated_at, 'Mon') as month"),
                 DB::raw("TO_CHAR(updated_at, 'YYYY-MM') as month_key"),
                 DB::raw('COUNT(*) as units'),
@@ -49,7 +63,11 @@ class DashboardController extends Controller
         }
 
         // ── Loyiha bo'yicha statistika ─────────────────────────────────────────
-        $projectData = Project::select('projects.id', 'projects.name')
+        $projectQuery = Project::select('projects.id', 'projects.name');
+        if (!$isSuperAdmin) {
+            $projectQuery->where('projects.company_id', $companyId);
+        }
+        $projectData = $projectQuery
             ->withCount([
                 'apartments as sold'      => fn ($q) => $q->where('apartments.status', 'sold'),
                 'apartments as available' => fn ($q) => $q->where('apartments.status', 'available'),
@@ -65,8 +83,12 @@ class DashboardController extends Controller
             ->values();
 
         // ── Recent transactions (so'nggi 5 ta) ───────────────────────────────
-        $transactions = Client::with(['apartment'])
-            ->whereIn('status', ['reserved', 'bought'])
+        $clientQuery = Client::with(['apartment'])
+            ->whereIn('status', ['reserved', 'bought']);
+        if (!$isSuperAdmin) {
+            $clientQuery->where('company_id', $companyId);
+        }
+        $transactions = $clientQuery
             ->latest()
             ->limit(5)
             ->get()
@@ -81,19 +103,24 @@ class DashboardController extends Controller
 
         // ── PM quick stats ────────────────────────────────────────────────────
         $pmStats = null;
-        if (auth()->user()?->hasAnyRole(['super_admin', 'company_admin', 'property_manager'])) {
+        if ($user->hasAnyRole(['super_admin', 'company_admin', 'property_manager'])) {
+            $mrQuery = MaintenanceRequest::where('status', 'open');
+            if (!$isSuperAdmin) {
+                $mrQuery->where('company_id', $companyId);
+            }
             $pmStats = [
-                'open_requests' => MaintenanceRequest::where('status', 'open')->count(),
+                'open_requests' => $mrQuery->count(),
                 'vendors'       => Vendor::where('is_active', true)->count(),
             ];
         }
 
         // ── Notifications (recent client activity) ────────────────────────────
-        $notifications = Client::select('id', 'full_name', 'status', 'created_at')
-            ->whereNotIn('status', ['new'])
-            ->latest()
-            ->limit(5)
-            ->get();
+        $notifQuery = Client::select('id', 'full_name', 'status', 'created_at')
+            ->whereNotIn('status', ['new']);
+        if (!$isSuperAdmin) {
+            $notifQuery->where('company_id', $companyId);
+        }
+        $notifications = $notifQuery->latest()->limit(5)->get();
 
         return Inertia::render('Dashboard/Index', [
             'metrics' => [

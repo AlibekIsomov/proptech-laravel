@@ -4,11 +4,15 @@ namespace App\Models;
 
 use App\Models\PM\Apartment;
 use App\Models\PM\Building;
+use App\Models\Scopes\CompanyScope;
 
+use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+
+#[ScopedBy([CompanyScope::class])]
 
 class MaintenanceRequest extends Model
 {
