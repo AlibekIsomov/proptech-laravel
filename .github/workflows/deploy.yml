@@ -212,35 +212,33 @@ jobs:
               echo "IMAGE_TAG=${{ env.IMAGE_TAG }}" >> .env
             fi
 
-            # 1️⃣  db ni force-recreate qilamiz — pg-ensure-password.sh ishlaydi va parol har deploy da yangilanadi
-            echo "🗄️  Recreating db service (enforcing password)..."
-            docker compose up -d --no-deps --force-recreate db
+            # 1️⃣  db ni ishga tushiramiz (agar o'chiq bo'lsa) — recreate QILMAYMIZ (downtime bo'ladi)
+            echo "🗄️  Ensuring db is running..."
+            docker compose up -d --no-deps db
 
             # DB tayyor bo'lguncha kutamiz
-            echo "⏳ Waiting for PostgreSQL healthcheck..."
+            echo "⏳ Waiting for PostgreSQL to be ready..."
             timeout 60 sh -c \
-              'until docker compose ps db | grep -q "(healthy)"; do sleep 2; done' \
-              || { echo "❌ PostgreSQL did not become healthy in time"; exit 1; }
+              'until docker compose exec -T db pg_isready -U "${DB_USERNAME:-postgres}" 2>/dev/null; do sleep 2; done' \
+              || { echo "❌ PostgreSQL did not become ready in time"; exit 1; }
+
+            # Parolni restart qilmasdan IN-PLACE yangilaymiz (zero-downtime!)
+            echo "🔑 Enforcing DB password in-place (no downtime)..."
+            docker compose exec -T db psql -U "${DB_USERNAME:-postgres}" \
+              -c "ALTER USER ${DB_USERNAME:-postgres} WITH PASSWORD '${DB_PASSWORD:-secret}';" \
+              && echo "✅ Password enforced." || echo "⚠️  Password enforcement warning."
 
             # 2️⃣  public_data volume ni tozalaymiz — entrypoint yangi image dan qayta to'ldiradi
-            #     (db_data va storage_data saqlanadi!)
             echo "🗑️  Refreshing public_data volume..."
             docker compose stop app web 2>/dev/null || true
             docker volume rm proptech-laravel_public_data 2>/dev/null || true
 
             # 3️⃣  App ni yangi image bilan ishga tushiramiz
-            #     (depends_on: db → db tayyor bo'lguncha kutadi)
             echo "🔄 Starting app with new image..."
             docker compose up -d --no-deps app
 
             # web ni ham qayta ishga tushiramiz (public_data volume yangilandi)
             docker compose up -d --no-deps web
-
-            # 3️⃣  DB tayyor bo'lguncha kutamiz (healthcheck o'tmaguncha migrate qilmaymiz)
-            echo "⏳ Waiting for PostgreSQL to be ready..."
-            timeout 60 sh -c \
-              'until docker compose exec -T db pg_isready -U ${DB_USERNAME:-postgres} -d ${DB_DATABASE:-proptech} 2>/dev/null; do sleep 2; done' \
-              || { echo "❌ PostgreSQL did not become ready in time"; exit 1; }
 
             # 4️⃣  Migration va optimize
             echo "🗄️  Running migrations..."
@@ -255,10 +253,9 @@ jobs:
               || { echo "❌ DB connection failed after deploy!"; exit 1; }
 
             # Laravel log — 500 xatoliklarni debugging uchun
-            echo "📋 Laravel log (last 30 lines):"
-            docker compose exec -T app tail -n 30 storage/logs/laravel.log 2>/dev/null || echo "(log empty or not found)"
+            echo "📋 Laravel log (last 20 lines):"
+            docker compose exec -T app tail -n 20 storage/logs/laravel.log 2>/dev/null || echo "(log empty)"
 
-            # App container holati
             echo "🐳 Container status:"
             docker compose ps
 
@@ -268,18 +265,12 @@ jobs:
 
             echo "✅ Deploy muvaffaqiyatli yakunlandi!"
 
-      - name: 🔔 Telegram — Deploy Success
+      - name: 🔔 Notify on success
         if: success()
         run: |
-          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
-            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
-            -d parse_mode="HTML" \
-            -d text="✅ <b>Deploy muvaffaqiyatli!</b>%0A%0A🔗 <b>Commit:</b> <code>${{ github.sha }}</code>%0A👤 <b>Kim:</b> ${{ github.actor }}%0A🌿 <b>Branch:</b> ${{ github.ref_name }}%0A🕐 <b>Vaqt:</b> $(date '+%d.%m.%Y %H:%M')" || true
+          echo "✅ Deploy muvaffaqiyatli! Commit: ${{ github.sha }}"
 
-      - name: ❌ Telegram — Deploy Failed
+      - name: ❌ Notify on failure
         if: failure()
         run: |
-          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
-            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
-            -d parse_mode="HTML" \
-            -d text="❌ <b>Deploy MUVAFFAQIYATSIZ!</b>%0A%0A🔗 <b>Commit:</b> <code>${{ github.sha }}</code>%0A👤 <b>Kim:</b> ${{ github.actor }}%0A🌿 <b>Branch:</b> ${{ github.ref_name }}%0A📋 <b>Log:</b> https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" || true
+          echo "❌ Deploy muvaffaqiyatsiz tugadi! Log ni tekshiring."
