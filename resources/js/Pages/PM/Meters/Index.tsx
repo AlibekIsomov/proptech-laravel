@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Head, useForm, router } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
 import { Gauge, AlertTriangle, Plus, X, Loader2 } from 'lucide-react';
 import AppShell from '@/Components/AppShell';
 
@@ -26,17 +27,18 @@ interface Props {
   apartments: ApartmentOption[];
 }
 
-const METER_META: Record<MeterType, { label: string; accent: string; unit: string }> = {
-  electricity: { label: 'Электричество', accent: '#fbbf24', unit: 'кВт·ч' },
-  gas:         { label: 'Газ',           accent: '#f97316', unit: 'м³' },
-  water_cold:  { label: 'Вода (хол.)',   accent: '#3b82f6', unit: 'м³' },
-  water_hot:   { label: 'Вода (гор.)',   accent: '#ef4444', unit: 'м³' },
-  heating:     { label: 'Отопление',     accent: '#a855f7', unit: 'Гкал' },
+const METER_META: Record<MeterType, { labelKey: string; accent: string; unit: string }> = {
+  electricity: { labelKey: 'pmMeters.electricity', accent: '#fbbf24', unit: 'кВт·ч' },
+  gas:         { labelKey: 'pmMeters.gas',         accent: '#f97316', unit: 'м³'    },
+  water_cold:  { labelKey: 'pmMeters.waterCold',   accent: '#3b82f6', unit: 'м³'    },
+  water_hot:   { labelKey: 'pmMeters.waterHot',    accent: '#ef4444', unit: 'м³'    },
+  heating:     { labelKey: 'pmMeters.heating',     accent: '#a855f7', unit: 'Гкал'  },
 };
 
 const STALE_DAYS = 45;
 
 export default function MetersIndex({ meters, apartments }: Props) {
+  const { t } = useTranslation();
   const [search, setSearch]     = useState('');
   const [typeFilter, setTypeFilter] = useState<MeterType | 'all'>('all');
   const [showAdd, setShowAdd]   = useState(false);
@@ -69,13 +71,13 @@ export default function MetersIndex({ meters, apartments }: Props) {
         <header className="flex items-start justify-between gap-4">
           <div>
             <p className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: '#34d399' }}>Property Management</p>
-            <h1 className="text-3xl font-bold text-slate-800 mt-1" style={{ fontFamily: 'var(--font-display)' }}>Счётчики</h1>
-            <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>Показания по всем счётчикам</p>
+            <h1 className="text-3xl font-bold text-slate-800 mt-1" style={{ fontFamily: 'var(--font-display)' }}>{t('pmMeters.title')}</h1>
+            <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>{t('pmMeters.subtitle')}</p>
           </div>
           <button onClick={() => setShowAdd(true)}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white"
             style={{ background: 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)' }}>
-            <Plus className="w-4 h-4" />Добавить счётчик
+            <Plus className="w-4 h-4" />{t('pmMeters.addMeter')}
           </button>
         </header>
 
@@ -97,8 +99,8 @@ export default function MetersIndex({ meters, apartments }: Props) {
             <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value as MeterType | 'all')}
               className="rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none"
               style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-              <option value="all" style={{ backgroundColor: 'var(--card)' }}>Все типы</option>
-              {Object.entries(METER_META).map(([k, v]) => <option key={k} value={k} style={{ backgroundColor: 'var(--card)' }}>{v.label}</option>)}
+              <option value="all">{t('pmMeters.allTypes')}</option>
+              {Object.entries(METER_META).map(([k, v]) => <option key={k} value={k}>{t(v.labelKey)}</option>)}
             </select>
           </label>
         </div>
@@ -107,14 +109,14 @@ export default function MetersIndex({ meters, apartments }: Props) {
           {filtered.length === 0 ? (
             <div className="p-12 text-center" style={{ color: 'var(--muted)' }}>
               <Gauge className="w-8 h-8 mx-auto mb-3" style={{ color: 'var(--border)' }} />
-              <p className="text-sm">Счётчиков нет</p>
+              <p className="text-sm">{t('pmMeters.noData')}</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                    {['Квартира', 'Здание', 'Тип', 'Серийный №', 'Посл. показание', 'Дата', 'Ед.', ''].map((h) => (
+                    {[t('pmMeters.colApt'), t('pmMeters.colBuilding'), t('pmMeters.colType'), t('pmMeters.colSerial'), t('pmMeters.colLastReading'), t('pmMeters.colLastDate'), t('pmMeters.colUnit'), ''].map((h) => (
                       <th key={h} className="text-left px-4 py-3 text-[10px] uppercase tracking-widest font-semibold" style={{ color: 'var(--muted)' }}>{h}</th>
                     ))}
                   </tr>
@@ -130,7 +132,7 @@ export default function MetersIndex({ meters, apartments }: Props) {
                         <td className="px-4 py-3 text-sm" style={{ color: 'var(--muted)' }}>{m.building ?? '—'}</td>
                         <td className="px-4 py-3">
                           <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full"
-                            style={{ backgroundColor: `${meta.accent}1A`, color: meta.accent }}>{meta.label}</span>
+                            style={{ backgroundColor: `${meta.accent}1A`, color: meta.accent }}>{t(meta.labelKey)}</span>
                         </td>
                         <td className="px-4 py-3 text-xs font-mono" style={{ color: 'var(--muted)' }}>{m.serial_number ?? '—'}</td>
                         <td className="px-4 py-3">
@@ -169,6 +171,7 @@ export default function MetersIndex({ meters, apartments }: Props) {
 }
 
 function AddMeterModal({ apartments, onClose }: { apartments: ApartmentOption[]; onClose: () => void }) {
+  const { t } = useTranslation();
   const { data, setData, post, processing, errors } = useForm({
     apartment_id: '',
     meter_type: 'electricity' as MeterType,
@@ -195,7 +198,7 @@ function AddMeterModal({ apartments, onClose }: { apartments: ApartmentOption[];
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}>
       <div className="rounded-2xl p-6 w-full max-w-md space-y-4" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-800">Добавить счётчик</h2>
+          <h2 className="text-lg font-semibold text-slate-800">{t('pmMeters.addMeterTitle')}</h2>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100" style={{ color: 'var(--muted)' }}><X className="w-4 h-4" /></button>
         </div>
         <form onSubmit={submit} className="space-y-3">
@@ -211,7 +214,7 @@ function AddMeterModal({ apartments, onClose }: { apartments: ApartmentOption[];
             <select value={data.meter_type} onChange={(e) => onTypeChange(e.target.value as MeterType)}
               className="w-full rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none"
               style={{ backgroundColor: 'var(--border)', border: '1px solid var(--border)' }}>
-              {Object.entries(METER_META).map(([k, v]) => <option key={k} value={k} style={{ backgroundColor: 'var(--card)' }}>{v.label}</option>)}
+              {Object.entries(METER_META).map(([k, v]) => <option key={k} value={k}>{t(v.labelKey)}</option>)}
             </select>
           </Field>
           <Field label="Серийный номер" error={errors.serial_number}>
@@ -225,11 +228,11 @@ function AddMeterModal({ apartments, onClose }: { apartments: ApartmentOption[];
               style={{ backgroundColor: 'var(--border)', border: '1px solid var(--border)' }} />
           </Field>
           <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 rounded-xl text-sm" style={{ color: 'var(--muted)', border: '1px solid var(--border)' }}>Отмена</button>
+            <button type="button" onClick={onClose} className="px-4 py-2 rounded-xl text-sm" style={{ color: 'var(--muted)', border: '1px solid var(--border)' }}>{t('pmMeters.cancel')}</button>
             <button type="submit" disabled={processing}
               className="px-4 py-2 rounded-xl text-sm font-semibold text-white flex items-center gap-2 disabled:opacity-50"
               style={{ background: 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)' }}>
-              {processing && <Loader2 className="w-4 h-4 animate-spin" />}Сохранить
+              {processing && <Loader2 className="w-4 h-4 animate-spin" />}{t('pmMeters.save')}
             </button>
           </div>
         </form>
@@ -239,6 +242,7 @@ function AddMeterModal({ apartments, onClose }: { apartments: ApartmentOption[];
 }
 
 function AddReadingModal({ meter, onClose }: { meter: Meter; onClose: () => void }) {
+  const { t } = useTranslation();
   const { data, setData, post, processing, errors } = useForm({
     reading_value: '',
     reading_date: new Date().toISOString().slice(0, 10),
@@ -256,11 +260,11 @@ function AddReadingModal({ meter, onClose }: { meter: Meter; onClose: () => void
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}>
       <div className="rounded-2xl p-6 w-full max-w-sm space-y-4" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-800">Внести показание</h2>
+          <h2 className="text-lg font-semibold text-slate-800">{t('pmMeters.addReadingTitle')}</h2>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100" style={{ color: 'var(--muted)' }}><X className="w-4 h-4" /></button>
         </div>
         <p className="text-sm" style={{ color: 'var(--muted)' }}>
-          Кв. №{meter.apartment} · <span style={{ color: meta.accent }}>{meta.label}</span>
+          Кв. №{meter.apartment} · <span style={{ color: meta.accent }}>{t(meta.labelKey)}</span>
           {meter.last_reading != null && <> · Последнее: {meter.last_reading.toLocaleString('ru-RU')} {meta.unit}</>}
         </p>
         <form onSubmit={submit} className="space-y-3">
@@ -276,11 +280,11 @@ function AddReadingModal({ meter, onClose }: { meter: Meter; onClose: () => void
               style={{ backgroundColor: 'var(--border)', border: '1px solid var(--border)' }} />
           </Field>
           <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 rounded-xl text-sm" style={{ color: 'var(--muted)', border: '1px solid var(--border)' }}>Отмена</button>
+            <button type="button" onClick={onClose} className="px-4 py-2 rounded-xl text-sm" style={{ color: 'var(--muted)', border: '1px solid var(--border)' }}>{t('pmMeters.cancel')}</button>
             <button type="submit" disabled={processing}
               className="px-4 py-2 rounded-xl text-sm font-semibold text-white flex items-center gap-2 disabled:opacity-50"
               style={{ background: 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)' }}>
-              {processing && <Loader2 className="w-4 h-4 animate-spin" />}Внести
+              {processing && <Loader2 className="w-4 h-4 animate-spin" />}{t('pmMeters.save')}
             </button>
           </div>
         </form>

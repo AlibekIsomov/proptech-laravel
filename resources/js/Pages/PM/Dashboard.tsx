@@ -167,15 +167,13 @@ export default function PMDashboard({
               <Sparkles className="w-4 h-4 text-slate-800" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-slate-800">🤖 AI Kommunal tahlil</h3>
+              <h3 className="text-sm font-semibold text-slate-800">🤖 {t('pmDash.aiAnalysis')}</h3>
               <p className="text-[11px] text-slate-400">
-                AI modellariga asoslangan aqlli og'ish tahlili
+                {t('pmDash.aiAnalysisHint')}
               </p>
             </div>
           </div>
-          <p className="text-xs py-2 text-slate-600">
-            Barcha kommunal xizmatlar iste'moli ayni vaqtda optimal darajada. Hech qanday og'ishlar aniqlanmadi.
-          </p>
+          <p className="text-xs py-2 text-slate-600">{t('pmDash.aiOptimal')}</p>
         </section>
 
         <ApartmentDetailDrawer

@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { Head, router } from "@inertiajs/react";
+import { useTranslation } from 'react-i18next';
 import { Plus, Loader2, Boxes, Edit2, X, AlertTriangle, ShieldCheck, Wrench, Trash2, LayoutGrid, Package } from "lucide-react";
 import AppShell from "@/Components/AppShell";
 
@@ -53,26 +54,27 @@ interface Props {
     projects: Project[];
 }
 
-const CAT_RU: Record<AssetCategory, string> = {
-    elevator:   "Лифт",
-    pump:       "Насос",
-    boiler:     "Котёл",
-    hvac:       "Вентиляция",
-    electrical: "Электрика",
-    plumbing:   "Сантехника",
-    security:   "Охрана",
-    other:      "Другое",
+const CAT_KEYS: Record<AssetCategory, string> = {
+    elevator:   "pmInventory.catElevator",
+    pump:       "pmInventory.catPump",
+    boiler:     "pmInventory.catBoiler",
+    hvac:       "pmInventory.catHvac",
+    electrical: "pmInventory.catElectrical",
+    plumbing:   "pmInventory.catPlumbing",
+    security:   "pmInventory.catSecurity",
+    other:      "pmInventory.catOther",
 };
 const ALL_CATS = Object.keys(CAT_RU) as AssetCategory[];
 
-const STATUS_META: Record<AssetStatus, { label: string; bg: string; fg: string; border: string; rank: number }> = {
-    broken:        { label: "Сломан",    bg: "rgba(239,68,68,0.10)",  fg: "#f87171", border: "rgba(239,68,68,0.30)", rank: 0 },
-    needs_service: { label: "ТО",        bg: "rgba(251,191,36,0.10)", fg: "#fbbf24", border: "rgba(251,191,36,0.30)", rank: 1 },
-    operational:   { label: "В строю",   bg: "rgba(16,185,129,0.10)", fg: "#34d399", border: "rgba(16,185,129,0.30)", rank: 2 },
-    retired:       { label: "Списан",    bg: "var(--border)", fg: "var(--muted)", border: "var(--border)", rank: 3 },
+const STATUS_META: Record<AssetStatus, { labelKey: string; bg: string; fg: string; border: string; rank: number }> = {
+    broken:        { labelKey: "pmInventory.statusBroken",        bg: "rgba(239,68,68,0.10)",  fg: "#f87171", border: "rgba(239,68,68,0.30)",  rank: 0 },
+    needs_service: { labelKey: "pmInventory.statusNeedsService",  bg: "rgba(251,191,36,0.10)", fg: "#fbbf24", border: "rgba(251,191,36,0.30)", rank: 1 },
+    operational:   { labelKey: "pmInventory.statusOperational",   bg: "rgba(16,185,129,0.10)", fg: "#34d399", border: "rgba(16,185,129,0.30)", rank: 2 },
+    retired:       { labelKey: "pmInventory.statusRetired",        bg: "var(--border)", fg: "var(--muted)", border: "var(--border)", rank: 3 },
 };
 
 export default function InventoryIndex({ projects }: Props) {
+    const { t } = useTranslation();
     const [activeTab,    setActiveTab]    = useState<'equipment' | 'supplies'>('equipment');
     const [selectedProj, setSelectedProj] = useState("");
     const [selectedBldg, setSelectedBldg] = useState("");
@@ -261,9 +263,9 @@ export default function InventoryIndex({ projects }: Props) {
                     <p className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: "#34d399" }}>
                         Property Management
                     </p>
-                    <h1 className="text-2xl font-bold text-slate-800 mt-1">Инвентарь</h1>
+                    <h1 className="text-2xl font-bold text-slate-800 mt-1">{t('pmInventory.title')}</h1>
                     <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>
-                        Реестр оборудования, инженерных систем и расходных материалов здания
+                        {t('pmInventory.subtitle')}
                     </p>
                 </div>
                 <div>
@@ -274,7 +276,7 @@ export default function InventoryIndex({ projects }: Props) {
                             className="rounded-xl px-4 py-2.5 text-xs font-bold text-white flex items-center gap-2 disabled:opacity-50 transition-all hover:opacity-90 animate-fade-in"
                             style={{ background: "linear-gradient(135deg, #10b981 0%, #14b8a6 100%)" }}
                         >
-                            <Plus className="w-4 h-4" /> Добавить объект
+                            <Plus className="w-4 h-4" /> {t('pmInventory.addEquipment')}
                         </button>
                     ) : (
                         <button
@@ -283,7 +285,7 @@ export default function InventoryIndex({ projects }: Props) {
                             className="rounded-xl px-4 py-2.5 text-xs font-bold text-white flex items-center gap-2 disabled:opacity-50 transition-all hover:opacity-90 animate-fade-in"
                             style={{ background: "linear-gradient(135deg, #10b981 0%, #14b8a6 100%)" }}
                         >
-                            <Plus className="w-4 h-4" /> Добавить материал
+                            <Plus className="w-4 h-4" /> {t('pmInventory.addMaterial')}
                         </button>
                     )}
                 </div>
@@ -300,7 +302,7 @@ export default function InventoryIndex({ projects }: Props) {
                     }}
                 >
                     <LayoutGrid className="w-4 h-4" />
-                    Оборудование и системы
+                    {t('pmInventory.equipment')}
                 </button>
                 <button
                     onClick={() => setActiveTab('supplies')}
@@ -311,7 +313,7 @@ export default function InventoryIndex({ projects }: Props) {
                     }}
                 >
                     <Package className="w-4 h-4" />
-                    Расходные материалы
+                    {t('pmInventory.supplies')}
                 </button>
             </div>
 
@@ -319,7 +321,7 @@ export default function InventoryIndex({ projects }: Props) {
                 {/* Selectors */}
                 <div className="flex flex-wrap items-center gap-4 p-4 rounded-2xl animate-fade-in" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
                     <div className="flex flex-col gap-1 min-w-[200px]">
-                        <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">Проект</span>
+                        <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">{t('pmInventory.project')}</span>
                         <select
                             value={selectedProj}
                             onChange={(e) => setSelectedProj(e.target.value)}
@@ -333,7 +335,7 @@ export default function InventoryIndex({ projects }: Props) {
                     </div>
 
                     <div className="flex flex-col gap-1 min-w-[200px]">
-                        <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">Корпус</span>
+                        <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">{t('pmInventory.building')}</span>
                         <select
                             value={selectedBldg}
                             onChange={(e) => setSelectedBldg(e.target.value)}
@@ -341,7 +343,7 @@ export default function InventoryIndex({ projects }: Props) {
                             className="rounded-xl px-3 py-2.5 text-xs text-slate-800 outline-none cursor-pointer disabled:opacity-50"
                             style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
                         >
-                            {buildings.length === 0 && <option value="">Нет корпусов</option>}
+                            {buildings.length === 0 && <option value="">{t('pmInventory.noBuildings')}</option>}
                             {buildings.map((b) => (
                                 <option key={b.id} value={b.id}>{b.name}</option>
                             ))}
@@ -353,10 +355,10 @@ export default function InventoryIndex({ projects }: Props) {
                     <>
                         {/* Metrics */}
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 animate-fade-in">
-                            <SummaryCard label="Всего оборудования" value={stats.total} accent="var(--muted)" />
-                            <SummaryCard label="В строю / OK" value={stats.ok} accent="#34d399" />
-                            <SummaryCard label="ТО / Требуется" value={stats.dueSoon} accent="#fbbf24" />
-                            <SummaryCard label="В поломке" value={stats.broken} accent="#f87171" />
+                            <SummaryCard label={t('pmInventory.totalEquipment')} value={stats.total}   accent="var(--muted)" />
+                            <SummaryCard label={t('pmInventory.operational')}    value={stats.ok}      accent="#34d399" />
+                            <SummaryCard label={t('pmInventory.needsService')}   value={stats.dueSoon} accent="#fbbf24" />
+                            <SummaryCard label={t('pmInventory.broken')}         value={stats.broken}  accent="#f87171" />
                         </div>
 
                         {showForm && selectedBldg && (
@@ -375,8 +377,8 @@ export default function InventoryIndex({ projects }: Props) {
                         ) : assets.length === 0 ? (
                             <div className="rounded-2xl p-16 text-center border border-dashed animate-fade-in" style={{ backgroundColor: "var(--border)", borderColor: 'var(--border)', color: "var(--muted)" }}>
                                 <Boxes className="w-10 h-10 mx-auto mb-3" style={{ color: "var(--border)" }} />
-                                <p className="text-sm font-medium text-slate-800">Оборудование не зарегистрировано</p>
-                                <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>Зарегистрируйте насосы, лифты и бойлеры здания для проведения ТО</p>
+                                <p className="text-sm font-medium text-slate-800">{t('pmInventory.noEquipment')}</p>
+                                <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>{t('pmInventory.noEquipmentHint')}</p>
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
@@ -390,9 +392,9 @@ export default function InventoryIndex({ projects }: Props) {
                     <>
                         {/* Consumables Metrics */}
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 animate-fade-in">
-                            <SummaryCard label="Всего наименований" value={supplyStats.totalItems} accent="var(--muted)" />
-                            <SummaryCard label="Заканчивается запас" value={supplyStats.lowStockCount} accent="#fbbf24" />
-                            <SummaryCard label="Общая стоимость ($)" value={supplyStats.totalValue} accent="#34d399" />
+                            <SummaryCard label={t('pmInventory.totalItems')} value={supplyStats.totalItems}   accent="var(--muted)" />
+                            <SummaryCard label={t('pmInventory.lowStock')}   value={supplyStats.lowStockCount} accent="#fbbf24" />
+                            <SummaryCard label={t('pmInventory.totalValue')} value={supplyStats.totalValue}    accent="#34d399" />
                         </div>
 
                         {showSupplyForm && selectedBldg && (
@@ -411,8 +413,8 @@ export default function InventoryIndex({ projects }: Props) {
                         ) : supplies.length === 0 ? (
                             <div className="rounded-2xl p-16 text-center border border-dashed animate-fade-in" style={{ backgroundColor: "var(--border)", borderColor: 'var(--border)', color: "var(--muted)" }}>
                                 <Boxes className="w-10 h-10 mx-auto mb-3" style={{ color: "var(--border)" }} />
-                                <p className="text-sm font-medium text-slate-800">Материалы не зарегистрированы</p>
-                                <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>Зарегистрируйте лампочки, фитинги и краны для контроля остатков</p>
+                                <p className="text-sm font-medium text-slate-800">{t('pmInventory.noMaterials')}</p>
+                                <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>{t('pmInventory.noMaterialsHint')}</p>
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
@@ -713,6 +715,7 @@ interface AssetCardProps {
 }
 
 function AssetCard({ asset, onEdit, onDelete }: AssetCardProps) {
+    const { t } = useTranslation();
     const meta = STATUS_META[asset.status] || STATUS_META.operational;
 
     const warrantyDays = asset.warranty_until
@@ -729,7 +732,7 @@ function AssetCard({ asset, onEdit, onDelete }: AssetCardProps) {
                     <div className="flex items-center gap-2">
                         <p className="text-sm font-bold text-slate-800 truncate">{asset.name}</p>
                         <span className="text-[9px] px-2 py-0.5 rounded font-bold uppercase tracking-wider" style={{ backgroundColor: "var(--border)", color: "#a5b4fc" }}>
-                            {CAT_RU[asset.category] || asset.category}
+                            {t(CAT_KEYS[asset.category] || 'pmInventory.catOther')}
                         </span>
                     </div>
                     <div className="text-xs mt-1.5 space-x-3 text-slate-500 font-medium">
@@ -740,7 +743,7 @@ function AssetCard({ asset, onEdit, onDelete }: AssetCardProps) {
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-md" style={{ backgroundColor: meta.bg, color: meta.fg, border: `1px solid ${meta.border}` }}>
-                        {meta.label}
+                        {t(meta.labelKey)}
                     </span>
                     <button
                         onClick={onEdit}
@@ -826,6 +829,7 @@ interface FormProps {
 }
 
 function AssetForm({ buildingId, asset, onSaved, onCancel }: FormProps) {
+    const { t } = useTranslation();
     const [name,            setName]            = useState(asset?.name ?? "");
     const [category,        setCategory]        = useState<AssetCategory>(asset?.category ?? "other");
     const [serialNumber,    setSerialNumber]    = useState(asset?.serial_number ?? "");
@@ -915,7 +919,7 @@ function AssetForm({ buildingId, asset, onSaved, onCancel }: FormProps) {
                         style={fs()}
                     >
                         {ALL_CATS.map((c) => (
-                            <option key={c} value={c} style={{ backgroundColor: 'var(--card)' }}>{CAT_RU[c]}</option>
+                            <option key={c} value={c} style={{ backgroundColor: 'var(--card)' }}>{t(CAT_KEYS[c] || 'pmInventory.catOther')}</option>
                         ))}
                     </select>
                 </Field>

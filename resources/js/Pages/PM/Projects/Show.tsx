@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { router, usePage } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
 import {
     ArrowLeft, Plus, Building2, MapPin, ChevronRight,
     ChevronDown, ChevronUp, Zap, X, Loader2, Home,
@@ -56,12 +57,13 @@ const emptyApt = (buildingId = ''): AptForm => ({
 });
 
 const STATUS_CFG = {
-    available: { bg: 'rgba(16,185,129,0.10)',  text: '#34d399', label: 'Mavjud'       },
-    reserved:  { bg: 'rgba(245,158,11,0.10)',  text: '#fbbf24', label: 'Bron qilingan' },
-    sold:      { bg: 'rgba(20,184,166,0.10)',  text: '#2dd4bf', label: 'Sotilgan'      },
+    available: { bg: 'rgba(16,185,129,0.10)',  text: '#34d399', labelKey: 'projectShow.statusAvailable' },
+    reserved:  { bg: 'rgba(245,158,11,0.10)',  text: '#fbbf24', labelKey: 'projectShow.statusReserved'  },
+    sold:      { bg: 'rgba(20,184,166,0.10)',  text: '#2dd4bf', labelKey: 'projectShow.statusSold'      },
 };
 
 export default function PMProjectShow({ project, buildings, aptStats }: Props) {
+    const { t } = useTranslation();
     const { auth } = usePage<any>().props;
     const canEdit = ['super_admin', 'company_admin'].includes(auth.user?.role) ||
                     auth.user?.pm_role === 'property_manager';
@@ -293,9 +295,9 @@ export default function PMProjectShow({ project, buildings, aptStats }: Props) {
                                                     </div>
                                                 </div>
                                                 <div className="flex justify-between text-[10px]" style={{ color: '#475569' }}>
-                                                    <span style={{ color: '#34d399' }}>{stats.available} mavjud</span>
-                                                    <span style={{ color: '#fbbf24' }}>{stats.reserved} bron</span>
-                                                    <span style={{ color: '#2dd4bf' }}>{stats.sold} sotilgan</span>
+                                                    <span style={{ color: '#34d399' }}>{stats.available} {t('projectShow.available')}</span>
+                                                    <span style={{ color: '#fbbf24' }}>{stats.reserved} {t('projectShow.reserved')}</span>
+                                                    <span style={{ color: '#2dd4bf' }}>{stats.sold} {t('projectShow.sold')}</span>
                                                 </div>
                                             </div>
                                         )}
@@ -564,9 +566,9 @@ export default function PMProjectShow({ project, buildings, aptStats }: Props) {
                                     <select value={aptForm.status} onChange={e => setAptForm(f => ({ ...f, status: e.target.value as any }))}
                                         className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
                                         style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.12)' }}>
-                                        <option value="available">Mavjud</option>
-                                        <option value="reserved">Bron</option>
-                                        <option value="sold">Sotilgan</option>
+                                        <option value="available">{t('projectShow.statusAvailable')}</option>
+                                        <option value="reserved">{t('projectShow.statusReserved')}</option>
+                                        <option value="sold">{t('projectShow.statusSold')}</option>
                                     </select>
                                 </div>
                             </div>

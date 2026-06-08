@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { Head, router } from "@inertiajs/react";
+import { useTranslation } from 'react-i18next';
 import { Vote, Plus, Loader2, X, Lock, Trash2, CalendarClock, ChevronRight, Sparkles, Check } from "lucide-react";
 import AppShell from "@/Components/AppShell";
 
@@ -41,13 +42,14 @@ interface Props {
     projects: Project[];
 }
 
-const STATUS_META: Record<PollStatus, { label: string; bg: string; fg: string; border: string }> = {
-    open:      { label: "Идёт",     bg: "rgba(16,185,129,0.12)", fg: "#34d399", border: "rgba(16,185,129,0.35)" },
-    closed:    { label: "Завершён", bg: "var(--border)", fg: "var(--muted)", border: "var(--border)" },
-    cancelled: { label: "Отменён",  bg: "rgba(239,68,68,0.10)",  fg: "#f87171", border: "rgba(239,68,68,0.30)" },
+const STATUS_META: Record<PollStatus, { labelKey: string; bg: string; fg: string; border: string }> = {
+    open:      { labelKey: "pmPolls.statusOpen",      bg: "rgba(16,185,129,0.12)", fg: "#34d399", border: "rgba(16,185,129,0.35)" },
+    closed:    { labelKey: "pmPolls.statusClosed",    bg: "var(--border)",          fg: "var(--muted)", border: "var(--border)" },
+    cancelled: { labelKey: "pmPolls.statusCancelled", bg: "rgba(239,68,68,0.10)",  fg: "#f87171", border: "rgba(239,68,68,0.30)" },
 };
 
 export default function PollsIndex({ projects }: Props) {
+    const { t } = useTranslation();
     const [selectedProj, setSelectedProj] = useState("");
     const [selectedBldg, setSelectedBldg] = useState("");
     const [polls,        setPolls]        = useState<PollRow[]>([]);
@@ -146,9 +148,9 @@ export default function PollsIndex({ projects }: Props) {
                     <p className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: "#34d399" }}>
                         Property Management
                     </p>
-                    <h1 className="text-2xl font-bold text-slate-800 mt-1">Голосования ОСС</h1>
+                    <h1 className="text-2xl font-bold text-slate-800 mt-1">{t('pmPolls.title')}</h1>
                     <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>
-                        Общие собрания собственников, опросы и сбор голосов
+                        {t('pmPolls.subtitle')}
                     </p>
                 </div>
                 <button
@@ -162,7 +164,7 @@ export default function PollsIndex({ projects }: Props) {
                     }}
                 >
                     {creating ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-                    {creating ? "Отмена" : "Создать опрос"}
+                    {creating ? t('pmPolls.cancel') : t('pmPolls.createPoll')}
                 </button>
             </div>
 
@@ -170,7 +172,7 @@ export default function PollsIndex({ projects }: Props) {
                 {/* Selectors */}
                 <div className="flex flex-wrap items-center gap-4 p-4 rounded-2xl" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
                     <div className="flex flex-col gap-1 min-w-[200px]">
-                        <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">Проект</span>
+                        <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">{t('pmPolls.project')}</span>
                         <select
                             value={selectedProj}
                             onChange={(e) => setSelectedProj(e.target.value)}
@@ -184,7 +186,7 @@ export default function PollsIndex({ projects }: Props) {
                     </div>
 
                     <div className="flex flex-col gap-1 min-w-[200px]">
-                        <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">Корпус</span>
+                        <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">{t('pmPolls.building')}</span>
                         <select
                             value={selectedBldg}
                             onChange={(e) => setSelectedBldg(e.target.value)}
@@ -192,7 +194,7 @@ export default function PollsIndex({ projects }: Props) {
                             className="rounded-xl px-3 py-2.5 text-xs text-slate-800 outline-none cursor-pointer disabled:opacity-50"
                             style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
                         >
-                            {buildings.length === 0 && <option value="">Нет корпусов</option>}
+                            {buildings.length === 0 && <option value="">{t('pmPolls.noBuildings')}</option>}
                             {buildings.map((b) => (
                                 <option key={b.id} value={b.id}>{b.name}</option>
                             ))}
@@ -412,6 +414,7 @@ interface PollCardProps {
 }
 
 function PollCard({ poll, aptCount, onStatusChange, onDelete }: PollCardProps) {
+    const { t } = useTranslation();
     const meta = STATUS_META[poll.status] || STATUS_META.open;
     const quorumThreshold = Math.ceil(aptCount * poll.quorum_pct / 100);
     const quorumPct = aptCount > 0 ? Math.min(100, (poll.total_votes / aptCount) * 100) : 0;
@@ -434,7 +437,7 @@ function PollCard({ poll, aptCount, onStatusChange, onDelete }: PollCardProps) {
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                     <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: meta.bg, color: meta.fg, border: `1px solid ${meta.border}` }}>
-                        {meta.label}
+                        {t(meta.labelKey)}
                     </span>
                     <button
                         onClick={() => onDelete(poll.id)}

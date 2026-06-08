@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { router, usePage } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
 import {
     DollarSign, CheckCircle, XCircle, AlertCircle, Zap,
     Filter, RefreshCw, ChevronDown, TrendingUp,
@@ -45,11 +46,11 @@ interface Props {
 }
 
 const STATUS_CFG = {
-    draft:     { label: "To'lanmagan",  color: '#f59e0b', bg: 'rgba(245,158,11,0.10)'  },
-    paid:      { label: "To'langan",    color: '#10b981', bg: 'rgba(16,185,129,0.10)'  },
-    overdue:   { label: 'Kechikkan',    color: '#ef4444', bg: 'rgba(239,68,68,0.10)'   },
-    sent:      { label: 'Yuborilgan',   color: '#6366f1', bg: 'rgba(99,102,241,0.10)'  },
-    cancelled: { label: 'Bekor qilingan', color: '#94a3b8', bg: 'rgba(148,163,184,0.10)' },
+    draft:     { labelKey: 'pmFees.unpaid',    color: '#f59e0b', bg: 'rgba(245,158,11,0.10)'  },
+    paid:      { labelKey: 'pmFees.paid',      color: '#10b981', bg: 'rgba(16,185,129,0.10)'  },
+    overdue:   { labelKey: 'pmFees.overdue',   color: '#ef4444', bg: 'rgba(239,68,68,0.10)'   },
+    sent:      { labelKey: 'pmFees.paid',      color: '#6366f1', bg: 'rgba(99,102,241,0.10)'  },
+    cancelled: { labelKey: 'common.cancel',    color: '#94a3b8', bg: 'rgba(148,163,184,0.10)' },
 } as const;
 
 function fmt(n: number) {
@@ -59,6 +60,7 @@ function fmt(n: number) {
 export default function MonthlyFeesIndex({
     buildings, selectedBldg, month, fees, summary,
 }: Props) {
+    const { t } = useTranslation();
     const { auth } = usePage<any>().props;
     const canEdit = ['super_admin', 'company_admin'].includes(auth.user?.role) ||
                     auth.user?.pm_role === 'property_manager';
@@ -107,13 +109,13 @@ export default function MonthlyFeesIndex({
                 <header className="flex items-start justify-between gap-4 flex-wrap">
                     <div>
                         <p className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: '#10b981' }}>
-                            Oylik to'lovlar
+                            {t('pmFees.sectionLabel')}
                         </p>
                         <h1 className="text-2xl font-bold text-slate-800 mt-1" style={{ fontFamily: 'var(--font-display)' }}>
-                            To'lov hisobotlari
+                            {t('pmFees.title')}
                         </h1>
                         <p className="text-sm text-slate-500 mt-0.5">
-                            Kvartiralar bo'yicha oylik kommunal to'lovlar
+                            {t('pmFees.subtitle')}
                         </p>
                     </div>
                     {canEdit && (
@@ -126,7 +128,7 @@ export default function MonthlyFeesIndex({
                             {generating
                                 ? <RefreshCw className="w-4 h-4 animate-spin" />
                                 : <Zap className="w-4 h-4" />}
-                            {generating ? 'Yaratilmoqda…' : `${monthLabel} uchun yaratish`}
+                            {generating ? t('pmFees.generating') : `${monthLabel} ${t('pmFees.generateFor')}`}
                         </button>
                     )}
                 </header>
@@ -134,7 +136,7 @@ export default function MonthlyFeesIndex({
                 {/* Filters */}
                 <div className="flex flex-wrap gap-3 p-4 rounded-2xl bg-white" style={{ border: '1px solid rgba(16,185,129,0.12)' }}>
                     <div className="flex flex-col gap-1.5 min-w-[160px]">
-                        <span className="text-[10px] uppercase tracking-widest font-semibold text-slate-400">Oy</span>
+                        <span className="text-[10px] uppercase tracking-widest font-semibold text-slate-400">{t('pmFees.month')}</span>
                         <input
                             type="month"
                             value={filterMonth}
@@ -148,7 +150,7 @@ export default function MonthlyFeesIndex({
                     </div>
 
                     <div className="flex flex-col gap-1.5 min-w-[180px]">
-                        <span className="text-[10px] uppercase tracking-widest font-semibold text-slate-400">Bino</span>
+                        <span className="text-[10px] uppercase tracking-widest font-semibold text-slate-400">{t('pmFees.building')}</span>
                         <div className="relative">
                             <select
                                 value={filterBldg}
@@ -159,7 +161,7 @@ export default function MonthlyFeesIndex({
                                 className="w-full appearance-none rounded-xl px-3 py-2 pr-8 text-sm text-slate-800 outline-none bg-white"
                                 style={{ border: '1px solid rgba(16,185,129,0.15)' }}
                             >
-                                <option value="">Barcha binolar</option>
+                                <option value="">{t('pmFees.allBuildings')}</option>
                                 {buildings.map(b => (
                                     <option key={b.id} value={b.id}>{b.name}</option>
                                 ))}
@@ -169,7 +171,7 @@ export default function MonthlyFeesIndex({
                     </div>
 
                     <div className="flex flex-col gap-1.5 min-w-[150px]">
-                        <span className="text-[10px] uppercase tracking-widest font-semibold text-slate-400">Holat</span>
+                        <span className="text-[10px] uppercase tracking-widest font-semibold text-slate-400">{t('pmFees.status')}</span>
                         <div className="relative">
                             <select
                                 value={filterStatus}
@@ -177,10 +179,10 @@ export default function MonthlyFeesIndex({
                                 className="w-full appearance-none rounded-xl px-3 py-2 pr-8 text-sm text-slate-800 outline-none bg-white"
                                 style={{ border: '1px solid rgba(16,185,129,0.15)' }}
                             >
-                                <option value="">Barchasi</option>
-                                <option value="draft">To'lanmagan</option>
-                                <option value="paid">To'langan</option>
-                                <option value="overdue">Kechikkan</option>
+                                <option value="">{t('pmFees.allStatuses')}</option>
+                                <option value="draft">{t('pmFees.unpaid')}</option>
+                                <option value="paid">{t('pmFees.paid')}</option>
+                                <option value="overdue">{t('pmFees.overdue')}</option>
                             </select>
                             <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none w-3.5 h-3.5 text-slate-400" />
                         </div>
@@ -190,10 +192,10 @@ export default function MonthlyFeesIndex({
                 {/* Summary cards */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                     {[
-                        { label: "Jami to'lovlar", value: fmt(summary.total_amount),  count: summary.total_count,  icon: DollarSign,   color: '#6366f1' },
-                        { label: "To'langan",       value: fmt(summary.paid_amount),   count: summary.paid_count,   icon: CheckCircle,  color: '#10b981' },
-                        { label: "To'lanmagan",     value: fmt(summary.unpaid_amount), count: summary.unpaid_count, icon: XCircle,      color: '#f59e0b' },
-                        { label: "Umumiy kvartira", value: `${summary.total_count} ta`, count: null,               icon: TrendingUp,   color: '#14b8a6' },
+                        { label: t('pmFees.totalPayments'), value: fmt(summary.total_amount),  count: summary.total_count,  icon: DollarSign,   color: '#6366f1' },
+                        { label: t('pmFees.paidTotal'),     value: fmt(summary.paid_amount),   count: summary.paid_count,   icon: CheckCircle,  color: '#10b981' },
+                        { label: t('pmFees.unpaidTotal'),   value: fmt(summary.unpaid_amount), count: summary.unpaid_count, icon: XCircle,      color: '#f59e0b' },
+                        { label: t('pmFees.totalApts'),     value: `${summary.total_count} ta`, count: null,               icon: TrendingUp,   color: '#14b8a6' },
                     ].map(({ label, value, count, icon: Icon, color }) => (
                         <div key={label} className="rounded-2xl p-4" style={{ backgroundColor: 'var(--card)', border: '1px solid rgba(16,185,129,0.10)' }}>
                             <div className="flex items-center gap-2 mb-2">
@@ -204,7 +206,7 @@ export default function MonthlyFeesIndex({
                             </div>
                             <p className="text-lg font-bold text-slate-800">{value}</p>
                             {count !== null && (
-                                <p className="text-xs text-slate-400 mt-0.5">{count} ta kvartira</p>
+                                <p className="text-xs text-slate-400 mt-0.5">{count} {t('pmFees.apartments')}</p>
                             )}
                         </div>
                     ))}
@@ -215,12 +217,12 @@ export default function MonthlyFeesIndex({
                     {/* Table header */}
                     <div className="grid grid-cols-[1fr_1fr_1fr_100px_110px_120px] gap-3 px-4 py-3 text-[10px] uppercase tracking-widest font-semibold text-slate-400"
                         style={{ backgroundColor: 'var(--card)', borderBottom: '1px solid rgba(16,185,129,0.08)' }}>
-                        <span>Kvartira</span>
-                        <span>Bino</span>
-                        <span>Aholi</span>
-                        <span className="text-right">Summa</span>
-                        <span className="text-center">Holat</span>
-                        <span className="text-center">Amal</span>
+                        <span>{t('pmFees.colApt')}</span>
+                        <span>{t('pmFees.colBuilding')}</span>
+                        <span>{t('pmFees.colResident')}</span>
+                        <span className="text-right">{t('pmFees.colAmount')}</span>
+                        <span className="text-center">{t('pmFees.colStatus')}</span>
+                        <span className="text-center">{t('pmFees.colAction')}</span>
                     </div>
 
                     {displayedFees.length === 0 ? (
@@ -228,8 +230,8 @@ export default function MonthlyFeesIndex({
                             <Filter className="w-7 h-7 text-slate-300" />
                             <p className="text-sm text-slate-400">
                                 {fees.length === 0
-                                    ? `${monthLabel} uchun to'lovlar hali yaratilmagan`
-                                    : 'Filtr bo\'yicha natija topilmadi'}
+                                    ? `${monthLabel} ${t('pmFees.noFees')}`
+                                    : t('pmFees.noFeesByFilter')}
                             </p>
                             {fees.length === 0 && canEdit && (
                                 <button
@@ -239,7 +241,7 @@ export default function MonthlyFeesIndex({
                                     style={{ backgroundColor: 'rgba(16,185,129,0.10)', color: '#10b981' }}
                                 >
                                     <Zap className="w-3.5 h-3.5" />
-                                    Hozir yaratish
+                                    {t('pmFees.generateNow')}
                                 </button>
                             )}
                         </div>
@@ -265,7 +267,7 @@ export default function MonthlyFeesIndex({
 
                                         {/* Resident */}
                                         <p className="text-xs text-slate-600 truncate">
-                                            {fee.resident ?? <span className="text-slate-300 italic">Aholi yo'q</span>}
+                                            {fee.resident ?? <span className="text-slate-300 italic">{t('pmFees.noResident')}</span>}
                                         </p>
 
                                         {/* Amount */}
@@ -280,7 +282,7 @@ export default function MonthlyFeesIndex({
                                                 className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold"
                                                 style={{ backgroundColor: cfg.bg, color: cfg.color }}
                                             >
-                                                {cfg.label}
+                                                {t(cfg.labelKey)}
                                             </span>
                                         </div>
 
@@ -297,7 +299,7 @@ export default function MonthlyFeesIndex({
                                                         {isUpdating
                                                             ? <RefreshCw className="w-3 h-3 animate-spin" />
                                                             : <CheckCircle className="w-3 h-3" />}
-                                                        To'landi
+                                                        {t('pmFees.markPaid')}
                                                     </button>
                                                 ) : (
                                                     <button
@@ -309,7 +311,7 @@ export default function MonthlyFeesIndex({
                                                         {isUpdating
                                                             ? <RefreshCw className="w-3 h-3 animate-spin" />
                                                             : <XCircle className="w-3 h-3" />}
-                                                        Bekor
+                                                        {t('pmFees.markUnpaid')}
                                                     </button>
                                                 )}
                                             </div>
@@ -326,9 +328,9 @@ export default function MonthlyFeesIndex({
                             className="flex items-center justify-between px-4 py-3 text-xs"
                             style={{ borderTop: '1px solid rgba(16,185,129,0.08)', backgroundColor: 'rgba(16,185,129,0.02)' }}
                         >
-                            <span className="text-slate-400">{displayedFees.length} ta yozuv</span>
+                            <span className="text-slate-400">{displayedFees.length} {t('pmFees.recordCount')}</span>
                             <span className="font-semibold text-slate-700">
-                                Jami: {fmt(displayedFees.reduce((s, f) => s + f.amount, 0))}
+                                {t('pmFees.totalSum')} {fmt(displayedFees.reduce((s, f) => s + f.amount, 0))}
                             </span>
                         </div>
                     )}

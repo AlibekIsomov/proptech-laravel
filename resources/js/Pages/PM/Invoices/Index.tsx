@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
 import { FileText, Plus, RefreshCw, X, Loader2, Download } from 'lucide-react';
 import AppShell from '@/Components/AppShell';
 
@@ -37,12 +38,12 @@ interface Props {
   apartments: ApartmentOption[];
 }
 
-const STATUS_META: Record<InvoiceStatus, { label: string; bg: string; fg: string; border: string }> = {
-  draft:     { label: 'Черновик',  bg: 'var(--border)', fg: 'var(--muted)', border: 'var(--border)' },
-  sent:      { label: 'Отправлен', bg: 'rgba(59,130,246,0.12)',  fg: '#60a5fa',                border: 'rgba(59,130,246,0.35)' },
-  paid:      { label: 'Оплачен',   bg: 'rgba(16,185,129,0.12)', fg: '#34d399',                border: 'rgba(16,185,129,0.35)' },
-  overdue:   { label: 'Просрочен', bg: 'rgba(239,68,68,0.12)',  fg: '#f87171',                border: 'rgba(239,68,68,0.35)' },
-  cancelled: { label: 'Отменён',   bg: 'var(--border)', fg: 'var(--muted)', border: 'var(--border)' },
+const STATUS_META: Record<InvoiceStatus, { labelKey: string; bg: string; fg: string; border: string }> = {
+  draft:     { labelKey: 'pmInvoices.statusDraft',     bg: 'var(--border)',              fg: 'var(--muted)', border: 'var(--border)'              },
+  sent:      { labelKey: 'pmInvoices.statusSent',      bg: 'rgba(59,130,246,0.12)',      fg: '#60a5fa',      border: 'rgba(59,130,246,0.35)'      },
+  paid:      { labelKey: 'pmInvoices.statusPaid',      bg: 'rgba(16,185,129,0.12)',      fg: '#34d399',      border: 'rgba(16,185,129,0.35)'      },
+  overdue:   { labelKey: 'pmInvoices.statusOverdue',   bg: 'rgba(239,68,68,0.12)',       fg: '#f87171',      border: 'rgba(239,68,68,0.35)'       },
+  cancelled: { labelKey: 'pmInvoices.statusCancelled', bg: 'var(--border)',              fg: 'var(--muted)', border: 'var(--border)'              },
 };
 
 function firstOfMonth() { const d = new Date(); d.setDate(1); return d.toISOString().slice(0, 10); }
@@ -54,6 +55,7 @@ function fmtPeriod(s: string | null, e: string | null) {
 }
 
 export default function InvoicesIndex({ invoices, apartments }: Props) {
+  const { t } = useTranslation();
   const [filterStatus, setFilterStatus] = useState<InvoiceStatus | 'all'>('all');
   const [showCreate, setShowCreate]     = useState(false);
 
@@ -83,20 +85,20 @@ export default function InvoicesIndex({ invoices, apartments }: Props) {
         <header className="flex items-start justify-between gap-4">
           <div>
             <p className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: '#34d399' }}>Property Management</p>
-            <h1 className="text-3xl font-bold text-slate-800 mt-1" style={{ fontFamily: 'var(--font-display)' }}>Счета</h1>
-            <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>Генерация и контроль ежемесячных счетов жильцам</p>
+            <h1 className="text-3xl font-bold text-slate-800 mt-1" style={{ fontFamily: 'var(--font-display)' }}>{t('pmInvoices.title')}</h1>
+            <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>{t('pmInvoices.subtitle')}</p>
           </div>
           <button onClick={() => setShowCreate(true)}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white"
             style={{ background: 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)' }}>
-            <Plus className="w-4 h-4" />Создать счёт
+            <Plus className="w-4 h-4" />{t('pmInvoices.createInvoice')}
           </button>
         </header>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <SummaryCard label="Всего за период" value={totals.t}       accent="#10b981" />
-          <SummaryCard label="Оплачено"        value={totals.paid}    accent="#34d399" />
-          <SummaryCard label="Просрочено"      value={totals.overdue} accent="#ef4444" />
+          <SummaryCard label={t('pmInvoices.totalPeriod')} value={totals.t}       accent="#10b981" />
+          <SummaryCard label={t('pmInvoices.paid')}        value={totals.paid}    accent="#34d399" />
+          <SummaryCard label={t('pmInvoices.overdue')}     value={totals.overdue} accent="#ef4444" />
         </div>
 
         <div className="flex flex-wrap gap-3">
@@ -108,7 +110,7 @@ export default function InvoicesIndex({ invoices, apartments }: Props) {
                 color: filterStatus === s ? (s === 'all' ? '#34d399' : STATUS_META[s as InvoiceStatus]?.fg ?? '#34d399') : 'var(--muted)',
                 border: filterStatus === s ? '1px solid rgba(16,185,129,0.35)' : '1px solid var(--border)',
               }}>
-              {s === 'all' ? 'Все' : STATUS_META[s as InvoiceStatus].label}
+              {s === 'all' ? t('pmInvoices.filterAll') : t(STATUS_META[s as InvoiceStatus].labelKey)}
             </button>
           ))}
         </div>
@@ -117,14 +119,14 @@ export default function InvoicesIndex({ invoices, apartments }: Props) {
           {filtered.length === 0 ? (
             <div className="p-12 text-center" style={{ color: 'var(--muted)' }}>
               <FileText className="w-8 h-8 mx-auto mb-3" style={{ color: 'var(--border)' }} />
-              <p className="text-sm">Счетов нет.</p>
+              <p className="text-sm">{t('pmInvoices.noInvoices')}</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                    {['№', 'Кв.', 'Жилец', 'Период', 'Сумма', 'Срок', 'Статус', ''].map((h) => (
+                    {[t('pmInvoices.colNum'), t('pmInvoices.colApt'), t('pmInvoices.colResident'), t('pmInvoices.colPeriod'), t('pmInvoices.colAmount'), t('pmInvoices.colDue'), t('pmInvoices.colStatus'), ''].map((h) => (
                       <th key={h} className="text-left px-4 py-3 text-[10px] uppercase tracking-widest font-semibold" style={{ color: 'var(--muted)' }}>{h}</th>
                     ))}
                   </tr>
@@ -148,19 +150,19 @@ export default function InvoicesIndex({ invoices, apartments }: Props) {
                         <td className="px-4 py-3 text-xs" style={{ color: 'var(--muted)' }}>{inv.due_date ? new Date(inv.due_date).toLocaleDateString('ru-RU') : '—'}</td>
                         <td className="px-4 py-3">
                           <span className="text-[11px] px-2 py-0.5 rounded-md inline-block"
-                            style={{ backgroundColor: meta.bg, color: meta.fg, border: `1px solid ${meta.border}` }}>{meta.label}</span>
+                            style={{ backgroundColor: meta.bg, color: meta.fg, border: `1px solid ${meta.border}` }}>{t(meta.labelKey)}</span>
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
                             {inv.status === 'draft' && (
                               <button onClick={() => updateStatus(inv.id, 'sent')}
                                 className="text-[11px] px-2.5 py-1 rounded-md hover:bg-white/[0.05]"
-                                style={{ color: 'var(--muted)', border: '1px solid var(--border)' }}>Отправить</button>
+                                style={{ color: 'var(--muted)', border: '1px solid var(--border)' }}>{t('pmInvoices.send')}</button>
                             )}
                             {(inv.status === 'sent' || inv.status === 'overdue') && (
                               <button onClick={() => updateStatus(inv.id, 'paid')}
                                 className="text-[11px] px-2.5 py-1 rounded-md hover:bg-white/[0.05]"
-                                style={{ color: '#34d399', border: '1px solid rgba(16,185,129,0.25)' }}>Оплачен</button>
+                                style={{ color: '#34d399', border: '1px solid rgba(16,185,129,0.25)' }}>{t('pmInvoices.markPaid')}</button>
                             )}
                             <a href={`/pm/invoices/${inv.id}/pdf`} target="_blank" rel="noopener noreferrer"
                               className="p-1 rounded-lg hover:bg-white/[0.05]" style={{ color: 'var(--muted)' }}>
@@ -184,6 +186,7 @@ export default function InvoicesIndex({ invoices, apartments }: Props) {
 }
 
 function CreateInvoiceModal({ apartments, onClose }: { apartments: ApartmentOption[]; onClose: () => void }) {
+  const { t } = useTranslation();
   const { data, setData, post, processing, errors } = useForm({
     apartment_id: '',
     resident_id: '',
@@ -207,11 +210,11 @@ function CreateInvoiceModal({ apartments, onClose }: { apartments: ApartmentOpti
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}>
       <div className="rounded-2xl p-6 w-full max-w-md space-y-4 max-h-[90vh] overflow-y-auto" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-800">Создать счёт</h2>
+          <h2 className="text-lg font-semibold text-slate-800">{t('pmInvoices.createTitle')}</h2>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100" style={{ color: 'var(--muted)' }}><X className="w-4 h-4" /></button>
         </div>
         <form onSubmit={submit} className="space-y-3">
-          <Field label="Квартира" error={errors.apartment_id}>
+          <Field label={t('pmInvoices.colApt')} error={errors.apartment_id}>
             <select value={data.apartment_id} onChange={(e) => {
                 const aptId = e.target.value;
                 const apt = apartments.find(a => a.id === aptId);
@@ -223,60 +226,60 @@ function CreateInvoiceModal({ apartments, onClose }: { apartments: ApartmentOpti
               }}
               className="w-full rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none"
               style={{ backgroundColor: 'var(--border)', border: '1px solid var(--border)' }}>
-              <option value="">— Выбрать —</option>
+              <option value="">{t('pmInvoices.selectApt')}</option>
               {apartments.map((a) => <option key={a.id} value={a.id} style={{ backgroundColor: 'var(--card)' }}>{a.label}</option>)}
             </select>
           </Field>
           {selectedApt && selectedApt.residents.length > 0 && (
-            <Field label="Жилец" error={errors.resident_id}>
+            <Field label={t('pmInvoices.colResident')} error={errors.resident_id}>
               <select value={data.resident_id} onChange={(e) => setData('resident_id', e.target.value)}
                 className="w-full rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none"
                 style={{ backgroundColor: 'var(--border)', border: '1px solid var(--border)' }}>
-                <option value="">— Не указан —</option>
+                <option value="">{t('pmInvoices.selectResident')}</option>
                 {selectedApt.residents.map((r) => <option key={r.id} value={r.id} style={{ backgroundColor: 'var(--card)' }}>{r.name}</option>)}
               </select>
             </Field>
           )}
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Период с" error={errors.billing_period_start}>
+            <Field label={t('pmInvoices.periodFrom')} error={errors.billing_period_start}>
               <input type="date" value={data.billing_period_start} onChange={(e) => setData('billing_period_start', e.target.value)}
                 className="w-full rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none"
                 style={{ backgroundColor: 'var(--border)', border: '1px solid var(--border)' }} />
             </Field>
-            <Field label="Период по" error={errors.billing_period_end}>
+            <Field label={t('pmInvoices.periodTo')} error={errors.billing_period_end}>
               <input type="date" value={data.billing_period_end} onChange={(e) => setData('billing_period_end', e.target.value)}
                 className="w-full rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none"
                 style={{ backgroundColor: 'var(--border)', border: '1px solid var(--border)' }} />
             </Field>
           </div>
           <div className="grid grid-cols-3 gap-3">
-            <Field label="Управление" error={errors.pm_fee}>
+            <Field label={t('pmInvoices.management')} error={errors.pm_fee}>
               <input type="number" value={data.pm_fee} onChange={(e) => setData('pm_fee', e.target.value)}
                 className="w-full rounded-xl px-3 py-2 text-sm text-slate-800 outline-none"
                 style={{ backgroundColor: 'var(--border)', border: '1px solid var(--border)' }} />
             </Field>
-            <Field label="Коммунальные" error={errors.utilities_amount}>
+            <Field label={t('pmInvoices.utilities')} error={errors.utilities_amount}>
               <input type="number" value={data.utilities_amount} onChange={(e) => setData('utilities_amount', e.target.value)}
                 className="w-full rounded-xl px-3 py-2 text-sm text-slate-800 outline-none"
                 style={{ backgroundColor: 'var(--border)', border: '1px solid var(--border)' }} />
             </Field>
-            <Field label="Ремонт" error={errors.maintenance_amount}>
+            <Field label={t('pmInvoices.maintenance')} error={errors.maintenance_amount}>
               <input type="number" value={data.maintenance_amount} onChange={(e) => setData('maintenance_amount', e.target.value)}
                 className="w-full rounded-xl px-3 py-2 text-sm text-slate-800 outline-none"
                 style={{ backgroundColor: 'var(--border)', border: '1px solid var(--border)' }} />
             </Field>
           </div>
-          <Field label="Срок оплаты" error={errors.due_date}>
+          <Field label={t('pmInvoices.dueDate')} error={errors.due_date}>
             <input type="date" value={data.due_date} onChange={(e) => setData('due_date', e.target.value)}
               className="w-full rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none"
               style={{ backgroundColor: 'var(--border)', border: '1px solid var(--border)' }} />
           </Field>
           <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 rounded-xl text-sm" style={{ color: 'var(--muted)', border: '1px solid var(--border)' }}>Отмена</button>
+            <button type="button" onClick={onClose} className="px-4 py-2 rounded-xl text-sm" style={{ color: 'var(--muted)', border: '1px solid var(--border)' }}>{t('pmInvoices.cancelBtn')}</button>
             <button type="submit" disabled={processing}
               className="px-4 py-2 rounded-xl text-sm font-semibold text-white flex items-center gap-2 disabled:opacity-50"
               style={{ background: 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)' }}>
-              {processing && <Loader2 className="w-4 h-4 animate-spin" />}Создать
+              {processing && <Loader2 className="w-4 h-4 animate-spin" />}{t('pmInvoices.createBtn')}
             </button>
           </div>
         </form>

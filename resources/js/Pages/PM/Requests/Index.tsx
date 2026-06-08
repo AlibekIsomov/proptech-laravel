@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Head, router } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
 import { Inbox, Loader, CheckCircle2, AlarmClock, Search, Loader2, ChevronRight, AlertTriangle, UserPlus, X, Sparkles, Phone, ShieldAlert, Check, Plus } from 'lucide-react';
 import AppShell from '@/Components/AppShell';
 
@@ -67,18 +68,18 @@ interface Props {
 }
 
 const PRIORITY_COLOR = {
-  emergency: { bg: 'rgba(239,68,68,0.18)',   text: '#fca5a5', label: 'Emergency', rank: 0 },
-  high:      { bg: 'rgba(251,146,60,0.15)',  text: '#fdba74', label: 'High',      rank: 1 },
-  medium:    { bg: 'rgba(59,130,246,0.15)',  text: '#93c5fd', label: 'Medium',    rank: 2 },
-  low:       { bg: 'rgba(100,116,139,0.15)', text: '#94a3b8', label: 'Low',       rank: 3 },
+  emergency: { bg: 'rgba(239,68,68,0.18)',   text: '#fca5a5', labelKey: 'pmRequests.priorityEmergency', rank: 0 },
+  high:      { bg: 'rgba(251,146,60,0.15)',  text: '#fdba74', labelKey: 'pmRequests.priorityHigh',      rank: 1 },
+  medium:    { bg: 'rgba(59,130,246,0.15)',  text: '#93c5fd', labelKey: 'pmRequests.priorityMedium',    rank: 2 },
+  low:       { bg: 'rgba(100,116,139,0.15)', text: '#94a3b8', labelKey: 'pmRequests.priorityLow',       rank: 3 },
 };
 
 const STATUS_COLOR = {
-  open:        { bg: 'rgba(251,191,36,0.12)', text: '#fcd34d', label: 'Open' },
-  assigned:    { bg: 'rgba(168,85,247,0.12)', text: '#c4b5fd', label: 'Assigned' },
-  in_progress: { bg: 'rgba(59,130,246,0.12)', text: '#93c5fd', label: 'In Progress' },
-  completed:   { bg: 'rgba(16,185,129,0.12)', text: '#6ee7b7', label: 'Completed' },
-  cancelled:   { bg: 'rgba(100,116,139,0.10)', text: '#64748b', label: 'Cancelled' },
+  open:        { bg: 'rgba(251,191,36,0.12)', text: '#fcd34d', labelKey: 'pmRequests.statusOpen'       },
+  assigned:    { bg: 'rgba(168,85,247,0.12)', text: '#c4b5fd', labelKey: 'pmRequests.statusAssigned'   },
+  in_progress: { bg: 'rgba(59,130,246,0.12)', text: '#93c5fd', labelKey: 'pmRequests.statusInProgress' },
+  completed:   { bg: 'rgba(16,185,129,0.12)', text: '#6ee7b7', labelKey: 'pmRequests.statusCompleted'  },
+  cancelled:   { bg: 'rgba(100,116,139,0.10)', text: '#64748b', labelKey: 'pmRequests.statusCancelled' },
 };
 
 const CATEGORY_RU: Record<string, string> = {
@@ -93,6 +94,7 @@ const CATEGORY_RU: Record<string, string> = {
 };
 
 export default function Index({ requests, vendors, projects, apartments, residents }: Props) {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | MaintenanceRequest['status']>('all');
   const [priorityFilter, setPriorityFilter] = useState<'all' | MaintenanceRequest['priority']>('all');
@@ -264,9 +266,9 @@ export default function Index({ requests, vendors, projects, apartments, residen
           <p className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: '#34d399' }}>
             Property Management
           </p>
-          <h1 className="text-2xl font-bold text-slate-800 mt-1">Maintenance Requests</h1>
+          <h1 className="text-2xl font-bold text-slate-800 mt-1">{t('pmRequests.title')}</h1>
           <p className="text-xs mt-1" style={{ color: 'var(--muted)' }}>
-            Service tickets, SLA tracking, and vendor assignments
+            {t('pmRequests.subtitle')}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -276,7 +278,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
             style={{ background: 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)' }}
           >
             <Plus className="w-4 h-4" />
-            New Request
+            {t('pmRequests.newRequest')}
           </button>
         </div>
       </div>
@@ -284,10 +286,10 @@ export default function Index({ requests, vendors, projects, apartments, residen
       <div className="mt-6 space-y-6">
         {/* Metrics Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <MetricCard icon={Inbox}        label="Open / Assigned" value={metrics.open}           accent="#fbbf24" />
-          <MetricCard icon={Loader}       label="In Progress"     value={metrics.inProgress}     accent="#3b82f6" />
-          <MetricCard icon={CheckCircle2} label="Completed"       value={metrics.completed}      accent="#10b981" />
-          <MetricCard icon={AlarmClock}   label="SLA Overdue"     value={metrics.overdue}        accent="#ef4444" />
+          <MetricCard icon={Inbox}        label={t('pmRequests.openAssigned')} value={metrics.open}       accent="#fbbf24" />
+          <MetricCard icon={Loader}       label={t('pmRequests.inProgress')}   value={metrics.inProgress} accent="#3b82f6" />
+          <MetricCard icon={CheckCircle2} label={t('pmRequests.completed')}    value={metrics.completed}  accent="#10b981" />
+          <MetricCard icon={AlarmClock}   label={t('pmRequests.slaOverdue')}   value={metrics.overdue}    accent="#ef4444" />
         </div>
 
         {/* Filters and search */}
@@ -297,7 +299,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search request title or description..."
+              placeholder={t('pmRequests.searchPlaceholder')}
               className="w-full rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-800 outline-none placeholder:text-slate-400"
               style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
             />
@@ -309,12 +311,12 @@ export default function Index({ requests, vendors, projects, apartments, residen
             className="rounded-xl px-3 py-2.5 text-xs text-slate-800 outline-none cursor-pointer"
             style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
           >
-            <option value="all">All Statuses</option>
-            <option value="open">Open</option>
-            <option value="assigned">Assigned</option>
-            <option value="in_progress">In Progress</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
+            <option value="all">{t('pmRequests.allStatuses')}</option>
+            <option value="open">{t('pmRequests.statusOpen')}</option>
+            <option value="assigned">{t('pmRequests.statusAssigned')}</option>
+            <option value="in_progress">{t('pmRequests.statusInProgress')}</option>
+            <option value="completed">{t('pmRequests.statusCompleted')}</option>
+            <option value="cancelled">{t('pmRequests.statusCancelled')}</option>
           </select>
 
           <select
@@ -323,11 +325,11 @@ export default function Index({ requests, vendors, projects, apartments, residen
             className="rounded-xl px-3 py-2.5 text-xs text-slate-800 outline-none cursor-pointer"
             style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
           >
-            <option value="all">All Priorities</option>
-            <option value="emergency">Emergency</option>
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
+            <option value="all">{t('pmRequests.allPriorities')}</option>
+            <option value="emergency">{t('pmRequests.priorityEmergency')}</option>
+            <option value="high">{t('pmRequests.priorityHigh')}</option>
+            <option value="medium">{t('pmRequests.priorityMedium')}</option>
+            <option value="low">{t('pmRequests.priorityLow')}</option>
           </select>
         </div>
 
@@ -336,14 +338,14 @@ export default function Index({ requests, vendors, projects, apartments, residen
           style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
           {filtered.length === 0 ? (
             <div className="py-20 text-center text-sm" style={{ color: 'var(--muted)' }}>
-              No maintenance requests matching filters.
+              {t('pmRequests.noRequests')}
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                    {['Priority', 'Ticket Details', 'Apartment', 'Resident', 'Category', 'Status', 'Contractor', 'SLA', 'Actions'].map((h) => (
+                    {[t('pmRequests.colPriority'), t('pmRequests.colDetails'), t('pmRequests.colApartment'), t('pmRequests.colResident'), t('pmRequests.colCategory'), t('pmRequests.colStatus'), t('pmRequests.colContractor'), t('pmRequests.colSla'), t('pmRequests.colActions')].map((h) => (
                       <th key={h} className="px-6 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--muted)' }}>
                         {h}
                       </th>
@@ -377,7 +379,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
                       >
                         <td className="px-6 py-4">
                           <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: p.bg, color: p.text }}>
-                            {p.label}
+                            {t(p.labelKey)}
                           </span>
                         </td>
                         <td className="px-6 py-4 max-w-xs">
@@ -392,7 +394,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
                         <td className="px-6 py-4 text-xs text-slate-800 capitalize">{r.category || '—'}</td>
                         <td className="px-6 py-4">
                           <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: s.bg, color: s.text }}>
-                            {s.label}
+                            {t(s.labelKey)}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-xs" onClick={(e) => e.stopPropagation()}>
@@ -409,7 +411,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
                               className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-400 hover:text-white transition-all bg-emerald-500/10 hover:bg-emerald-500/20 px-2 py-1 rounded-lg"
                             >
                               <UserPlus className="w-3.5 h-3.5" />
-                              Assign
+                              {t('pmRequests.assign')}
                             </button>
                           )}
                         </td>
@@ -434,14 +436,14 @@ export default function Index({ requests, vendors, projects, apartments, residen
           <div className="w-full max-w-sm rounded-2xl border p-6"
             style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-base font-bold text-slate-800">Assign Contractor</h2>
+              <h2 className="text-base font-bold text-slate-800">{t('pmRequests.assignContractor')}</h2>
               <button onClick={() => setAssignReq(null)} className="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-white">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={handleAssignVendor} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-1.5">Select Contractor</label>
+                <label className="block text-xs font-semibold text-slate-400 mb-1.5">{t('pmRequests.selectContractor')}</label>
                 <select
                   value={selectedVendorId}
                   onChange={(e) => setSelectedVendorId(e.target.value)}
@@ -449,7 +451,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
                   className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none cursor-pointer"
                   style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
                 >
-                  <option value="">Choose a contractor...</option>
+                  <option value="">{t('pmRequests.selectContractor')}</option>
                   {vendors.map((v) => (
                     <option key={v.id} value={v.id}>{v.name} ({v.specializations.join(', ') || 'General'})</option>
                   ))}
@@ -461,14 +463,14 @@ export default function Index({ requests, vendors, projects, apartments, residen
                   onClick={() => setAssignReq(null)}
                   className="flex-1 py-2.5 rounded-xl text-xs font-semibold text-slate-400 border border-slate-700 hover:bg-slate-100"
                 >
-                  Cancel
+                  {t('pmRequests.cancel')}
                 </button>
                 <button
                   type="submit"
                   className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white"
                   style={{ background: 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)' }}
                 >
-                  Assign Vendor
+                  {t('pmRequests.assignVendor')}
                 </button>
               </div>
             </form>
@@ -503,23 +505,23 @@ export default function Index({ requests, vendors, projects, apartments, residen
               {/* SLA status details */}
               <div className="rounded-xl p-4 flex items-center justify-between" style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}>
                 <div>
-                  <p className="text-[9px] uppercase tracking-widest text-slate-500 font-semibold">Current Status</p>
+                  <p className="text-[9px] uppercase tracking-widest text-slate-500 font-semibold">{t('pmRequests.currentStatus')}</p>
                   <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold mt-1"
                     style={{
                       backgroundColor: STATUS_COLOR[selectedReq.status]?.bg || 'var(--border)',
                       color:           STATUS_COLOR[selectedReq.status]?.text || 'white',
                     }}>
-                    {STATUS_COLOR[selectedReq.status]?.label || selectedReq.status}
+                    {t(STATUS_COLOR[selectedReq.status]?.labelKey ?? 'pmRequests.statusOpen')}
                   </span>
                 </div>
                 <div>
-                  <p className="text-[9px] uppercase tracking-widest text-slate-500 font-semibold">Priority</p>
+                  <p className="text-[9px] uppercase tracking-widest text-slate-500 font-semibold">{t('pmRequests.priority')}</p>
                   <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold mt-1"
                     style={{
                       backgroundColor: PRIORITY_COLOR[selectedReq.priority]?.bg || 'var(--border)',
                       color:           PRIORITY_COLOR[selectedReq.priority]?.text || 'white',
                     }}>
-                    {PRIORITY_COLOR[selectedReq.priority]?.label || selectedReq.priority}
+                    {t(PRIORITY_COLOR[selectedReq.priority]?.labelKey ?? 'pmRequests.priorityMedium')}
                   </span>
                 </div>
               </div>
@@ -528,7 +530,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
               <div className="rounded-2xl p-4 bg-gradient-to-br from-purple-500/10 to-indigo-500/5 border border-purple-500/20">
                 <div className="flex items-center gap-2 mb-2">
                   <Sparkles className="w-4 h-4 text-purple-400" />
-                  <h4 className="text-xs font-bold text-slate-800">AI Assistant Insights</h4>
+                  <h4 className="text-xs font-bold text-slate-800">{t('pmRequests.aiAssistant')}</h4>
                 </div>
                 {selectedReq.ai_summary ? (
                   <div className="space-y-2">
@@ -570,14 +572,14 @@ export default function Index({ requests, vendors, projects, apartments, residen
               {/* Actions workflow */}
               {selectedReq.status !== 'completed' && selectedReq.status !== 'cancelled' && (
                 <div className="space-y-3 pt-4 border-t border-slate-200">
-                  <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">Actions Workflow</h3>
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">{t('pmRequests.actionsWorkflow')}</h3>
                   <div className="flex gap-3">
                     {selectedReq.status === 'open' && (
                       <button
                         onClick={() => handleUpdateStatus(selectedReq, 'in_progress')}
                         className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-500"
                       >
-                        Start Progress
+                        {t('pmRequests.startProgress')}
                       </button>
                     )}
                     {selectedReq.status === 'assigned' && (
@@ -585,7 +587,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
                         onClick={() => handleUpdateStatus(selectedReq, 'in_progress')}
                         className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-500"
                       >
-                        Start Progress
+                        {t('pmRequests.startProgress')}
                       </button>
                     )}
                     {selectedReq.status === 'in_progress' && (
@@ -593,14 +595,14 @@ export default function Index({ requests, vendors, projects, apartments, residen
                         onClick={() => handleUpdateStatus(selectedReq, 'completed')}
                         className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500"
                       >
-                        Complete Job
+                        {t('pmRequests.completeJob')}
                       </button>
                     )}
                     <button
                       onClick={() => handleUpdateStatus(selectedReq, 'cancelled')}
                       className="flex-1 py-2.5 rounded-xl text-xs font-semibold text-slate-400 border border-slate-700 hover:bg-slate-100"
                     >
-                      Cancel Request
+                      {t('pmRequests.cancelRequest')}
                     </button>
                   </div>
                 </div>
@@ -616,7 +618,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
           <div className="w-full max-w-md rounded-2xl border p-6 max-h-[90vh] overflow-y-auto animate-fade-in"
             style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-lg font-bold text-slate-800">New Maintenance Ticket</h2>
+              <h2 className="text-lg font-bold text-slate-800">{t('pmRequests.newTicket')}</h2>
               <button
                 onClick={() => setShowCreateModal(false)}
                 className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-white"
@@ -628,7 +630,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
             <form onSubmit={handleCreateRequest} className="space-y-4">
               {/* Title */}
               <div>
-                <label className="block text-xs font-semibold mb-1.5 text-slate-400">Ticket Title *</label>
+                <label className="block text-xs font-semibold mb-1.5 text-slate-400">{t('pmRequests.ticketTitle')} *</label>
                 <input
                   type="text"
                   required
@@ -642,7 +644,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
 
               {/* Description */}
               <div>
-                <label className="block text-xs font-semibold mb-1.5 text-slate-400">Description *</label>
+                <label className="block text-xs font-semibold mb-1.5 text-slate-400">{t('pmRequests.description')} *</label>
                 <textarea
                   required
                   value={createDesc}
@@ -657,7 +659,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
               {/* Project -> Building -> Apartment Selector */}
               <div className="grid grid-cols-3 gap-2.5">
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">Project *</label>
+                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">{t('pmRequests.projectLabel')} *</label>
                   <select
                     required
                     value={createProjId}
@@ -678,7 +680,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">Building *</label>
+                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">{t('pmRequests.buildingLabel')} *</label>
                   <select
                     required
                     value={createBldgId}
@@ -699,7 +701,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">Apartment *</label>
+                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">{t('pmRequests.apartmentLabel')} *</label>
                   <select
                     required
                     value={createAptId}
@@ -721,7 +723,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
 
               {/* Resident */}
               <div>
-                <label className="block text-xs font-semibold mb-1.5 text-slate-400">Resident (Optional)</label>
+                <label className="block text-xs font-semibold mb-1.5 text-slate-400">{t('pmRequests.residentOptional')}</label>
                 <select
                   value={createResidentId}
                   onChange={(e) => setCreateResidentId(e.target.value)}
@@ -730,11 +732,11 @@ export default function Index({ requests, vendors, projects, apartments, residen
                   style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
                 >
                   <option value="" style={{ backgroundColor: 'var(--card)' }}>
-                    {!createAptId 
-                      ? 'Select apartment first...' 
-                      : (filteredResidentsForCreate.length === 0 
-                        ? 'No active residents found in this unit' 
-                        : 'Select resident...')}
+                    {!createAptId
+                      ? t('pmRequests.selectAptFirst')
+                      : (filteredResidentsForCreate.length === 0
+                        ? t('pmRequests.noActiveResidents')
+                        : t('pmRequests.selectResident'))}
                   </option>
                   {filteredResidentsForCreate.map((r) => (
                     <option key={r.id} value={r.id} style={{ backgroundColor: 'var(--card)' }}>{r.full_name}</option>
@@ -745,7 +747,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
               <div className="grid grid-cols-2 gap-4">
                 {/* Category */}
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">Category</label>
+                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">{t('pmRequests.category')}</label>
                   <select
                     value={createCategory}
                     onChange={(e) => setCreateCategory(e.target.value)}
@@ -761,7 +763,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
 
                 {/* Priority */}
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">Priority *</label>
+                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">{t('pmRequests.priority')} *</label>
                   <select
                     required
                     value={createPriority}
@@ -769,24 +771,24 @@ export default function Index({ requests, vendors, projects, apartments, residen
                     className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
                     style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
                   >
-                    <option value="low" style={{ backgroundColor: 'var(--card)' }}>Low</option>
-                    <option value="medium" style={{ backgroundColor: 'var(--card)' }}>Medium</option>
-                    <option value="high" style={{ backgroundColor: 'var(--card)' }}>High</option>
-                    <option value="emergency" style={{ backgroundColor: 'var(--card)' }}>Emergency</option>
+                    <option value="low">{t('pmRequests.priorityLow')}</option>
+                    <option value="medium">{t('pmRequests.priorityMedium')}</option>
+                    <option value="high">{t('pmRequests.priorityHigh')}</option>
+                    <option value="emergency">{t('pmRequests.priorityEmergency')}</option>
                   </select>
                 </div>
               </div>
 
               {/* Assign Vendor (Optional) */}
               <div>
-                <label className="block text-xs font-semibold mb-1.5 text-slate-400">Assign Contractor (Optional)</label>
+                <label className="block text-xs font-semibold mb-1.5 text-slate-400">{t('pmRequests.assignContractorOpt')}</label>
                 <select
                   value={createVendorId}
                   onChange={(e) => setCreateVendorId(e.target.value)}
                   className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
                   style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
                 >
-                  <option value="" style={{ backgroundColor: 'var(--card)' }}>Assign contractor later...</option>
+                  <option value="">{t('pmRequests.assignLater')}</option>
                   {vendors.map((v) => (
                     <option key={v.id} value={v.id} style={{ backgroundColor: 'var(--card)' }}>{v.name} ({v.specializations.join(', ') || 'General'})</option>
                   ))}
@@ -800,7 +802,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
                   className="flex-1 py-3 rounded-xl text-xs font-semibold hover:bg-slate-100 transition-all text-slate-400"
                   style={{ border: '1px solid var(--border)' }}
                 >
-                  Cancel
+                  {t('pmRequests.cancel')}
                 </button>
                 <button
                   type="submit"
@@ -809,7 +811,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
                   style={{ background: 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)' }}
                 >
                   {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                  Create Ticket
+                  {t('pmRequests.createTicket')}
                 </button>
               </div>
             </form>

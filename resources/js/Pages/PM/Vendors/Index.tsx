@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Head, router } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
 import {
     Plus, Search, Star, Phone, Mail, MessageCircle, Loader2, HardHat,
     Edit2, ToggleRight, X, Eye, CheckCircle2, Clock, AlertCircle,
@@ -66,6 +67,7 @@ const SPEC_RU: Record<string, string> = {
 const ALL_SPECS = Object.keys(SPEC_RU);
 
 export default function Index({ vendors }: Props) {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [specFilter, setSpecFilter] = useState('all');
   const [showActive, setShowActive] = useState(true);
@@ -209,9 +211,9 @@ export default function Index({ vendors }: Props) {
           <p className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: '#34d399' }}>
             Property Management
           </p>
-          <h1 className="text-2xl font-bold text-slate-800 mt-1">Vendors</h1>
+          <h1 className="text-2xl font-bold text-slate-800 mt-1">{t('pmVendors.title')}</h1>
           <p className="text-xs mt-1" style={{ color: 'var(--muted)' }}>
-            Service contractors, plumbers, and technicians
+            {t('pmVendors.subtitle')}
           </p>
         </div>
         <button
@@ -220,17 +222,17 @@ export default function Index({ vendors }: Props) {
           style={{ background: 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)' }}
         >
           <Plus className="w-4 h-4" />
-          Add Vendor
+          {t('pmVendors.addVendor')}
         </button>
       </div>
 
       <div className="mt-6 space-y-6">
         {/* Summary Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <SummaryCard label="Active"         value={String(stats.active)}    accent="#34d399" />
-          <SummaryCard label="Archived"       value={String(stats.archived)}  accent="var(--muted)" />
-          <SummaryCard label="Avg Rating"     value={stats.avgRating.toFixed(1)} accent="#fbbf24" />
-          <SummaryCard label="Total Jobs Done" value={String(stats.totalJobs)} accent="#60a5fa" />
+          <SummaryCard label={t('pmVendors.active')}    value={String(stats.active)}       accent="#34d399" />
+          <SummaryCard label={t('pmVendors.archived')}  value={String(stats.archived)}     accent="var(--muted)" />
+          <SummaryCard label={t('pmVendors.avgRating')} value={stats.avgRating.toFixed(1)} accent="#fbbf24" />
+          <SummaryCard label={t('pmVendors.totalJobs')} value={String(stats.totalJobs)}    accent="#60a5fa" />
         </div>
 
         {/* Tab Filters and Search */}
@@ -244,7 +246,7 @@ export default function Index({ vendors }: Props) {
                 color:           showActive ? '#6ee7b7' : 'var(--muted)',
               }}
             >
-              Active
+              {t('pmVendors.activeTab')}
             </button>
             <button
               onClick={() => setShowActive(false)}
@@ -254,7 +256,7 @@ export default function Index({ vendors }: Props) {
                 color:           !showActive ? '#6ee7b7' : 'var(--muted)',
               }}
             >
-              Archive
+              {t('pmVendors.archiveTab')}
             </button>
           </div>
 
@@ -263,7 +265,7 @@ export default function Index({ vendors }: Props) {
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search vendor name or phone..."
+              placeholder={t('pmVendors.searchPlaceholder')}
               className="w-full rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-800 outline-none placeholder:text-slate-400"
               style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
             />
@@ -275,7 +277,7 @@ export default function Index({ vendors }: Props) {
             className="rounded-xl px-3 py-2.5 text-xs text-slate-800 outline-none cursor-pointer"
             style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
           >
-            <option value="all">All Specializations</option>
+            <option value="all">{t('pmVendors.allSpecs')}</option>
             {ALL_SPECS.map((s) => (
               <option key={s} value={s}>{SPEC_RU[s]}</option>
             ))}
@@ -286,7 +288,7 @@ export default function Index({ vendors }: Props) {
         {filtered.length === 0 ? (
           <div className="rounded-2xl p-12 text-center" style={{ border: '1px dashed var(--border)', color: 'var(--muted)' }}>
             <HardHat className="w-8 h-8 mx-auto mb-3 text-slate-500" />
-            <p className="text-xs">No contractors found matching filters.</p>
+            <p className="text-xs">{t('pmVendors.noVendors')}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -375,7 +377,7 @@ export default function Index({ vendors }: Props) {
                     </span>
                   </div>
                   <div className="text-xs" style={{ color: 'var(--muted)' }}>
-                    {v.completed_jobs} / {v.total_jobs || v.completed_jobs} jobs done
+                    {v.completed_jobs} / {v.total_jobs || v.completed_jobs} {t('pmVendors.jobsDone')}
                   </div>
                 </div>
               </div>
@@ -427,10 +429,10 @@ export default function Index({ vendors }: Props) {
                   <div className="grid grid-cols-4 gap-3 px-6 py-4 border-b"
                     style={{ borderColor: 'rgba(16,185,129,0.08)' }}>
                     {[
-                      { label: "Jami ish",      value: detailData.stats.total,        color: '#6366f1', icon: Wrench         },
-                      { label: "Bajarilgan",    value: detailData.stats.completed,    color: '#10b981', icon: CheckCircle2   },
-                      { label: "Jarayonda",     value: detailData.stats.in_progress,  color: '#f59e0b', icon: Clock          },
-                      { label: "Kutilmoqda",    value: detailData.stats.open,         color: '#94a3b8', icon: AlertCircle    },
+                      { label: t('pmVendors.totalWork'),  value: detailData.stats.total,       color: '#6366f1', icon: Wrench       },
+                      { label: t('pmVendors.completed'), value: detailData.stats.completed,   color: '#10b981', icon: CheckCircle2 },
+                      { label: t('pmVendors.inProgress'),value: detailData.stats.in_progress, color: '#f59e0b', icon: Clock        },
+                      { label: t('pmVendors.waiting'),   value: detailData.stats.open,        color: '#94a3b8', icon: AlertCircle  },
                     ].map(({ label, value, color, icon: Icon }) => (
                       <div key={label} className="rounded-xl p-3 text-center"
                         style={{ backgroundColor: `${color}0F`, border: `1px solid ${color}25` }}>
@@ -447,7 +449,7 @@ export default function Index({ vendors }: Props) {
                     {detailData.stats.total_earned > 0 && (
                       <div className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: '#10b981' }}>
                         <DollarSign className="w-3.5 h-3.5" />
-                        Umumiy: {detailData.stats.total_earned.toLocaleString()} UZS
+                        {t('pmVendors.total')}: {detailData.stats.total_earned.toLocaleString()} UZS
                       </div>
                     )}
                     <div className="flex items-center gap-1">
@@ -478,29 +480,29 @@ export default function Index({ vendors }: Props) {
                   {/* Request history */}
                   <div className="px-6 py-4">
                     <p className="text-[10px] uppercase tracking-widest font-semibold mb-3" style={{ color: '#94a3b8' }}>
-                      Ishlar tarixi ({detailData.requests.length} ta)
+                      {t('pmVendors.history')} ({detailData.requests.length})
                     </p>
                     {detailData.requests.length === 0 ? (
                       <div className="text-center py-8 text-sm text-slate-400">
-                        Hali birorta ish tayinlanmagan
+                        {t('pmVendors.noHistory')}
                       </div>
                     ) : (
                       <div className="space-y-2">
                         {detailData.requests.map(req => {
                           const statusCfg = {
-                            open:        { label: 'Kutilmoqda',  color: '#f59e0b' },
-                            assigned:    { label: 'Tayinlangan', color: '#a78bfa' },
-                            in_progress: { label: 'Jarayonda',   color: '#60a5fa' },
-                            completed:   { label: 'Bajarildi',   color: '#10b981' },
-                            cancelled:   { label: 'Bekor',       color: '#94a3b8' },
-                          }[req.status] ?? { label: req.status, color: '#94a3b8' };
+                            open:        { labelKey: 'pmVendors.jobOpen',       color: '#f59e0b' },
+                            assigned:    { labelKey: 'pmVendors.jobAssigned',   color: '#a78bfa' },
+                            in_progress: { labelKey: 'pmVendors.jobInProgress', color: '#60a5fa' },
+                            completed:   { labelKey: 'pmVendors.jobCompleted',  color: '#10b981' },
+                            cancelled:   { labelKey: 'pmVendors.jobCancelled',  color: '#94a3b8' },
+                          }[req.status] ?? { labelKey: req.status, color: '#94a3b8' };
 
                           const priorityCfg = {
-                            emergency: { label: 'Emergency', color: '#ef4444' },
-                            high:      { label: 'Yuqori',    color: '#f97316' },
-                            medium:    { label: "O'rta",     color: '#3b82f6' },
-                            low:       { label: 'Past',      color: '#94a3b8' },
-                          }[req.priority] ?? { label: req.priority, color: '#94a3b8' };
+                            emergency: { labelKey: 'pmVendors.priorityEmergency', color: '#ef4444' },
+                            high:      { labelKey: 'pmVendors.priorityHigh',      color: '#f97316' },
+                            medium:    { labelKey: 'pmVendors.priorityMedium',    color: '#3b82f6' },
+                            low:       { labelKey: 'pmVendors.priorityLow',       color: '#94a3b8' },
+                          }[req.priority] ?? { labelKey: req.priority, color: '#94a3b8' };
 
                           return (
                             <div key={req.id} className="rounded-xl px-4 py-3 flex items-start gap-3"
@@ -531,11 +533,11 @@ export default function Index({ vendors }: Props) {
                               <div className="shrink-0 flex flex-col items-end gap-1.5">
                                 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
                                   style={{ backgroundColor: `${statusCfg.color}18`, color: statusCfg.color }}>
-                                  {statusCfg.label}
+                                  {t(statusCfg.labelKey)}
                                 </span>
                                 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
                                   style={{ backgroundColor: `${priorityCfg.color}18`, color: priorityCfg.color }}>
-                                  {priorityCfg.label}
+                                  {t(priorityCfg.labelKey)}
                                 </span>
                                 {req.resident_rating && req.resident_rating > 0 && (
                                   <div className="flex items-center gap-0.5">
@@ -560,7 +562,7 @@ export default function Index({ vendors }: Props) {
                     onClick={() => { openEditModal(detailData.vendor); setDetailData(null); }}
                     className="w-full py-2.5 rounded-xl text-sm font-semibold transition-all"
                     style={{ backgroundColor: 'rgba(16,185,129,0.10)', color: '#10b981', border: '1px solid rgba(16,185,129,0.20)' }}>
-                    Tahrirlash
+                    {t('pmVendors.edit')}
                   </button>
                 </div>
               </>
@@ -577,7 +579,7 @@ export default function Index({ vendors }: Props) {
             style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-bold text-slate-800">
-                {editingVendor ? 'Edit Vendor' : 'New Vendor'}
+                {editingVendor ? t('pmVendors.editVendor') : t('pmVendors.newVendor')}
               </h2>
               <button
                 onClick={() => setShowModal(false)}
@@ -590,7 +592,7 @@ export default function Index({ vendors }: Props) {
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Vendor Name */}
               <div>
-                <label className="block text-xs font-semibold mb-1.5 text-slate-400">Vendor Name *</label>
+                <label className="block text-xs font-semibold mb-1.5 text-slate-400">{t('pmVendors.vendorName')} *</label>
                 <input
                   type="text"
                   required
@@ -604,7 +606,7 @@ export default function Index({ vendors }: Props) {
 
               {/* Phone */}
               <div>
-                <label className="block text-xs font-semibold mb-1.5 text-slate-400">Phone *</label>
+                <label className="block text-xs font-semibold mb-1.5 text-slate-400">{t('pmVendors.phone')} *</label>
                 <input
                   type="text"
                   required
@@ -619,7 +621,7 @@ export default function Index({ vendors }: Props) {
               <div className="grid grid-cols-2 gap-4">
                 {/* Email */}
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">Email</label>
+                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">{t('pmVendors.email')}</label>
                   <input
                     type="email"
                     value={email}
@@ -632,7 +634,7 @@ export default function Index({ vendors }: Props) {
 
                 {/* Telegram Username */}
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">Telegram Username</label>
+                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">{t('pmVendors.telegram')}</label>
                   <input
                     type="text"
                     value={telegramUsername}
@@ -646,7 +648,7 @@ export default function Index({ vendors }: Props) {
 
               {/* Specializations checkboxes */}
               <div>
-                <label className="block text-xs font-semibold mb-2 text-slate-400">Specializations</label>
+                <label className="block text-xs font-semibold mb-2 text-slate-400">{t('pmVendors.specializations')}</label>
                 <div className="grid grid-cols-2 gap-2 p-3 rounded-xl" style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}>
                   {ALL_SPECS.map((s) => (
                     <label key={s} className="flex items-center gap-2 text-xs text-slate-800 cursor-pointer select-none">
@@ -664,7 +666,7 @@ export default function Index({ vendors }: Props) {
 
               {/* Notes */}
               <div>
-                <label className="block text-xs font-semibold mb-1.5 text-slate-400">Notes</label>
+                <label className="block text-xs font-semibold mb-1.5 text-slate-400">{t('pmVendors.notes')}</label>
                 <textarea
                   rows={2}
                   value={notes}
@@ -682,7 +684,7 @@ export default function Index({ vendors }: Props) {
                   className="flex-1 py-3 rounded-xl text-xs font-semibold hover:bg-slate-100 transition-all text-slate-400"
                   style={{ border: '1px solid var(--border)' }}
                 >
-                  Cancel
+                  {t('pmVendors.cancel')}
                 </button>
                 <button
                   type="submit"
@@ -691,7 +693,7 @@ export default function Index({ vendors }: Props) {
                   style={{ background: 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)' }}
                 >
                   {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                  {editingVendor ? 'Save Changes' : 'Create Vendor'}
+                  {editingVendor ? t('pmVendors.save') : t('pmVendors.create')}
                 </button>
               </div>
             </form>

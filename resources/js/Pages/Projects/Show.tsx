@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { router, usePage } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
 import {
     ArrowLeft, Plus, Building2, MapPin, ChevronRight,
     ChevronDown, ChevronUp, Zap, X, Loader2, Home,
@@ -56,12 +57,13 @@ const emptyApt = (buildingId = ''): AptForm => ({
 });
 
 const STATUS_CFG = {
-    available: { bg: 'rgba(16,185,129,0.10)',  text: '#34d399', label: 'Mavjud'       },
-    reserved:  { bg: 'rgba(245,158,11,0.10)',  text: '#fbbf24', label: 'Bron qilingan' },
-    sold:      { bg: 'rgba(20,184,166,0.10)',  text: '#2dd4bf', label: 'Sotilgan'      },
+    available: { bg: 'rgba(16,185,129,0.10)',  text: '#34d399', labelKey: 'projectShow.statusAvailable' },
+    reserved:  { bg: 'rgba(245,158,11,0.10)',  text: '#fbbf24', labelKey: 'projectShow.statusReserved'  },
+    sold:      { bg: 'rgba(20,184,166,0.10)',  text: '#2dd4bf', labelKey: 'projectShow.statusSold'      },
 };
 
 export default function ProjectShow({ project, buildings, aptStats }: Props) {
+    const { t } = useTranslation();
     const { auth } = usePage<any>().props;
     const canEdit = ['super_admin', 'company_admin', 'manager'].includes(auth.user?.role);
 
@@ -218,13 +220,13 @@ export default function ProjectShow({ project, buildings, aptStats }: Props) {
                     <div className="flex gap-6 text-center shrink-0">
                         <div>
                             <p className="text-xl font-bold text-slate-800">{buildings.length}</p>
-                            <p className="text-xs mt-0.5" style={{ color: '#475569' }}>Binolar</p>
+                            <p className="text-xs mt-0.5" style={{ color: '#475569' }}>{t('projects.buildings')}</p>
                         </div>
                         <div>
                             <p className="text-xl font-bold text-slate-800">
                                 {Object.values(aptStats).reduce((s, v) => s + v.total, 0)}
                             </p>
-                            <p className="text-xs mt-0.5" style={{ color: '#475569' }}>Kvartiralar</p>
+                            <p className="text-xs mt-0.5" style={{ color: '#475569' }}>{t('projects.apartments')}</p>
                         </div>
                     </div>
                 </div>
@@ -232,12 +234,12 @@ export default function ProjectShow({ project, buildings, aptStats }: Props) {
                 {/* Buildings section */}
                 <div>
                     <div className="flex items-center justify-between mb-3">
-                        <h2 className="text-sm font-semibold text-slate-800">Binolar</h2>
+                        <h2 className="text-sm font-semibold text-slate-800">{t('projects.buildings')}</h2>
                         {canEdit && (
                             <button onClick={() => { setBuildingName(''); setShowAddBuilding(true); }}
                                 className="flex items-center gap-1.5 text-xs font-semibold text-white px-3.5 py-2 rounded-xl transition-all hover:opacity-90"
                                 style={{ backgroundColor: '#10b981' }}>
-                                <Plus className="w-3.5 h-3.5" /> Bino qo'shish
+                                <Plus className="w-3.5 h-3.5" /> {t('projectShow.addBuilding')}
                             </button>
                         )}
                     </div>
@@ -292,9 +294,9 @@ export default function ProjectShow({ project, buildings, aptStats }: Props) {
                                                     </div>
                                                 </div>
                                                 <div className="flex justify-between text-[10px]" style={{ color: '#475569' }}>
-                                                    <span style={{ color: '#34d399' }}>{stats.available} mavjud</span>
-                                                    <span style={{ color: '#fbbf24' }}>{stats.reserved} bron</span>
-                                                    <span style={{ color: '#2dd4bf' }}>{stats.sold} sotilgan</span>
+                                                    <span style={{ color: '#34d399' }}>{stats.available} {t('projectShow.available')}</span>
+                                                    <span style={{ color: '#fbbf24' }}>{stats.reserved} {t('projectShow.reserved')}</span>
+                                                    <span style={{ color: '#2dd4bf' }}>{stats.sold} {t('projectShow.sold')}</span>
                                                 </div>
                                             </div>
                                         )}
@@ -308,7 +310,7 @@ export default function ProjectShow({ project, buildings, aptStats }: Props) {
                                                         className="flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors border hover:border-emerald-500/40"
                                                         style={{ borderColor: 'rgba(16,185,129,0.15)', color: '#34d399', backgroundColor: 'rgba(16,185,129,0.05)' }}>
                                                         <Zap className="w-3.5 h-3.5" />
-                                                        Bulk yaratish
+                                                        {t('projectShow.bulkGenerate')}
                                                     </button>
                                                     <button onClick={() => openAddApt(b)}
                                                         className="flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors border hover:border-emerald-500/40"

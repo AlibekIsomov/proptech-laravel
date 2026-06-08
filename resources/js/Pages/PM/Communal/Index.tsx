@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { Head, router } from "@inertiajs/react";
+import { useTranslation } from 'react-i18next';
 import {
     Plus, Loader2, Building, Edit2, X, AlertTriangle, CheckCircle2,
     CalendarCheck, Trees, Car, Home, DoorOpen, Layers, Hammer, Trash2
@@ -39,26 +40,27 @@ interface Props {
     projects: Project[];
 }
 
-const TYPE_RU: Record<CommunalType, { label: string; icon: React.ElementType }> = {
-    elevator:    { label: "Лифт",            icon: Layers   },
-    entrance:    { label: "Подъезд",         icon: DoorOpen },
-    parking:     { label: "Парковка",        icon: Car      },
-    playground:  { label: "Детская площадка", icon: Trees    },
-    common_area: { label: "Общая зона",      icon: Home     },
-    roof:        { label: "Кровля",          icon: Building },
-    facade:      { label: "Фасад",           icon: Hammer   },
-    other:       { label: "Другое",          icon: Building },
+const TYPE_CONFIG: Record<CommunalType, { labelKey: string; icon: React.ElementType }> = {
+    elevator:    { labelKey: "pmCommunal.typeElevator",    icon: Layers   },
+    entrance:    { labelKey: "pmCommunal.typeEntrance",    icon: DoorOpen },
+    parking:     { labelKey: "pmCommunal.typeParking",     icon: Car      },
+    playground:  { labelKey: "pmCommunal.typePlayground",  icon: Trees    },
+    common_area: { labelKey: "pmCommunal.typeCommonArea",  icon: Home     },
+    roof:        { labelKey: "pmCommunal.typeRoof",        icon: Building },
+    facade:      { labelKey: "pmCommunal.typeFacade",      icon: Hammer   },
+    other:       { labelKey: "pmCommunal.typeOther",       icon: Building },
 };
-const ALL_TYPES = Object.keys(TYPE_RU) as CommunalType[];
+const ALL_TYPES = Object.keys(TYPE_CONFIG) as CommunalType[];
 
-const STATUS_META: Record<CommunalStatus, { label: string; bg: string; fg: string; border: string; rank: number }> = {
-    broken:      { label: "Сломан",       bg: "rgba(239,68,68,0.10)",  fg: "#f87171", border: "rgba(239,68,68,0.30)",  rank: 0 },
-    maintenance: { label: "На обслуж.",   bg: "rgba(251,191,36,0.10)", fg: "#fbbf24", border: "rgba(251,191,36,0.30)", rank: 1 },
-    operational: { label: "В порядке",    bg: "rgba(16,185,129,0.10)", fg: "#34d399", border: "rgba(16,185,129,0.30)", rank: 2 },
-    retired:     { label: "Списано",      bg: "var(--border)", fg: "var(--muted)", border: "var(--border)", rank: 3 },
+const STATUS_META: Record<CommunalStatus, { labelKey: string; bg: string; fg: string; border: string; rank: number }> = {
+    broken:      { labelKey: "pmCommunal.statusBroken",      bg: "rgba(239,68,68,0.10)",  fg: "#f87171", border: "rgba(239,68,68,0.30)",  rank: 0 },
+    maintenance: { labelKey: "pmCommunal.statusMaintenance", bg: "rgba(251,191,36,0.10)", fg: "#fbbf24", border: "rgba(251,191,36,0.30)", rank: 1 },
+    operational: { labelKey: "pmCommunal.statusOperational", bg: "rgba(16,185,129,0.10)", fg: "#34d399", border: "rgba(16,185,129,0.30)", rank: 2 },
+    retired:     { labelKey: "pmCommunal.statusRetired",     bg: "var(--border)", fg: "var(--muted)", border: "var(--border)", rank: 3 },
 };
 
 export default function CommunalIndex({ projects }: Props) {
+    const { t } = useTranslation();
     const [selectedProj, setSelectedProj] = useState("");
     const [selectedBldg, setSelectedBldg] = useState("");
     const [assets,       setAssets]       = useState<CommunalAssetRow[]>([]);
@@ -189,9 +191,9 @@ export default function CommunalIndex({ projects }: Props) {
                     <p className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: "#34d399" }}>
                         Property Management
                     </p>
-                    <h1 className="text-2xl font-bold text-slate-800 mt-1">Общее имущество</h1>
+                    <h1 className="text-2xl font-bold text-slate-800 mt-1">{t('pmCommunal.title')}</h1>
                     <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>
-                        Подъезды, фасады, кровли, детские площадки здания и инспекции
+                        {t('pmCommunal.subtitle')}
                     </p>
                 </div>
                 <button
@@ -200,7 +202,7 @@ export default function CommunalIndex({ projects }: Props) {
                     className="rounded-xl px-4 py-2.5 text-xs font-bold text-white flex items-center gap-2 disabled:opacity-50 transition-all hover:opacity-90 animate-fade-in"
                     style={{ background: "linear-gradient(135deg, #10b981 0%, #14b8a6 100%)" }}
                 >
-                    <Plus className="w-4 h-4" /> Добавить
+                    <Plus className="w-4 h-4" /> {t('pmCommunal.addAsset')}
                 </button>
             </div>
 
@@ -208,7 +210,7 @@ export default function CommunalIndex({ projects }: Props) {
                 {/* Selectors */}
                 <div className="flex flex-wrap items-center gap-4 p-4 rounded-2xl animate-fade-in" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
                     <div className="flex flex-col gap-1 min-w-[180px]">
-                        <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">Проект</span>
+                        <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">{t('pmCommunal.project')}</span>
                         <select
                             value={selectedProj}
                             onChange={(e) => setSelectedProj(e.target.value)}
@@ -222,7 +224,7 @@ export default function CommunalIndex({ projects }: Props) {
                     </div>
 
                     <div className="flex flex-col gap-1 min-w-[180px]">
-                        <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">Корпус</span>
+                        <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">{t('pmCommunal.building')}</span>
                         <select
                             value={selectedBldg}
                             onChange={(e) => setSelectedBldg(e.target.value)}
@@ -238,16 +240,16 @@ export default function CommunalIndex({ projects }: Props) {
                     </div>
 
                     <div className="flex flex-col gap-1 min-w-[180px]">
-                        <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">Тип</span>
+                        <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">{t('pmCommunal.assetType')}</span>
                         <select
                             value={typeFilter}
                             onChange={(e) => setTypeFilter(e.target.value as CommunalType | "all")}
                             className="rounded-xl px-3 py-2.5 text-xs text-slate-800 outline-none cursor-pointer"
                             style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
                         >
-                            <option value="all">Все типы</option>
-                            {ALL_TYPES.map((t) => (
-                                <option key={t} value={t}>{TYPE_RU[t].label}</option>
+                            <option value="all">{t('pmCommunal.filterAll')}</option>
+                            {ALL_TYPES.map((tk) => (
+                                <option key={tk} value={tk}>{t(TYPE_CONFIG[tk].labelKey)}</option>
                             ))}
                         </select>
                     </div>
@@ -255,10 +257,10 @@ export default function CommunalIndex({ projects }: Props) {
 
                 {/* Metrics */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 animate-fade-in">
-                    <SummaryCard label="Всего объектов" value={stats.total} accent="var(--muted)" />
-                    <SummaryCard label="В порядке" value={stats.ok} accent="#34d399" />
-                    <SummaryCard label="Требует ТО / Сроки" value={stats.dueSoon} accent="#fbbf24" />
-                    <SummaryCard label="В аварии" value={stats.broken} accent="#f87171" />
+                    <SummaryCard label={t('pmCommunal.totalAssets')} value={stats.total}   accent="var(--muted)" />
+                    <SummaryCard label={t('pmCommunal.operational')} value={stats.ok}      accent="#34d399" />
+                    <SummaryCard label={t('pmCommunal.maintenance')} value={stats.dueSoon} accent="#fbbf24" />
+                    <SummaryCard label={t('pmCommunal.brokenCount')} value={stats.broken}  accent="#f87171" />
                 </div>
 
                 {showForm && selectedBldg && (
@@ -277,8 +279,8 @@ export default function CommunalIndex({ projects }: Props) {
                 ) : filtered.length === 0 ? (
                     <div className="rounded-2xl p-16 text-center border border-dashed animate-fade-in" style={{ backgroundColor: "var(--border)", borderColor: 'var(--border)', color: "var(--muted)" }}>
                         <Building className="w-10 h-10 mx-auto mb-3" style={{ color: "var(--border)" }} />
-                        <p className="text-sm font-medium text-slate-800">Объекты не зарегистрированы</p>
-                        <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>Зарегистрируйте подъезды, кровлю, детские площадки для ведения лога инспекций</p>
+                        <p className="text-sm font-medium text-slate-800">{t('pmCommunal.noAssets')}</p>
+                        <p className="text-xs mt-1" style={{ color: "var(--muted)" }}></p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
@@ -308,8 +310,9 @@ interface CardProps {
 }
 
 function CommunalCard({ asset, onEdit, onDelete, onMarkInspected }: CardProps) {
+    const { t } = useTranslation();
     const meta = STATUS_META[asset.status] || STATUS_META.operational;
-    const TypeIcon = (TYPE_RU[asset.asset_type] || TYPE_RU.other).icon;
+    const TypeIcon = (TYPE_CONFIG[asset.asset_type] || TYPE_CONFIG.other).icon;
 
     const nextDays = asset.next_inspection_date
         ? Math.floor((new Date(asset.next_inspection_date).getTime() - Date.now()) / (24 * 3600 * 1000))
@@ -326,12 +329,12 @@ function CommunalCard({ asset, onEdit, onDelete, onMarkInspected }: CardProps) {
                     </div>
                     <div className="min-w-0 flex-1">
                         <h3 className="text-sm font-bold text-slate-800 truncate">{asset.name}</h3>
-                        <p className="text-xs text-slate-500 font-semibold mt-0.5">{TYPE_RU[asset.asset_type]?.label || asset.asset_type}</p>
+                        <p className="text-xs text-slate-500 font-semibold mt-0.5">{t(TYPE_CONFIG[asset.asset_type]?.labelKey || 'pmCommunal.typeOther')}</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-md" style={{ backgroundColor: meta.bg, color: meta.fg, border: `1px solid ${meta.border}` }}>
-                        {meta.label}
+                        {t(meta.labelKey)}
                     </span>
                     <button
                         onClick={onEdit}
@@ -410,6 +413,7 @@ interface FormProps {
 }
 
 function CommunalForm({ buildingId, asset, onSaved, onCancel }: FormProps) {
+    const { t } = useTranslation();
     const [name,        setName]        = useState(asset?.name ?? "");
     const [assetType,   setAssetType]   = useState<CommunalType>(asset?.asset_type ?? "entrance");
     const [description, setDescription] = useState(asset?.description ?? "");
@@ -489,9 +493,9 @@ function CommunalForm({ buildingId, asset, onSaved, onCancel }: FormProps) {
                         className="w-full rounded-xl px-3 py-2 text-xs text-slate-800 outline-none cursor-pointer"
                         style={fs()}
                     >
-                        {ALL_TYPES.map((t) => (
-                            <option key={t} value={t} style={{ backgroundColor: 'var(--card)' }}>
-                                {TYPE_RU[t].label}
+                        {ALL_TYPES.map((tk) => (
+                            <option key={tk} value={tk} style={{ backgroundColor: 'var(--card)' }}>
+                                {t(TYPE_CONFIG[tk].labelKey)}
                             </option>
                         ))}
                     </select>
@@ -503,10 +507,10 @@ function CommunalForm({ buildingId, asset, onSaved, onCancel }: FormProps) {
                         className="w-full rounded-xl px-3 py-2 text-xs text-slate-800 outline-none cursor-pointer"
                         style={fs()}
                     >
-                        <option value="operational" style={{ backgroundColor: 'var(--card)' }}>В порядке</option>
-                        <option value="maintenance" style={{ backgroundColor: 'var(--card)' }}>На обслуживании</option>
-                        <option value="broken" style={{ backgroundColor: 'var(--card)' }}>Сломан</option>
-                        <option value="retired" style={{ backgroundColor: 'var(--card)' }}>Списано</option>
+                        <option value="operational">{t('pmCommunal.statusOperational')}</option>
+                        <option value="maintenance">{t('pmCommunal.statusMaintenance')}</option>
+                        <option value="broken">{t('pmCommunal.statusBroken')}</option>
+                        <option value="retired">{t('pmCommunal.statusRetired')}</option>
                     </select>
                 </Field>
                 <div className="hidden sm:block" />

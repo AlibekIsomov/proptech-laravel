@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Head, router } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
 import { Plus, Search, Loader2, Phone, Mail, Send, X, ShieldAlert, Home, Edit, Trash2 } from 'lucide-react';
 import AppShell from '@/Components/AppShell';
 import ApartmentDetailDrawer from '@/Components/pm/ApartmentDetailDrawer';
@@ -45,10 +46,10 @@ interface Props {
   apartments: ApartmentOption[];
 }
 
-const TYPE_RU = {
-  owner:  'Owner',
-  tenant: 'Tenant',
-  family: 'Family Member',
+const TYPE_KEYS = {
+  owner:  'pmResidents.owner',
+  tenant: 'pmResidents.tenant',
+  family: 'pmResidents.family',
 };
 
 const TYPE_COLOR = {
@@ -58,6 +59,7 @@ const TYPE_COLOR = {
 };
 
 export default function Index({ residents, projects, apartments }: Props) {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState('');
 
@@ -232,27 +234,25 @@ export default function Index({ residents, projects, apartments }: Props) {
 
   return (
     <AppShell>
-      <Head title="Aholilar — Mulk boshqaruvi" />
+      <Head title="PM — 1Mahalla" />
 
-      {/* Header bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b" style={{ borderColor: 'rgba(16,185,129,0.12)' }}>
         <div>
           <p className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: '#10b981' }}>
-            Mulk boshqaruvi
+            {t('common.propertyMgmt')}
           </p>
-          <h1 className="text-2xl font-bold text-slate-800 mt-1">Aholilar</h1>
+          <h1 className="text-2xl font-bold text-slate-800 mt-1">{t('pmResidents.title')}</h1>
           <p className="text-xs mt-1 text-slate-500">
-            Faol aholining {filtered.length} tasi ko'rsatilmoqda (jami {residents.length} tadan)
+            {filtered.length} {t('pmResidents.showingOf')} {residents.length} {t('pmResidents.from')}
           </p>
         </div>
         <div className="flex items-center gap-3">
-          {/* Search */}
           <div className="flex items-center gap-2 rounded-xl px-3.5 py-2 bg-white"
             style={{ border: '1px solid rgba(16,185,129,0.15)' }}>
             <Search className="w-4 h-4 text-slate-400" />
             <input
               type="text"
-              placeholder="Qidirish..."
+              placeholder={t('common.search') + '...'}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="bg-transparent text-xs text-slate-800 outline-none placeholder:text-slate-400 w-44 md:w-56 border-none p-0 focus:ring-0 focus:outline-none"
@@ -264,7 +264,7 @@ export default function Index({ residents, projects, apartments }: Props) {
             style={{ background: 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)' }}
           >
             <Plus className="w-4 h-4" />
-            Aholi qo'shish
+            {t('pmResidents.addResident')}
           </button>
         </div>
       </div>
@@ -273,17 +273,17 @@ export default function Index({ residents, projects, apartments }: Props) {
         {/* Filters Select */}
         <div className="flex items-center gap-3">
           <label className="flex items-center gap-2 text-xs text-slate-500">
-            <span>Turi bo'yicha:</span>
+            <span>{t('pmResidents.filterByType')}</span>
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
               className="rounded-xl px-3 py-2 text-xs text-slate-800 outline-none cursor-pointer bg-white"
               style={{ border: '1px solid rgba(16,185,129,0.15)' }}
             >
-              <option value="">Barchasi</option>
-              <option value="owner">Mulkdor</option>
-              <option value="tenant">Ijarachi</option>
-              <option value="family">Oila a'zosi</option>
+              <option value="">{t('pmResidents.allTypes')}</option>
+              <option value="owner">{t('pmResidents.owner')}</option>
+              <option value="tenant">{t('pmResidents.tenant')}</option>
+              <option value="family">{t('pmResidents.family')}</option>
             </select>
           </label>
         </div>
@@ -294,14 +294,14 @@ export default function Index({ residents, projects, apartments }: Props) {
           {filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 gap-3">
               <Home className="w-10 h-10 text-slate-300" />
-              <p className="text-sm text-slate-400">Aholilar topilmadi.</p>
+              <p className="text-sm text-slate-400">{t('pmResidents.noResidents')}</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
                   <tr style={{ borderBottom: '1px solid rgba(16,185,129,0.12)' }}>
-                    {['Foydalanuvchi', 'Kontaktlar', 'Turi', 'Xonadon', 'Bino / Loyiha', 'Harakatlar'].map((h) => (
+                    {[t('pmResidents.colUser'), t('pmResidents.colContacts'), t('pmResidents.colType'), t('pmResidents.colApartment'), t('pmResidents.colBuilding'), t('pmResidents.colActions')].map((h) => (
                       <th key={h} className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-slate-500">
                         {h}
                       </th>
@@ -311,7 +311,7 @@ export default function Index({ residents, projects, apartments }: Props) {
                 <tbody className="divide-y divide-slate-100">
                   {filtered.map((r) => {
                     const c = TYPE_COLOR[r.resident_type] || TYPE_COLOR.owner;
-                    const typeLabel = r.resident_type === 'owner' ? 'Mulkdor' : r.resident_type === 'tenant' ? 'Ijarachi' : 'Oila a\'zosi';
+                    const typeLabel = t(TYPE_KEYS[r.resident_type] ?? 'pmResidents.owner');
                     const typeTextColors: Record<string, string> = {
                       owner: '#047857',
                       tenant: '#1d4ed8',
@@ -352,7 +352,7 @@ export default function Index({ residents, projects, apartments }: Props) {
                               onClick={() => setDrawerId(r.apartment_id)}
                               className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-emerald-500/20 text-emerald-600 hover:text-slate-800 bg-emerald-500/5 hover:bg-emerald-500/10 transition-all cursor-pointer"
                             >
-                              Xonadonni ko'rish
+                              {t('pmResidents.viewApartment')}
                             </button>
                             <button
                               onClick={() => openEditModal(r)}
@@ -386,7 +386,7 @@ export default function Index({ residents, projects, apartments }: Props) {
             style={{ borderColor: 'rgba(16,185,129,0.15)' }}>
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-bold text-slate-800">
-                {editingResident ? 'Aholini tahrirlash' : 'Yangi aholi'}
+                {editingResident ? t('pmResidents.editResident') : t('pmResidents.newResident')}
               </h2>
               <button
                 onClick={() => setShowModal(false)}
@@ -399,7 +399,7 @@ export default function Index({ residents, projects, apartments }: Props) {
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Full Name */}
               <div>
-                <label className="block text-xs font-semibold mb-1.5 text-slate-500">F.I.SH. *</label>
+                <label className="block text-xs font-semibold mb-1.5 text-slate-500">{t('pmResidents.fullName')} *</label>
                 <input
                   type="text"
                   required
@@ -413,7 +413,7 @@ export default function Index({ residents, projects, apartments }: Props) {
 
               {/* Smart Apartment Autocomplete Selector */}
               <div className="relative">
-                <label className="block text-xs font-semibold mb-1.5 text-slate-500">Xonadon *</label>
+                <label className="block text-xs font-semibold mb-1.5 text-slate-500">{t('pmResidents.apartment')} *</label>
                 <div className="relative">
                   <input
                     type="text"
@@ -433,7 +433,7 @@ export default function Index({ residents, projects, apartments }: Props) {
                       setIsAptDropdownOpen(true);
                       setSearchAptQuery('');
                     }}
-                    placeholder="Xonadon raqami, bino yoki loyiha..."
+                    placeholder={t('pmResidents.aptPlaceholder')}
                     className="w-full rounded-xl pl-3.5 pr-10 py-2.5 text-sm text-slate-800 outline-none transition-all bg-white"
                     style={{ 
                       border: '1px solid rgba(16,185,129,0.15)',
@@ -486,7 +486,7 @@ export default function Index({ residents, projects, apartments }: Props) {
                           }}
                           className="bg-slate-50 text-[10px] text-slate-700 px-2 py-1 rounded border border-slate-200 outline-none cursor-pointer"
                         >
-                          <option value="">Barcha loyihalar</option>
+                          <option value="">{t('pmResidents.allProjectsFilter')}</option>
                           {projects.map((p) => (
                             <option key={p.id} value={p.id}>{p.name}</option>
                           ))}
@@ -501,7 +501,7 @@ export default function Index({ residents, projects, apartments }: Props) {
                           disabled={!projId}
                           className="bg-slate-50 text-[10px] text-slate-700 px-2 py-1 rounded border border-slate-200 outline-none disabled:opacity-50 cursor-pointer"
                         >
-                          <option value="">Barcha binolar</option>
+                          <option value="">{t('pmResidents.allBuildingsFilter')}</option>
                           {buildingsForSelectedProj.map((b) => (
                             <option key={b.id} value={b.id}>{b.name}</option>
                           ))}
@@ -511,7 +511,7 @@ export default function Index({ residents, projects, apartments }: Props) {
                       {/* Filtered list of apartments with full context subtitle */}
                       {filteredApartmentsForSelector.length === 0 ? (
                         <div className="text-center text-xs text-slate-400 py-6 select-none">
-                          Mos keladigan xonadonlar topilmadi.
+                          {t('pmResidents.aptNotFound')}
                         </div>
                       ) : (
                         <div className="space-y-1">
@@ -569,7 +569,7 @@ export default function Index({ residents, projects, apartments }: Props) {
               <div className="grid grid-cols-2 gap-4">
                 {/* Phone */}
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5 text-slate-500">Telefon</label>
+                  <label className="block text-xs font-semibold mb-1.5 text-slate-500">{t('pmResidents.phone')}</label>
                   <input
                     type="text"
                     value={phone}
@@ -582,7 +582,7 @@ export default function Index({ residents, projects, apartments }: Props) {
 
                 {/* Email */}
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5 text-slate-500">Email</label>
+                  <label className="block text-xs font-semibold mb-1.5 text-slate-500">{t('pmResidents.email')}</label>
                   <input
                     type="email"
                     value={email}
@@ -597,7 +597,7 @@ export default function Index({ residents, projects, apartments }: Props) {
               <div className="grid grid-cols-2 gap-4">
                 {/* Telegram Username */}
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5 text-slate-500">Telegram</label>
+                  <label className="block text-xs font-semibold mb-1.5 text-slate-500">{t('pmResidents.telegram')}</label>
                   <input
                     type="text"
                     value={telegramUsername}
@@ -610,23 +610,23 @@ export default function Index({ residents, projects, apartments }: Props) {
 
                 {/* Resident Type */}
                 <div>
-                  <label className="block text-xs font-semibold mb-1.5 text-slate-500">Turi *</label>
+                  <label className="block text-xs font-semibold mb-1.5 text-slate-500">{t('pmResidents.type')} *</label>
                   <select
                     value={residentType}
                     onChange={(e) => setResidentType(e.target.value as any)}
                     className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none bg-white"
                     style={{ border: '1px solid rgba(16,185,129,0.15)' }}
                   >
-                    <option value="owner">Mulkdor</option>
-                    <option value="tenant">Ijarachi</option>
-                    <option value="family">Oila a'zosi</option>
+                    <option value="owner">{t('pmResidents.owner')}</option>
+                    <option value="tenant">{t('pmResidents.tenant')}</option>
+                    <option value="family">{t('pmResidents.family')}</option>
                   </select>
                 </div>
               </div>
 
               {/* Move-in Date */}
               <div>
-                <label className="block text-xs font-semibold mb-1.5 text-slate-500">Ko'chib kelgan sana</label>
+                <label className="block text-xs font-semibold mb-1.5 text-slate-500">{t('pmResidents.moveInDate')}</label>
                 <input
                   type="date"
                   value={moveInDate}
@@ -642,7 +642,7 @@ export default function Index({ residents, projects, apartments }: Props) {
                   onClick={() => setShowModal(false)}
                   className="flex-1 py-3 rounded-xl text-xs font-semibold hover:bg-slate-50 transition-all text-slate-400 border border-slate-200 cursor-pointer"
                 >
-                  Bekor qilish
+                  {t('pmResidents.cancel')}
                 </button>
                 <button
                   type="submit"
@@ -651,7 +651,7 @@ export default function Index({ residents, projects, apartments }: Props) {
                   style={{ background: 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)' }}
                 >
                   {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                  {editingResident ? 'Saqlash' : 'Qo\'shish'}
+                  {editingResident ? t('pmResidents.save') : t('pmResidents.add')}
                 </button>
               </div>
             </form>

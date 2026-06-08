@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Head, router, usePage } from '@inertiajs/react';
+import { useTranslation } from 'react-i18next';
 import { Search, Home, ChevronDown, Plus, X, Loader2, Calculator, Edit, Trash2 } from 'lucide-react';
 import AppShell from '@/Components/AppShell';
 
@@ -35,15 +36,16 @@ interface Props {
   buildings:  Building[];
 }
 
-const STATUS_CONFIG: Record<string, { bg: string; text: string; label: string }> = {
-  available: { bg: '#1e1b4b', text: '#a5b4fc', label: 'Available' },
-  reserved:  { bg: '#1c1003', text: '#fbbf24', label: 'Reserved'  },
-  sold:      { bg: '#052e16', text: '#34d399', label: 'Sold'       },
+const STATUS_CONFIG: Record<string, { bg: string; text: string; labelKey: string }> = {
+  available: { bg: '#1e1b4b', text: '#a5b4fc', labelKey: 'apartments.statusAvailable' },
+  reserved:  { bg: '#1c1003', text: '#fbbf24', labelKey: 'apartments.statusReserved'  },
+  sold:      { bg: '#052e16', text: '#34d399', labelKey: 'apartments.statusSold'       },
 };
 
 const ALL_STATUSES = ['available', 'reserved', 'sold'];
 
 export default function Index({ apartments, projects, buildings }: Props) {
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'available' | 'reserved' | 'sold'>('all');
 
@@ -196,9 +198,9 @@ export default function Index({ apartments, projects, buildings }: Props) {
       {/* Header bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b" style={{ borderColor: 'var(--border)' }}>
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Apartments</h1>
+          <h1 className="text-2xl font-bold text-slate-800">{t('apartments.title')}</h1>
           <p className="text-xs mt-1" style={{ color: 'var(--muted)' }}>
-            Showing {filtered.length} of {apartments.length} total units
+            {filtered.length} / {apartments.length}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -208,7 +210,7 @@ export default function Index({ apartments, projects, buildings }: Props) {
             <Search className="w-4 h-4" style={{ color: 'var(--muted)' }} />
             <input
               type="text"
-              placeholder="Search apartment, building..."
+              placeholder={t('apartments.searchPlaceholder')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="bg-transparent text-xs text-slate-800 outline-none placeholder:text-slate-400 w-44 md:w-56"
@@ -220,7 +222,7 @@ export default function Index({ apartments, projects, buildings }: Props) {
             style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' }}
           >
             <Plus className="w-4 h-4" />
-            New Unit
+            {t('apartments.newApartment')}
           </button>
         </div>
       </div>
@@ -228,7 +230,7 @@ export default function Index({ apartments, projects, buildings }: Props) {
       <div className="mt-6 flex flex-wrap gap-4 p-4 rounded-2xl" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
         <label className="flex flex-col gap-1.5 min-w-[200px]">
           <span className="text-[10px] uppercase tracking-widest font-semibold text-slate-400">
-            Project
+            {t('apartments.project')}
           </span>
           <select
             value={searchProjectId}
@@ -240,7 +242,7 @@ export default function Index({ apartments, projects, buildings }: Props) {
             className="rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none transition-all cursor-pointer bg-white"
             style={{ border: '1px solid var(--border)' }}
           >
-            <option value="">All Projects</option>
+            <option value="">{t('apartments.allProjects')}</option>
             {projects.map((p) => (
               <option key={p.id} value={p.id}>{p.name}</option>
             ))}
@@ -249,7 +251,7 @@ export default function Index({ apartments, projects, buildings }: Props) {
 
         <label className="flex flex-col gap-1.5 min-w-[200px]">
           <span className="text-[10px] uppercase tracking-widest font-semibold text-slate-400">
-            Building
+            {t('apartments.building')}
           </span>
           <select
             value={searchBuildingId}
@@ -261,7 +263,7 @@ export default function Index({ apartments, projects, buildings }: Props) {
             className="rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none transition-all cursor-pointer disabled:opacity-50 bg-white"
             style={{ border: '1px solid var(--border)' }}
           >
-            <option value="">All Buildings</option>
+            <option value="">{t('apartments.allBuildings')}</option>
             {buildings.filter(b => b.project_id === searchProjectId).map((b) => (
               <option key={b.id} value={b.id}>{b.name}</option>
             ))}
@@ -286,7 +288,7 @@ export default function Index({ apartments, projects, buildings }: Props) {
                   color:           active ? '#a5b4fc' : 'var(--muted)',
                 }}
               >
-                <span className="capitalize">{s}</span>
+                <span className="capitalize">{s === 'all' ? t('apartments.allStatuses') : t(STATUS_CONFIG[s]?.labelKey ?? 'apartments.statusAvailable')}</span>
                 <span className="inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold"
                   style={{ backgroundColor: active ? '#6366f1' : 'var(--border)', color: 'white' }}>
                   {count}
@@ -302,14 +304,14 @@ export default function Index({ apartments, projects, buildings }: Props) {
           {filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 gap-3">
               <Home className="w-10 h-10" style={{ color: 'var(--border)' }} />
-              <p className="text-sm" style={{ color: 'var(--muted)' }}>No apartments found matching your filters.</p>
+              <p className="text-sm" style={{ color: 'var(--muted)' }}>{t('apartments.noApartments')}</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                    {['Number', 'Building/Project', 'Floor', 'Rooms', 'Size (m²)', 'Price', '$/m²', 'Status', 'Actions'].map((h) => (
+                    {[t('apartments.colNum'), t('apartments.colBuilding') + '/' + t('apartments.colProject'), t('apartments.colFloor'), t('apartments.colRooms'), t('apartments.colArea'), t('apartments.colPrice'), '$/m²', t('apartments.colStatus'), t('apartments.colActions')].map((h) => (
                       <th key={h} className="px-6 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--muted)' }}>
                         {h}
                       </th>
@@ -332,8 +334,8 @@ export default function Index({ apartments, projects, buildings }: Props) {
                           <p className="text-slate-800 font-medium">{apt.building}</p>
                           <p style={{ color: 'var(--muted)' }}>{apt.project}</p>
                         </td>
-                        <td className="px-6 py-4 text-xs text-slate-800">Floor {apt.floor}</td>
-                        <td className="px-6 py-4 text-xs text-slate-800">{apt.rooms} rooms</td>
+                        <td className="px-6 py-4 text-xs text-slate-800">{t('apartments.floorLabel')} {apt.floor}</td>
+                        <td className="px-6 py-4 text-xs text-slate-800">{apt.rooms}</td>
                         <td className="px-6 py-4 text-xs text-slate-800">{apt.area || '—'} m²</td>
                         <td className="px-6 py-4 text-xs font-semibold text-slate-800">
                           {apt.price ? `$${Number(apt.price).toLocaleString()}` : '—'}
@@ -344,7 +346,7 @@ export default function Index({ apartments, projects, buildings }: Props) {
                         <td className="px-6 py-4 text-xs">
                           <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold"
                             style={{ backgroundColor: cfg.bg, color: cfg.text }}>
-                            {cfg.label}
+                            {t(cfg.labelKey)}
                           </span>
                         </td>
                         <td className="px-6 py-4">
@@ -490,7 +492,7 @@ export default function Index({ apartments, projects, buildings }: Props) {
                     style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
                   >
                     {ALL_STATUSES.map((s) => (
-                      <option key={s} value={s}>{STATUS_CONFIG[s].label}</option>
+                      <option key={s} value={s}>{t(STATUS_CONFIG[s].labelKey)}</option>
                     ))}
                   </select>
                 </div>
