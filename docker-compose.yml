@@ -50,16 +50,13 @@ services:
     container_name: proptech_db
     restart: unless-stopped
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     environment:
       POSTGRES_DB: ${DB_DATABASE}
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - db_data:/var/lib/postgresql/data
-      # Har restart da parolni majburiy to'g'ri qo'yuvchi wrapper script
-      - ./docker/pg-ensure-password.sh:/usr/local/bin/pg-ensure-password.sh:ro
-    entrypoint: ["/bin/sh", "/usr/local/bin/pg-ensure-password.sh"]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres} -d ${DB_DATABASE:-proptech}"]
       interval: 5s

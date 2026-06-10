@@ -223,9 +223,13 @@ jobs:
               || { echo "❌ PostgreSQL did not become ready in time"; exit 1; }
 
             # Parolni restart qilmasdan IN-PLACE yangilaymiz (zero-downtime!)
+            # .env ni shu shell ga yuklaymiz — aks holda $DB_USERNAME/$DB_PASSWORD
+            # bo'sh bo'lib, fallback qiymatlar (postgres/secret) ishlatiladi va
+            # haqiqiy parolni "secret" ga almashtirib qo'yadi.
             echo "🔑 Enforcing DB password in-place (no downtime)..."
+            set -a; . ./.env; set +a
             docker compose exec -T db psql -U "${DB_USERNAME:-postgres}" \
-              -c "ALTER USER ${DB_USERNAME:-postgres} WITH PASSWORD '${DB_PASSWORD:-secret}';" \
+              -c "ALTER USER ${DB_USERNAME:-postgres} WITH PASSWORD '${DB_PASSWORD}';" \
               && echo "✅ Password enforced." || echo "⚠️  Password enforcement warning."
 
             # 2️⃣  public_data volume ni tozalaymiz — entrypoint yangi image dan qayta to'ldiradi
