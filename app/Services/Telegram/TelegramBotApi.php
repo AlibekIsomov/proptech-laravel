@@ -100,6 +100,21 @@ class TelegramBotApi
         }
     }
 
+    /**
+     * Botning doimiy "Menu" tugmasini Mini App ochadigan qilib o'rnatish
+     * (barcha private chat'lar uchun, chat_id berilmasa).
+     */
+    public function setChatMenuButton(string $webAppUrl, string $text = 'Mini App'): ?array
+    {
+        return $this->call('setChatMenuButton', [
+            'menu_button' => [
+                'type' => 'web_app',
+                'text' => $text,
+                'web_app' => ['url' => $webAppUrl],
+            ],
+        ]);
+    }
+
     public function setWebhook(string $url, string $secretToken): ?array
     {
         return $this->call('setWebhook', [
