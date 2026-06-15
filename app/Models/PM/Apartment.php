@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Apartment extends Model
 {
+    use \App\Traits\SyncsToSupabase;
     use HasUuids;
 
     protected $table = 'pm_apartments';

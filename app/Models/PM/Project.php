@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 #[ScopedBy([CompanyScope::class])]
 class Project extends Model
 {
+    use \App\Traits\SyncsToSupabase;
     use HasUuids;
 
     protected $table = 'pm_projects';

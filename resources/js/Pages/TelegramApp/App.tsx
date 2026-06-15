@@ -14,6 +14,10 @@ declare global {
         ready: () => void;
         expand: () => void;
         initData: string;
+        initDataUnsafe?: Record<string, unknown>;
+        platform?: string;
+        version?: string;
+        colorScheme?: string;
       };
     };
   }
@@ -26,11 +30,21 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [me, setMe] = useState<MeResponse | null>(null);
   const [tab, setTab] = useState<Tab>('resident');
+  const [debugInfo, setDebugInfo] = useState<string>('');
 
   useEffect(() => {
     const tg = window.Telegram?.WebApp;
     tg?.ready();
     tg?.expand();
+
+    setDebugInfo(JSON.stringify({
+      hasTelegram: !!window.Telegram,
+      hasWebApp: !!tg,
+      initDataLength: tg?.initData?.length ?? 0,
+      initDataUnsafeKeys: tg?.initDataUnsafe ? Object.keys(tg.initDataUnsafe) : [],
+      platform: tg?.platform ?? null,
+      version: tg?.version ?? null,
+    }));
 
     apiFetch<MeResponse>('/me')
       .then((data) => {
@@ -54,7 +68,8 @@ export default function App() {
       <div className="min-h-screen flex items-center justify-center p-6 text-center" style={{ backgroundColor: 'var(--bg)' }}>
         <div>
           <p className="text-sm font-semibold text-slate-800 mb-1">Xatolik</p>
-          <p className="text-xs" style={{ color: 'var(--muted)' }}>{error || "Ma'lumot olinmadi"}</p>
+          <p className="text-xs mb-3" style={{ color: 'var(--muted)' }}>{error || "Ma'lumot olinmadi"}</p>
+          <p className="text-[10px] break-all" style={{ color: 'var(--muted)' }}>{debugInfo}</p>
         </div>
       </div>
     );
