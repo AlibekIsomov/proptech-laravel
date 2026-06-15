@@ -6,6 +6,7 @@ use App\Models\TelegramSession;
 use App\Services\Telegram\WebAppAuth;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -23,6 +24,11 @@ class AuthenticateWebApp
         $header = (string) $request->header('Authorization', '');
 
         if (! str_starts_with($header, 'tma ')) {
+            Log::warning('Telegram WebApp auth: missing/invalid Authorization header', [
+                'header_present' => $header !== '',
+                'header_prefix' => substr($header, 0, 10),
+            ]);
+
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
@@ -30,6 +36,11 @@ class AuthenticateWebApp
         $validated = $this->webAppAuth->validate($initData);
 
         if (! $validated || empty($validated['user']['id'])) {
+            Log::warning('Telegram WebApp auth: initData validation failed', [
+                'init_data_length' => strlen($initData),
+                'bot_token_configured' => filled(config('services.telegram.user_bot_token')),
+            ]);
+
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
