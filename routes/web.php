@@ -9,6 +9,30 @@ Route::get('/', function () {
     return redirect()->route('pm.login');
 });
 
+// ── Telegram bot webhook (CSRF dan ozod, bootstrap/app.php ga qarang) ────────
+Route::post('telegram/webhook', [\App\Http\Controllers\Telegram\WebhookController::class, 'handle'])
+    ->name('telegram.webhook');
+
+// ── Telegram Mini App (Web App) ───────────────────────────────────────────────
+Route::get('telegram-app', function () {
+    return Inertia::render('TelegramApp/App');
+})->name('telegram-app');
+
+Route::prefix('telegram-app/api')
+    ->middleware(\App\Http\Middleware\Telegram\AuthenticateWebApp::class)
+    ->group(function () {
+        Route::get('me', [\App\Http\Controllers\Telegram\WebApp\MeController::class, 'show']);
+
+        Route::get('resident/requests', [\App\Http\Controllers\Telegram\WebApp\Resident\RequestController::class, 'index']);
+        Route::post('resident/requests', [\App\Http\Controllers\Telegram\WebApp\Resident\RequestController::class, 'store']);
+        Route::get('resident/requests/{requestModel}', [\App\Http\Controllers\Telegram\WebApp\Resident\RequestController::class, 'show']);
+        Route::post('resident/requests/{requestModel}/rate', [\App\Http\Controllers\Telegram\WebApp\Resident\RequestController::class, 'rate']);
+
+        Route::get('vendor/requests', [\App\Http\Controllers\Telegram\WebApp\Vendor\RequestController::class, 'index']);
+        Route::get('vendor/requests/{requestModel}', [\App\Http\Controllers\Telegram\WebApp\Vendor\RequestController::class, 'show']);
+        Route::patch('vendor/requests/{requestModel}/status', [\App\Http\Controllers\Telegram\WebApp\Vendor\RequestController::class, 'updateStatus']);
+    });
+
 // ── Public routes (autentifikatsiya shart emas) ──────────────────────────────
 Route::middleware('guest')->group(function () {
     Route::get('login', [AuthController::class, 'showLogin'])->name('login');

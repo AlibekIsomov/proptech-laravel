@@ -17,7 +17,7 @@ class Vendor extends Model
     use HasUuids;
     protected $fillable = [
         'company_id', 'user_id', 'name', 'phone', 'email',
-        'telegram_username', 'specializations', 'rating',
+        'telegram_username', 'telegram_chat_id', 'specializations', 'rating',
         'total_jobs', 'completed_jobs', 'is_active', 'notes',
     ];
 

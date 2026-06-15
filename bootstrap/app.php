@@ -19,6 +19,12 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\HandleInertiaRequests::class,
         ]);
 
+        // Telegram webhook va Mini App API'si o'z ichida CSRF token yubormaydi
+        $middleware->validateCsrfTokens(except: [
+            'telegram/webhook',
+            'telegram-app/api/*',
+        ]);
+
         $middleware->alias([
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,

@@ -43,6 +43,12 @@ return [
     'telegram' => [
         'bot_token' => env('TELEGRAM_BOT_TOKEN'),
         'chat_id'   => env('TELEGRAM_CHAT_ID'),
+
+        // Aholi/Pudratchi bot (resident & vendor bot) — alohida bot
+        'user_bot_token'    => env('TELEGRAM_USER_BOT_TOKEN'),
+        'user_bot_username' => env('TELEGRAM_USER_BOT_USERNAME'),
+        'webapp_url'        => env('TELEGRAM_WEBAPP_URL'),
+        'webhook_secret'    => env('TELEGRAM_WEBHOOK_SECRET'),
     ],
 
 ];
