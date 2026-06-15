@@ -251,6 +251,11 @@ jobs:
             echo "⚡ Optimizing..."
             docker compose exec -T app php artisan optimize
 
+            # Telegram Mini App Menu tugmasini sozlash (idempotent)
+            echo "🔘 Telegram Mini App menu tugmasini sozlash..."
+            docker compose exec -T app php artisan telegram:menu-button \
+              || echo "⚠️  Menu tugmasini sozlashda xato (TELEGRAM_USER_BOT_TOKEN/TELEGRAM_WEBAPP_URL tekshiring)."
+
             # 5️⃣  DB ulanishini tekshiramiz (kafolat)
             echo "🔍 Verifying DB connection..."
             docker compose exec -T app php artisan tinker --execute="DB::connection()->getPdo(); echo 'DB OK';" \
