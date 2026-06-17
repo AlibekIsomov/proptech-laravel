@@ -17,7 +17,18 @@
       "Bash(git add *)",
       "Bash(git restore *)",
       "Bash(git commit *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(flutter *)",
+      "PowerShell(flutter *)",
+      "PowerShell(winget *)",
+      "PowerShell(flutter create *)",
+      "PowerShell(flutter pub *)",
+      "PowerShell(flutter analyze *)",
+      "PowerShell(flutter devices *)",
+      "PowerShell(flutter run *)",
+      "Bash(Get-Content \"C:\\\\Users\\\\user\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\D--my-own-proptech-laravel\\\\ab750aba-8701-4bc3-87dc-01e04c9dd066\\\\tasks\\\\b560z2jpt.output\" -Wait)",
+      "PowerShell(flutter analyze)",
+      "PowerShell(New-Item *)"
     ]
   }
 }

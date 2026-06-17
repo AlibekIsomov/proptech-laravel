@@ -21,7 +21,7 @@ class Resident extends Model
     protected $fillable = [
         'apartment_id', 'company_id', 'user_id', 'full_name',
         'phone', 'email', 'telegram_username', 'telegram_chat_id',
-        'resident_type', 'move_in_date', 'is_active',
+        'resident_type', 'move_in_date', 'is_active', 'api_token',
     ];
 
     protected function casts(): array
