@@ -26,8 +26,12 @@ class AuthController extends Controller
             $phone = '+' . $phone;
         }
 
+        $shortPhone = substr($phone, -9); // oxirgi 9 raqam (+998 bo'lmasa ham topsin)
+
         $resident = Resident::withoutGlobalScopes()
-            ->where('phone', $phone)
+            ->where(function ($q) use ($phone, $shortPhone) {
+                $q->where('phone', $phone)->orWhere('phone', $shortPhone);
+            })
             ->where('is_active', true)
             ->with(['apartment.building.project'])
             ->first();
