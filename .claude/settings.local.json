@@ -28,7 +28,14 @@
       "PowerShell(flutter run *)",
       "Bash(Get-Content \"C:\\\\Users\\\\user\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\D--my-own-proptech-laravel\\\\ab750aba-8701-4bc3-87dc-01e04c9dd066\\\\tasks\\\\b560z2jpt.output\" -Wait)",
       "PowerShell(flutter analyze)",
-      "PowerShell(New-Item *)"
+      "PowerShell(New-Item *)",
+      "Bash(curl -s -X POST https://1mahalla.uz/api/resident/login -H \"Content-Type: application/json\" -d '{\"phone\":\"+998901234567\"}')",
+      "Bash(C:/flutter/bin/flutter build *)",
+      "Bash(C:/flutter/bin/flutter clean *)",
+      "Bash(C:/flutter/bin/flutter pub *)",
+      "Bash(C:/flutter/bin/flutter devices *)",
+      "Bash(C:/flutter/bin/flutter run *)",
+      "Bash(curl -v https://1mahalla.uz/api/resident/login -X POST -H \"Content-Type: application/json\" -d '{\"phone\":\"901234567\"}')"
     ]
   }
 }
