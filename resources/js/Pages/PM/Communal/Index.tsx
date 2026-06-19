@@ -1,11 +1,14 @@
 import { useState, useMemo, useEffect } from "react";
-import { Head, router } from "@inertiajs/react";
 import { useTranslation } from 'react-i18next';
 import {
     Plus, Loader2, Building, Edit2, X, AlertTriangle, CheckCircle2,
-    CalendarCheck, Trees, Car, Home, DoorOpen, Layers, Hammer, Trash2
+    CalendarCheck, Trees, Car, Home, DoorOpen, Layers, Hammer, Trash2,
 } from "lucide-react";
 import AppShell from "@/Components/AppShell";
+import {
+    PageHead, Stat, Btn, Badge, Field, TextInput, PmSelect, EmptyState,
+} from "@/Components/pm/ui";
+import type { BadgeTone } from "@/Components/pm/ui";
 
 interface BuildingRow {
     id: string;
@@ -27,7 +30,7 @@ type CommunalStatus = "operational" | "maintenance" | "broken" | "retired";
 
 interface CommunalAssetRow {
     id:                    string;
-    pm_building_id:           string;
+    pm_building_id:        string;
     asset_type:            CommunalType;
     name:                  string;
     description:           string | null;
@@ -52,11 +55,11 @@ const TYPE_CONFIG: Record<CommunalType, { labelKey: string; icon: React.ElementT
 };
 const ALL_TYPES = Object.keys(TYPE_CONFIG) as CommunalType[];
 
-const STATUS_META: Record<CommunalStatus, { labelKey: string; bg: string; fg: string; border: string; rank: number }> = {
-    broken:      { labelKey: "pmCommunal.statusBroken",      bg: "rgba(239,68,68,0.10)",  fg: "#f87171", border: "rgba(239,68,68,0.30)",  rank: 0 },
-    maintenance: { labelKey: "pmCommunal.statusMaintenance", bg: "rgba(251,191,36,0.10)", fg: "#fbbf24", border: "rgba(251,191,36,0.30)", rank: 1 },
-    operational: { labelKey: "pmCommunal.statusOperational", bg: "rgba(16,185,129,0.10)", fg: "#34d399", border: "rgba(16,185,129,0.30)", rank: 2 },
-    retired:     { labelKey: "pmCommunal.statusRetired",     bg: "var(--border)", fg: "var(--muted)", border: "var(--border)", rank: 3 },
+const STATUS_TONE: Record<CommunalStatus, BadgeTone> = {
+    operational: 'ok',
+    maintenance: 'warn',
+    broken:      'danger',
+    retired:     'neutral',
 };
 
 export default function CommunalIndex({ projects }: Props) {
@@ -69,11 +72,8 @@ export default function CommunalIndex({ projects }: Props) {
     const [showForm,     setShowForm]     = useState(false);
     const [typeFilter,   setTypeFilter]   = useState<CommunalType | "all">("all");
 
-    // Initial project and building selection
     useEffect(() => {
-        if (projects && projects.length > 0) {
-            setSelectedProj(projects[0].id);
-        }
+        if (projects && projects.length > 0) setSelectedProj(projects[0].id);
     }, [projects]);
 
     const buildings = useMemo(() => {
@@ -82,29 +82,21 @@ export default function CommunalIndex({ projects }: Props) {
     }, [selectedProj, projects]);
 
     useEffect(() => {
-        if (buildings.length > 0) {
-            setSelectedBldg(buildings[0].id);
-        } else {
-            setSelectedBldg("");
-        }
+        if (buildings.length > 0) setSelectedBldg(buildings[0].id);
+        else setSelectedBldg("");
     }, [buildings]);
 
     const loadAssets = async () => {
-        if (!selectedBldg) {
-            setAssets([]);
-            return;
-        }
+        if (!selectedBldg) { setAssets([]); return; }
         setLoading(true);
         try {
-            const res = await fetch(`/pm/communal?pm_building_id=${selectedBldg}`, {
-                headers: {
-                    "Accept": "application/json",
-                    "X-Requested-With": "XMLHttpRequest",
-                }
+            const res  = await fetch(`/pm/communal?pm_building_id=${selectedBldg}`, {
+                headers: { "Accept": "application/json", "X-Requested-With": "XMLHttpRequest" }
             });
             const json = await res.json();
             const list = json.assets || [];
-            list.sort((a: CommunalAssetRow, b: CommunalAssetRow) => STATUS_META[a.status].rank - STATUS_META[b.status].rank || a.name.localeCompare(b.name));
+            const rankOf = (s: CommunalStatus) => ({ broken: 0, maintenance: 1, operational: 2, retired: 3 }[s] ?? 9);
+            list.sort((a: CommunalAssetRow, b: CommunalAssetRow) => rankOf(a.status) - rankOf(b.status) || a.name.localeCompare(b.name));
             setAssets(list);
         } catch (err) {
             console.error("Failed to load communal assets:", err);
@@ -113,9 +105,7 @@ export default function CommunalIndex({ projects }: Props) {
         }
     };
 
-    useEffect(() => {
-        loadAssets();
-    }, [selectedBldg]);
+    useEffect(() => { loadAssets(); }, [selectedBldg]);
 
     const filtered = useMemo(() => {
         if (typeFilter === "all") return assets;
@@ -124,50 +114,40 @@ export default function CommunalIndex({ projects }: Props) {
 
     const stats = useMemo(() => {
         let ok = 0, maint = 0, broken = 0, dueSoon = 0;
-        const now = Date.now();
-        const in30 = now + 30 * 24 * 3600 * 1000;
+        const in30 = Date.now() + 30 * 24 * 3600 * 1000;
         for (const a of assets) {
             if (a.status === "broken") broken++;
             else if (a.status === "maintenance") maint++;
             else if (a.status === "operational") ok++;
             if (a.next_inspection_date) {
-                const t = new Date(a.next_inspection_date).getTime();
-                if (t <= in30 && a.status !== "retired") dueSoon++;
+                const ts = new Date(a.next_inspection_date).getTime();
+                if (ts <= in30 && a.status !== "retired") dueSoon++;
             }
         }
         return { ok, maint, broken, dueSoon, total: assets.length };
     }, [assets]);
 
-    function openCreate() {
-        setEditing(null);
-        setShowForm(true);
-    }
-    function openEdit(a: CommunalAssetRow) {
-        setEditing(a);
-        setShowForm(true);
-    }
+    function openCreate() { setEditing(null); setShowForm(true); }
+    function openEdit(a: CommunalAssetRow) { setEditing(a); setShowForm(true); }
 
     async function markInspectedToday(a: CommunalAssetRow) {
         const today = new Date().toISOString().slice(0, 10);
         setAssets((rows) => rows.map((r) => (r.id === a.id ? { ...r, last_inspection_date: today } : r)));
         try {
             await fetch(`/pm/communal/${a.id}`, {
-                method:  "PUT",
+                method: "PUT",
                 headers: {
-                    "Content-Type": "application/json",
-                    "Accept": "application/json",
+                    "Content-Type": "application/json", "Accept": "application/json",
                     "X-CSRF-TOKEN": (document.querySelector("meta[name=\"csrf-token\"]") as HTMLMetaElement)?.content || "",
                 },
                 body: JSON.stringify({ last_inspection_date: today }),
             });
             loadAssets();
-        } catch (err) {
-            console.error("Failed to quick inspect asset:", err);
-        }
+        } catch (err) { console.error("Failed to quick inspect:", err); }
     }
 
     async function handleDelete(id: string) {
-        if (!confirm("Вы уверены, что хотите удалить этот коммунальный объект?")) return;
+        if (!confirm(t('pmCommunal.confirmDelete'))) return;
         try {
             await fetch(`/pm/communal/${id}`, {
                 method: "DELETE",
@@ -177,113 +157,64 @@ export default function CommunalIndex({ projects }: Props) {
                 }
             });
             loadAssets();
-        } catch (err) {
-            console.error("Failed to delete asset:", err);
-        }
+        } catch (err) { console.error("Failed to delete asset:", err); }
     }
 
     return (
         <AppShell>
-            <Head title="Реестр общего имущества - PM Portal" />
+            <div className="page">
+                <PageHead
+                    eyebrow="Property Management"
+                    title={t('pmCommunal.title')}
+                    sub={t('pmCommunal.subtitle')}
+                    actions={
+                        <Btn variant="primary" icon={Plus} disabled={!selectedBldg} onClick={openCreate}>
+                            {t('pmCommunal.addAsset')}
+                        </Btn>
+                    }
+                />
 
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b" style={{ borderColor: 'var(--border)' }}>
-                <div>
-                    <p className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: "#34d399" }}>
-                        Property Management
-                    </p>
-                    <h1 className="text-2xl font-bold text-slate-800 mt-1">{t('pmCommunal.title')}</h1>
-                    <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>
-                        {t('pmCommunal.subtitle')}
-                    </p>
-                </div>
-                <button
-                    onClick={openCreate}
-                    disabled={!selectedBldg}
-                    className="rounded-xl px-4 py-2.5 text-xs font-bold text-white flex items-center gap-2 disabled:opacity-50 transition-all hover:opacity-90 animate-fade-in"
-                    style={{ background: "linear-gradient(135deg, #10b981 0%, #14b8a6 100%)" }}
-                >
-                    <Plus className="w-4 h-4" /> {t('pmCommunal.addAsset')}
-                </button>
-            </div>
-
-            <div className="mt-6 space-y-6">
                 {/* Selectors */}
-                <div className="flex flex-wrap items-center gap-4 p-4 rounded-2xl animate-fade-in" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-                    <div className="flex flex-col gap-1 min-w-[180px]">
-                        <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">{t('pmCommunal.project')}</span>
-                        <select
-                            value={selectedProj}
-                            onChange={(e) => setSelectedProj(e.target.value)}
-                            className="rounded-xl px-3 py-2.5 text-xs text-slate-800 outline-none cursor-pointer"
-                            style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
-                        >
-                            {projects.map((p) => (
-                                <option key={p.id} value={p.id}>{p.name}</option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div className="flex flex-col gap-1 min-w-[180px]">
-                        <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">{t('pmCommunal.building')}</span>
-                        <select
-                            value={selectedBldg}
-                            onChange={(e) => setSelectedBldg(e.target.value)}
-                            disabled={buildings.length === 0}
-                            className="rounded-xl px-3 py-2.5 text-xs text-slate-800 outline-none cursor-pointer disabled:opacity-50"
-                            style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
-                        >
-                            {buildings.length === 0 && <option value="">Нет корпусов</option>}
-                            {buildings.map((b) => (
-                                <option key={b.id} value={b.id}>{b.name}</option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div className="flex flex-col gap-1 min-w-[180px]">
-                        <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">{t('pmCommunal.assetType')}</span>
-                        <select
-                            value={typeFilter}
-                            onChange={(e) => setTypeFilter(e.target.value as CommunalType | "all")}
-                            className="rounded-xl px-3 py-2.5 text-xs text-slate-800 outline-none cursor-pointer"
-                            style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
-                        >
-                            <option value="all">{t('pmCommunal.filterAll')}</option>
-                            {ALL_TYPES.map((tk) => (
-                                <option key={tk} value={tk}>{t(TYPE_CONFIG[tk].labelKey)}</option>
-                            ))}
-                        </select>
+                <div className="card card-pad" style={{ marginBottom: 18 }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, alignItems: 'flex-end' }}>
+                        <Field label={t('pmCommunal.project')}>
+                            <PmSelect value={selectedProj} onChange={(e) => setSelectedProj(e.target.value)}>
+                                {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                            </PmSelect>
+                        </Field>
+                        <Field label={t('pmCommunal.building')}>
+                            <PmSelect value={selectedBldg} disabled={buildings.length === 0} onChange={(e) => setSelectedBldg(e.target.value)}>
+                                {buildings.length === 0 && <option value="">Binolar yo'q</option>}
+                                {buildings.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+                            </PmSelect>
+                        </Field>
+                        <Field label={t('pmCommunal.assetType')}>
+                            <PmSelect value={typeFilter} onChange={(e) => setTypeFilter(e.target.value as CommunalType | "all")}>
+                                <option value="all">{t('pmCommunal.filterAll')}</option>
+                                {ALL_TYPES.map((tk) => <option key={tk} value={tk}>{t(TYPE_CONFIG[tk].labelKey)}</option>)}
+                            </PmSelect>
+                        </Field>
                     </div>
                 </div>
 
-                {/* Metrics */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 animate-fade-in">
-                    <SummaryCard label={t('pmCommunal.totalAssets')} value={stats.total}   accent="var(--muted)" />
-                    <SummaryCard label={t('pmCommunal.operational')} value={stats.ok}      accent="#34d399" />
-                    <SummaryCard label={t('pmCommunal.maintenance')} value={stats.dueSoon} accent="#fbbf24" />
-                    <SummaryCard label={t('pmCommunal.brokenCount')} value={stats.broken}  accent="#f87171" />
+                {/* Stats */}
+                <div className="stat-grid" style={{ marginBottom: 24 }}>
+                    <Stat label={t('pmCommunal.totalAssets')} value={stats.total}   icon={Building as any} tone="neutral" />
+                    <Stat label={t('pmCommunal.operational')} value={stats.ok}      icon={CheckCircle2}    tone="ok"      />
+                    <Stat label={t('pmCommunal.maintenance')} value={stats.dueSoon} icon={AlertTriangle as any} tone="warn" />
+                    <Stat label={t('pmCommunal.brokenCount')} value={stats.broken}  icon={AlertTriangle as any} tone="danger" />
                 </div>
 
-                {showForm && selectedBldg && (
-                    <CommunalForm
-                        buildingId={selectedBldg}
-                        asset={editing}
-                        onSaved={() => { setShowForm(false); loadAssets(); }}
-                        onCancel={() => setShowForm(false)}
-                    />
-                )}
-
+                {/* Assets grid */}
                 {loading ? (
-                    <div className="rounded-2xl p-12 flex items-center justify-center" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)', color: "var(--muted)" }}>
-                        <Loader2 className="w-5 h-5 animate-spin" style={{ color: "#34d399" }} />
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 48 }}>
+                        <Loader2 className="ic" style={{ color: 'var(--brand)', width: 28, height: 28 }} />
                     </div>
                 ) : filtered.length === 0 ? (
-                    <div className="rounded-2xl p-16 text-center border border-dashed animate-fade-in" style={{ backgroundColor: "var(--border)", borderColor: 'var(--border)', color: "var(--muted)" }}>
-                        <Building className="w-10 h-10 mx-auto mb-3" style={{ color: "var(--border)" }} />
-                        <p className="text-sm font-medium text-slate-800">{t('pmCommunal.noAssets')}</p>
-                        <p className="text-xs mt-1" style={{ color: "var(--muted)" }}></p>
-                    </div>
+                    <EmptyState icon={Building as any} title={t('pmCommunal.noAssets')}
+                        action={selectedBldg ? <Btn variant="primary" icon={Plus} onClick={openCreate}>{t('pmCommunal.addAsset')}</Btn> : undefined} />
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
                         {filtered.map((a) => (
                             <CommunalCard
                                 key={a.id}
@@ -296,11 +227,21 @@ export default function CommunalIndex({ projects }: Props) {
                     </div>
                 )}
             </div>
+
+            {/* Asset form modal */}
+            {showForm && selectedBldg && (
+                <CommunalFormModal
+                    buildingId={selectedBldg}
+                    asset={editing}
+                    onSaved={() => { setShowForm(false); loadAssets(); }}
+                    onCancel={() => setShowForm(false)}
+                />
+            )}
         </AppShell>
     );
 }
 
-// ── Communal Card ────────────────────────────────────────────────────────────
+// ── Communal Card ─────────────────────────────────────────────────────────────
 
 interface CardProps {
     asset: CommunalAssetRow;
@@ -311,108 +252,75 @@ interface CardProps {
 
 function CommunalCard({ asset, onEdit, onDelete, onMarkInspected }: CardProps) {
     const { t } = useTranslation();
-    const meta = STATUS_META[asset.status] || STATUS_META.operational;
     const TypeIcon = (TYPE_CONFIG[asset.asset_type] || TYPE_CONFIG.other).icon;
 
     const nextDays = asset.next_inspection_date
         ? Math.floor((new Date(asset.next_inspection_date).getTime() - Date.now()) / (24 * 3600 * 1000))
         : null;
-    const overdue  = nextDays != null && nextDays < 0;
-    const dueSoon  = nextDays != null && nextDays >= 0 && nextDays <= 30;
+    const overdue = nextDays != null && nextDays < 0;
+    const dueSoon = nextDays != null && nextDays >= 0 && nextDays <= 30;
 
     return (
-        <div className="rounded-2xl p-5 space-y-4 relative overflow-hidden transition-all" style={{ backgroundColor: 'var(--card)', border: `1px solid ${overdue ? "rgba(239,68,68,0.25)" : "var(--border)"}` }}>
-            <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0 flex-1 flex items-start gap-3">
-                    <div className="flex items-center justify-center w-10 h-10 rounded-xl shrink-0" style={{ backgroundColor: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.2)" }}>
-                        <TypeIcon className="w-5 h-5 text-emerald-400" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                        <h3 className="text-sm font-bold text-slate-800 truncate">{asset.name}</h3>
-                        <p className="text-xs text-slate-500 font-semibold mt-0.5">{t(TYPE_CONFIG[asset.asset_type]?.labelKey || 'pmCommunal.typeOther')}</p>
-                    </div>
+        <div className="card card-pad" style={{ borderColor: overdue ? 'color-mix(in srgb, var(--danger) 30%, transparent)' : undefined }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 14 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 40, height: 40, borderRadius: 10, flexShrink: 0, backgroundColor: 'var(--brand-tint)', border: '1px solid color-mix(in srgb, var(--brand) 20%, transparent)' }}>
+                    <TypeIcon className="ic" style={{ color: 'var(--brand)' }} />
                 </div>
-                <div className="flex items-center gap-1.5 shrink-0">
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md" style={{ backgroundColor: meta.bg, color: meta.fg, border: `1px solid ${meta.border}` }}>
-                        {t(meta.labelKey)}
-                    </span>
-                    <button
-                        onClick={onEdit}
-                        className="p-1 rounded hover:bg-slate-100 text-slate-500 hover:text-white transition-colors"
-                        title="Редактировать"
-                    >
-                        <Edit2 className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                        onClick={onDelete}
-                        className="p-1 rounded hover:bg-red-500/10 text-slate-500 hover:text-red-400 transition-colors"
-                        title="Удалить"
-                    >
-                        <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--text-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{asset.name}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 2 }}>{t(TYPE_CONFIG[asset.asset_type]?.labelKey || 'pmCommunal.typeOther')}</div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                    <Badge tone={STATUS_TONE[asset.status]}>{t(`pmCommunal.status${asset.status.charAt(0).toUpperCase() + asset.status.slice(1)}`)}</Badge>
+                    <button className="icon-act" onClick={onEdit} title={t('common.edit')}><Edit2 className="ic" /></button>
+                    <button className="icon-act" onClick={onDelete} title={t('common.delete')} style={{ color: 'var(--danger)' }}><Trash2 className="ic" /></button>
                 </div>
             </div>
 
             {asset.description && (
-                <p className="text-xs leading-relaxed" style={{ color: "var(--muted)" }}>
-                    {asset.description}
-                </p>
+                <p style={{ fontSize: 12, color: 'var(--text-3)', marginBottom: 12, lineHeight: 1.5 }}>{asset.description}</p>
             )}
 
-            <div className="grid grid-cols-2 gap-4 p-3.5 rounded-xl pt-3.5" style={{ backgroundColor: 'var(--bg)', border: "1px solid var(--border)" }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, padding: '12px 14px', borderRadius: 10, backgroundColor: 'var(--bg)', border: '1px solid var(--border)', marginBottom: 14 }}>
                 <div>
-                    <span className="text-[9px] uppercase tracking-widest text-slate-500 font-bold block mb-0.5">Последняя инспекция</span>
-                    <p className="text-xs text-slate-800 font-semibold">
-                        {asset.last_inspection_date
-                            ? new Date(asset.last_inspection_date).toLocaleDateString("ru-RU")
-                            : <span className="text-slate-600">—</span>}
-                    </p>
+                    <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600, color: 'var(--text-3)', marginBottom: 4 }}>{t('pmCommunal.lastInspection')}</div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-1)' }}>
+                        {asset.last_inspection_date ? new Date(asset.last_inspection_date).toLocaleDateString('ru-RU') : '—'}
+                    </div>
                 </div>
                 <div>
-                    <span className="text-[9px] uppercase tracking-widest text-slate-500 font-bold block mb-0.5">Следующая инспекция</span>
+                    <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600, color: 'var(--text-3)', marginBottom: 4 }}>{t('pmCommunal.nextInspection')}</div>
                     {asset.next_inspection_date ? (
                         <>
-                            <p className="text-xs text-slate-800 font-semibold">
-                                {new Date(asset.next_inspection_date).toLocaleDateString("ru-RU")}
-                            </p>
-                            <p className="text-[10px] mt-0.5 flex items-center gap-0.5" style={{ color: overdue ? "#f87171" : dueSoon ? "#fbbf24" : "var(--muted)" }}>
-                                {overdue && <AlertTriangle className="w-3 h-3 shrink-0" />}
-                                {overdue
-                                    ? `просрочено на ${-(nextDays!)} дн.`
-                                    : nextDays != null
-                                        ? `через ${nextDays} дн.`
-                                        : ""}
-                            </p>
+                            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-1)' }}>{new Date(asset.next_inspection_date).toLocaleDateString('ru-RU')}</div>
+                            <div style={{ fontSize: 10, marginTop: 2, display: 'flex', alignItems: 'center', gap: 3, color: overdue ? 'var(--danger)' : dueSoon ? 'var(--warn)' : 'var(--text-3)' }}>
+                                {overdue && <AlertTriangle className="ic" style={{ width: 10, height: 10 }} />}
+                                {overdue ? `${-(nextDays!)} kun kechikdi` : nextDays != null ? `${nextDays} kun qoldi` : ''}
+                            </div>
                         </>
                     ) : (
-                        <p className="text-xs text-slate-600 font-semibold">—</p>
+                        <div style={{ fontSize: 12, color: 'var(--text-3)' }}>—</div>
                     )}
                 </div>
             </div>
 
-            <div className="flex justify-end pt-1">
-                <button
-                    onClick={onMarkInspected}
-                    className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg text-emerald-400 hover:text-white border border-emerald-500/20 hover:bg-emerald-500/10 transition-all"
-                >
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    Инспектировать сегодня
-                </button>
-            </div>
+            <Btn variant="soft" size="sm" icon={CheckCircle2} onClick={onMarkInspected}>
+                {t('pmCommunal.markInspected')}
+            </Btn>
         </div>
     );
 }
 
-// ── Communal Form ─────────────────────────────────────────────────────────────
+// ── Communal Form Modal ───────────────────────────────────────────────────────
 
-interface FormProps {
+interface FormModalProps {
     buildingId: string;
     asset:      CommunalAssetRow | null;
     onSaved:    () => void;
     onCancel:   () => void;
 }
 
-function CommunalForm({ buildingId, asset, onSaved, onCancel }: FormProps) {
+function CommunalFormModal({ buildingId, asset, onSaved, onCancel }: FormModalProps) {
     const { t } = useTranslation();
     const [name,        setName]        = useState(asset?.name ?? "");
     const [assetType,   setAssetType]   = useState<CommunalType>(asset?.asset_type ?? "entrance");
@@ -424,177 +332,95 @@ function CommunalForm({ buildingId, asset, onSaved, onCancel }: FormProps) {
     const [error,       setError]       = useState<string | null>(null);
 
     async function save() {
-        if (!name.trim()) {
-            setError("Введите название объекта");
-            return;
-        }
+        if (!name.trim()) { setError(t('pmCommunal.nameRequired')); return; }
         setSaving(true);
         setError(null);
         try {
             const url    = asset ? `/pm/communal/${asset.id}` : "/pm/communal";
             const method = asset ? "PUT" : "POST";
             const body: Record<string, unknown> = {
-                name:                 name.trim(),
-                asset_type:           assetType,
-                description:          description.trim() || null,
-                status,
+                name: name.trim(), asset_type: assetType,
+                description: description.trim() || null, status,
                 last_inspection_date: lastInsp || null,
                 next_inspection_date: nextInsp || null,
             };
             if (!asset) body.pm_building_id = buildingId;
-
             const res  = await fetch(url, {
                 method,
                 headers: {
-                    "Content-Type": "application/json",
-                    "Accept": "application/json",
+                    "Content-Type": "application/json", "Accept": "application/json",
                     "X-CSRF-TOKEN": (document.querySelector("meta[name=\"csrf-token\"]") as HTMLMetaElement)?.content || "",
                 },
                 body: JSON.stringify(body),
             });
             const json = await res.json();
-            if (!res.ok) {
-                setError(json.error ?? "Ошибка сохранения");
-                return;
-            }
+            if (!res.ok) { setError(json.error ?? t('pmCommunal.saveError')); return; }
             onSaved();
-        } catch (err) {
-            setError("Произошла ошибка при сохранении");
+        } catch {
+            setError(t('pmCommunal.saveError'));
         } finally {
             setSaving(false);
         }
     }
 
     return (
-        <div className="rounded-2xl p-6 space-y-4" style={{ backgroundColor: 'var(--card)', border: "1px solid rgba(16,185,129,0.25)" }}>
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">
-                    {asset ? "Редактировать объект общего имущества" : "Новый объект общего имущества"}
-                </h3>
-                <button onClick={onCancel} className="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-white">
-                    <X className="w-4 h-4" />
-                </button>
-            </div>
+        <div className="scrim show" onClick={onCancel}>
+            <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+                onClick={e => e.stopPropagation()}>
+                <div className="card card-pad" style={{ width: '100%', maxWidth: 520, maxHeight: '90vh', overflowY: 'auto' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+                        <h2 style={{ fontWeight: 700, fontSize: 15, color: 'var(--text-1)' }}>
+                            {asset ? t('pmCommunal.editAsset') : t('pmCommunal.newAsset')}
+                        </h2>
+                        <button className="drawer-close" onClick={onCancel}><X className="ic" /></button>
+                    </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field label="Название объекта общего имущества *">
-                    <input
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="напр. Подъезд №3, парковка во дворе"
-                        className="w-full rounded-xl px-3 py-2 text-xs text-slate-800 outline-none"
-                        style={fs()}
-                    />
-                </Field>
-                <Field label="Тип общего имущества">
-                    <select
-                        value={assetType}
-                        onChange={(e) => setAssetType(e.target.value as CommunalType)}
-                        className="w-full rounded-xl px-3 py-2 text-xs text-slate-800 outline-none cursor-pointer"
-                        style={fs()}
-                    >
-                        {ALL_TYPES.map((tk) => (
-                            <option key={tk} value={tk} style={{ backgroundColor: 'var(--card)' }}>
-                                {t(TYPE_CONFIG[tk].labelKey)}
-                            </option>
-                        ))}
-                    </select>
-                </Field>
-                <Field label="Текущее состояние">
-                    <select
-                        value={status}
-                        onChange={(e) => setStatus(e.target.value as CommunalStatus)}
-                        className="w-full rounded-xl px-3 py-2 text-xs text-slate-800 outline-none cursor-pointer"
-                        style={fs()}
-                    >
-                        <option value="operational">{t('pmCommunal.statusOperational')}</option>
-                        <option value="maintenance">{t('pmCommunal.statusMaintenance')}</option>
-                        <option value="broken">{t('pmCommunal.statusBroken')}</option>
-                        <option value="retired">{t('pmCommunal.statusRetired')}</option>
-                    </select>
-                </Field>
-                <div className="hidden sm:block" />
-                <Field label="Дата последней инспекции">
-                    <input
-                        type="date"
-                        value={lastInsp}
-                        onChange={(e) => setLastInsp(e.target.value)}
-                        className="w-full rounded-xl px-3 py-2 text-xs text-slate-800 outline-none cursor-pointer"
-                        style={{ ...fs() }}
-                    />
-                </Field>
-                <Field label="Дата следующей инспекции">
-                    <input
-                        type="date"
-                        value={nextInsp}
-                        onChange={(e) => setNextInsp(e.target.value)}
-                        className="w-full rounded-xl px-3 py-2 text-xs text-slate-800 outline-none cursor-pointer"
-                        style={{ ...fs() }}
-                    />
-                </Field>
-            </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                        <Field label={t('pmCommunal.assetName')}>
+                            <input className="input" value={name} onChange={(e) => setName(e.target.value)}
+                                placeholder={t('pmCommunal.assetNamePlaceholder')} />
+                        </Field>
+                        <Field label={t('pmCommunal.assetType')}>
+                            <PmSelect value={assetType} onChange={(e) => setAssetType(e.target.value as CommunalType)}>
+                                {ALL_TYPES.map((tk) => <option key={tk} value={tk}>{t(TYPE_CONFIG[tk].labelKey)}</option>)}
+                            </PmSelect>
+                        </Field>
+                        <Field label={t('pmCommunal.statusLabel')}>
+                            <PmSelect value={status} onChange={(e) => setStatus(e.target.value as CommunalStatus)}>
+                                <option value="operational">{t('pmCommunal.statusOperational')}</option>
+                                <option value="maintenance">{t('pmCommunal.statusMaintenance')}</option>
+                                <option value="broken">{t('pmCommunal.statusBroken')}</option>
+                                <option value="retired">{t('pmCommunal.statusRetired')}</option>
+                            </PmSelect>
+                        </Field>
+                        <div />
+                        <Field label={t('pmCommunal.lastInspection')}>
+                            <input className="input" type="date" value={lastInsp} onChange={(e) => setLastInsp(e.target.value)} />
+                        </Field>
+                        <Field label={t('pmCommunal.nextInspection')}>
+                            <input className="input" type="date" value={nextInsp} onChange={(e) => setNextInsp(e.target.value)} />
+                        </Field>
+                    </div>
 
-            <Field label="Описание состояния / Заметки">
-                <textarea
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    rows={2}
-                    placeholder="Описание состояния, проведенных работ или необходимых мер..."
-                    className="w-full rounded-xl px-3.5 py-2 text-xs text-slate-800 outline-none resize-none placeholder:text-slate-400"
-                    style={fs()}
-                />
-            </Field>
+                    <div style={{ marginTop: 14 }}>
+                        <Field label={t('pmCommunal.description')}>
+                            <textarea className="input" rows={3} value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                placeholder={t('pmCommunal.descriptionPlaceholder')}
+                                style={{ resize: 'none' }} />
+                        </Field>
+                    </div>
 
-            {error && <p className="text-xs text-red-400 font-semibold">{error}</p>}
+                    {error && <p style={{ fontSize: 12, color: 'var(--danger)', fontWeight: 600, marginTop: 8 }}>{error}</p>}
 
-            <div className="flex justify-end gap-3 pt-2">
-                <button
-                    type="button"
-                    onClick={onCancel}
-                    className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 border border-slate-700 hover:bg-slate-100 transition-all"
-                >
-                    Отмена
-                </button>
-                <button
-                    type="button"
-                    onClick={save}
-                    disabled={saving}
-                    className="px-4 py-2.5 rounded-xl text-xs font-bold text-white flex items-center gap-2 disabled:opacity-50 transition-all"
-                    style={{ background: "linear-gradient(135deg, #10b981 0%, #14b8a6 100%)" }}
-                >
-                    {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CalendarCheck className="w-3.5 h-3.5" />}
-                    Сохранить объект
-                </button>
+                    <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
+                        <Btn variant="ghost" block type="button" onClick={onCancel}>{t('common.cancel')}</Btn>
+                        <Btn variant="primary" block type="button" disabled={saving} icon={saving ? Loader2 : CalendarCheck as any} onClick={save}>
+                            {t('pmCommunal.save')}
+                        </Btn>
+                    </div>
+                </div>
             </div>
         </div>
     );
 }
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-    return (
-        <div className="w-full">
-            <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold block mb-1.5">
-                {label}
-            </span>
-            {children}
-        </div>
-    );
-}
-
-function fs() {
-    return { backgroundColor: 'var(--card)', border: '1px solid var(--border)' };
-}
-
-// ── Summary Card ─────────────────────────────────────────────────────────────
-
-function SummaryCard({ label, value, accent }: { label: string; value: number; accent: string }) {
-    return (
-        <div className="rounded-2xl p-5" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-            <p className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: accent }}>{label}</p>
-            <p className="text-2xl text-slate-800 mt-2 font-bold font-mono" style={{ fontFamily: "var(--font-display)" }}>
-                {value}
-            </p>
-        </div>
-    );
-}
-

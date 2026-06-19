@@ -1,8 +1,12 @@
 import { useState, useMemo, useEffect } from "react";
-import { Head, router } from "@inertiajs/react";
 import { useTranslation } from 'react-i18next';
-import { Vote, Plus, Loader2, X, Lock, Trash2, CalendarClock, ChevronRight, Sparkles, Check } from "lucide-react";
+import { Vote, Lock, Trash2, CalendarClock } from "lucide-react";
 import AppShell from "@/Components/AppShell";
+import {
+    PageHead, Btn, Badge, Field, PmSelect, EmptyState,
+    Plus, X, Loader2, Sparkles, Check,
+} from "@/Components/pm/ui";
+import type { BadgeTone } from "@/Components/pm/ui";
 
 interface Building {
     id: string;
@@ -24,28 +28,28 @@ interface PollOption {
 type PollStatus = "open" | "closed" | "cancelled";
 
 interface PollRow {
-    id:          string;
+    id:             string;
     pm_building_id: string;
-    title:       string;
-    description: string | null;
-    options:     PollOption[];
-    status:      PollStatus;
-    quorum_pct:  number;
-    closes_at:   string | null;
-    ai_summary:  string | null;
-    vote_counts: Record<string, number>;
-    total_votes: number;
-    created_at:  string;
+    title:          string;
+    description:    string | null;
+    options:        PollOption[];
+    status:         PollStatus;
+    quorum_pct:     number;
+    closes_at:      string | null;
+    ai_summary:     string | null;
+    vote_counts:    Record<string, number>;
+    total_votes:    number;
+    created_at:     string;
 }
 
 interface Props {
     projects: Project[];
 }
 
-const STATUS_META: Record<PollStatus, { labelKey: string; bg: string; fg: string; border: string }> = {
-    open:      { labelKey: "pmPolls.statusOpen",      bg: "rgba(16,185,129,0.12)", fg: "#34d399", border: "rgba(16,185,129,0.35)" },
-    closed:    { labelKey: "pmPolls.statusClosed",    bg: "var(--border)",          fg: "var(--muted)", border: "var(--border)" },
-    cancelled: { labelKey: "pmPolls.statusCancelled", bg: "rgba(239,68,68,0.10)",  fg: "#f87171", border: "rgba(239,68,68,0.30)" },
+const STATUS_TONE: Record<PollStatus, BadgeTone> = {
+    open:      'ok',
+    closed:    'neutral',
+    cancelled: 'danger',
 };
 
 export default function PollsIndex({ projects }: Props) {
@@ -57,11 +61,8 @@ export default function PollsIndex({ projects }: Props) {
     const [aptCount,     setAptCount]     = useState(0);
     const [creating,     setCreating]     = useState(false);
 
-    // Initial project and building selection
     useEffect(() => {
-        if (projects && projects.length > 0) {
-            setSelectedProj(projects[0].id);
-        }
+        if (projects && projects.length > 0) setSelectedProj(projects[0].id);
     }, [projects]);
 
     const buildings = useMemo(() => {
@@ -70,61 +71,43 @@ export default function PollsIndex({ projects }: Props) {
     }, [selectedProj, projects]);
 
     useEffect(() => {
-        if (buildings.length > 0) {
-            setSelectedBldg(buildings[0].id);
-        } else {
-            setSelectedBldg("");
-        }
+        if (buildings.length > 0) setSelectedBldg(buildings[0].id);
+        else setSelectedBldg("");
     }, [buildings]);
 
     const loadPolls = async () => {
-        if (!selectedBldg) {
-            setPolls([]);
-            setAptCount(0);
-            return;
-        }
+        if (!selectedBldg) { setPolls([]); setAptCount(0); return; }
         setLoading(true);
         try {
-            const res = await fetch(`/pm/polls?pm_building_id=${selectedBldg}`, {
-                headers: {
-                    "Accept": "application/json",
-                    "X-Requested-With": "XMLHttpRequest",
-                }
+            const res  = await fetch(`/pm/polls?pm_building_id=${selectedBldg}`, {
+                headers: { "Accept": "application/json", "X-Requested-With": "XMLHttpRequest" }
             });
             const json = await res.json();
             setPolls(json.polls || []);
             setAptCount(json.apartment_count || 0);
-        } catch (err) {
-            console.error("Failed to load polls:", err);
-        } finally {
-            setLoading(false);
-        }
+        } catch (err) { console.error("Failed to load polls:", err); }
+        finally { setLoading(false); }
     };
 
-    useEffect(() => {
-        loadPolls();
-    }, [selectedBldg]);
+    useEffect(() => { loadPolls(); }, [selectedBldg]);
 
     const changeStatus = async (id: string, status: PollStatus) => {
+        setPolls((rows) => rows.map((r) => (r.id === id ? { ...r, status } : r)));
         try {
-            setPolls((rows) => rows.map((r) => (r.id === id ? { ...r, status } : r)));
             await fetch(`/pm/polls/${id}`, {
-                method:  "PATCH",
+                method: "PATCH",
                 headers: {
-                    "Content-Type": "application/json",
-                    "Accept": "application/json",
+                    "Content-Type": "application/json", "Accept": "application/json",
                     "X-CSRF-TOKEN": (document.querySelector("meta[name=\"csrf-token\"]") as HTMLMetaElement)?.content || "",
                 },
                 body: JSON.stringify({ status }),
             });
             loadPolls();
-        } catch (err) {
-            console.error("Failed to update status:", err);
-        }
+        } catch (err) { console.error("Failed to update status:", err); }
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm("Вы уверены, что хотите удалить это голосование?")) return;
+        if (!confirm(t('pmPolls.confirmDelete'))) return;
         try {
             await fetch(`/pm/polls/${id}`, {
                 method: "DELETE",
@@ -134,74 +117,46 @@ export default function PollsIndex({ projects }: Props) {
                 }
             });
             loadPolls();
-        } catch (err) {
-            console.error("Failed to delete poll:", err);
-        }
+        } catch (err) { console.error("Failed to delete poll:", err); }
     };
 
     return (
         <AppShell>
-            <Head title="Голосования ОСС - PM Portal" />
+            <div className="page">
+                <PageHead
+                    eyebrow="Property Management"
+                    title={t('pmPolls.title')}
+                    sub={t('pmPolls.subtitle')}
+                    actions={
+                        <Btn
+                            variant={creating ? "ghost" : "primary"}
+                            icon={creating ? X : Plus}
+                            disabled={!selectedBldg}
+                            onClick={() => setCreating((c) => !c)}
+                        >
+                            {creating ? t('pmPolls.cancel') : t('pmPolls.createPoll')}
+                        </Btn>
+                    }
+                />
 
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b" style={{ borderColor: 'var(--border)' }}>
-                <div>
-                    <p className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: "#34d399" }}>
-                        Property Management
-                    </p>
-                    <h1 className="text-2xl font-bold text-slate-800 mt-1">{t('pmPolls.title')}</h1>
-                    <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>
-                        {t('pmPolls.subtitle')}
-                    </p>
-                </div>
-                <button
-                    onClick={() => setCreating((c) => !c)}
-                    disabled={!selectedBldg}
-                    className="rounded-xl px-4 py-2.5 text-xs font-bold text-white flex items-center gap-2 disabled:opacity-50 transition-all hover:opacity-90"
-                    style={{
-                        background: creating
-                            ? "var(--border)"
-                            : "linear-gradient(135deg, #10b981 0%, #14b8a6 100%)",
-                    }}
-                >
-                    {creating ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-                    {creating ? t('pmPolls.cancel') : t('pmPolls.createPoll')}
-                </button>
-            </div>
-
-            <div className="mt-6 space-y-6">
                 {/* Selectors */}
-                <div className="flex flex-wrap items-center gap-4 p-4 rounded-2xl" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-                    <div className="flex flex-col gap-1 min-w-[200px]">
-                        <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">{t('pmPolls.project')}</span>
-                        <select
-                            value={selectedProj}
-                            onChange={(e) => setSelectedProj(e.target.value)}
-                            className="rounded-xl px-3 py-2.5 text-xs text-slate-800 outline-none cursor-pointer"
-                            style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
-                        >
-                            {projects.map((p) => (
-                                <option key={p.id} value={p.id}>{p.name}</option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div className="flex flex-col gap-1 min-w-[200px]">
-                        <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">{t('pmPolls.building')}</span>
-                        <select
-                            value={selectedBldg}
-                            onChange={(e) => setSelectedBldg(e.target.value)}
-                            disabled={buildings.length === 0}
-                            className="rounded-xl px-3 py-2.5 text-xs text-slate-800 outline-none cursor-pointer disabled:opacity-50"
-                            style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
-                        >
-                            {buildings.length === 0 && <option value="">{t('pmPolls.noBuildings')}</option>}
-                            {buildings.map((b) => (
-                                <option key={b.id} value={b.id}>{b.name}</option>
-                            ))}
-                        </select>
+                <div className="card card-pad" style={{ marginBottom: 18 }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, alignItems: 'flex-end' }}>
+                        <Field label={t('pmPolls.project')}>
+                            <PmSelect value={selectedProj} onChange={(e) => setSelectedProj(e.target.value)}>
+                                {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                            </PmSelect>
+                        </Field>
+                        <Field label={t('pmPolls.building')}>
+                            <PmSelect value={selectedBldg} disabled={buildings.length === 0} onChange={(e) => setSelectedBldg(e.target.value)}>
+                                {buildings.length === 0 && <option value="">{t('pmPolls.noBuildings')}</option>}
+                                {buildings.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+                            </PmSelect>
+                        </Field>
                     </div>
                 </div>
 
+                {/* Create form (inline expand) */}
                 {creating && selectedBldg && (
                     <CreatePollCard
                         buildingId={selectedBldg}
@@ -210,18 +165,22 @@ export default function PollsIndex({ projects }: Props) {
                     />
                 )}
 
+                {/* Poll list */}
                 {loading ? (
-                    <div className="rounded-2xl p-12 flex items-center justify-center" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)', color: "var(--muted)" }}>
-                        <Loader2 className="w-5 h-5 animate-spin" style={{ color: "#34d399" }} />
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 48 }}>
+                        <Loader2 className="ic" style={{ color: 'var(--brand)', width: 28, height: 28 }} />
                     </div>
                 ) : polls.length === 0 ? (
-                    <div className="rounded-2xl p-16 text-center border border-dashed" style={{ backgroundColor: "var(--border)", borderColor: 'var(--border)', color: "var(--muted)" }}>
-                        <Vote className="w-10 h-10 mx-auto mb-3" style={{ color: "var(--border)" }} />
-                        <p className="text-sm font-medium text-slate-800">Голосований не найдено</p>
-                        <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>Создайте первое собрание или опрос для этого здания</p>
-                    </div>
+                    <EmptyState
+                        icon={Vote as any}
+                        title={t('pmPolls.noPolls')}
+                        sub={t('pmPolls.noPollsSub')}
+                        action={selectedBldg ? (
+                            <Btn variant="primary" icon={Plus} onClick={() => setCreating(true)}>{t('pmPolls.createPoll')}</Btn>
+                        ) : undefined}
+                    />
                 ) : (
-                    <div className="grid grid-cols-1 gap-4">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                         {polls.map((p) => (
                             <PollCard key={p.id} poll={p} aptCount={aptCount} onStatusChange={changeStatus} onDelete={handleDelete} />
                         ))}
@@ -232,29 +191,26 @@ export default function PollsIndex({ projects }: Props) {
     );
 }
 
-// ── Create Poll Card ────────────────────────────────────────────────────────
+// ── Create Poll Card ──────────────────────────────────────────────────────────
 
 interface CreateProps {
     buildingId: string;
-    onCreated: () => void;
-    onCancel: () => void;
+    onCreated:  () => void;
+    onCancel:   () => void;
 }
 
 function CreatePollCard({ buildingId, onCreated, onCancel }: CreateProps) {
+    const { t } = useTranslation();
     const [title,       setTitle]       = useState("");
     const [description, setDescription] = useState("");
-    const [options,     setOptions]     = useState<string[]>(["За", "Против", "Воздержался"]);
+    const [options,     setOptions]     = useState<string[]>(["Ha", "Yo'q", "Betaraf"]);
     const [quorum,      setQuorum]      = useState(50);
     const [closesAt,    setClosesAt]    = useState("");
     const [saving,      setSaving]      = useState(false);
     const [error,       setError]       = useState<string | null>(null);
 
-    function setOpt(i: number, v: string) {
-        setOptions((arr) => arr.map((x, idx) => (idx === i ? v : x)));
-    }
-    function addOpt() {
-        setOptions((arr) => [...arr, ""]);
-    }
+    function setOpt(i: number, v: string) { setOptions((arr) => arr.map((x, idx) => (idx === i ? v : x))); }
+    function addOpt() { setOptions((arr) => [...arr, ""]); }
     function removeOpt(i: number) {
         if (options.length <= 2) return;
         setOptions((arr) => arr.filter((_, idx) => idx !== i));
@@ -265,233 +221,169 @@ function CreatePollCard({ buildingId, onCreated, onCancel }: CreateProps) {
         const cleanOpts = options
             .map((o, idx) => ({ id: String.fromCharCode(97 + idx), label: o.trim() }))
             .filter((o) => o.label);
-        if (!title.trim()) {
-            setError("Введите заголовок");
-            return;
-        }
-        if (cleanOpts.length < 2) {
-            setError("Минимум 2 варианта ответа");
-            return;
-        }
+        if (!title.trim()) { setError(t('pmPolls.titleRequired')); return; }
+        if (cleanOpts.length < 2) { setError(t('pmPolls.minOptions')); return; }
 
         setSaving(true);
         try {
             const res = await fetch("/pm/polls", {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
-                    "Accept": "application/json",
+                    "Content-Type": "application/json", "Accept": "application/json",
                     "X-CSRF-TOKEN": (document.querySelector("meta[name=\"csrf-token\"]") as HTMLMetaElement)?.content || "",
                 },
                 body: JSON.stringify({
                     pm_building_id: buildingId,
-                    title:       title.trim(),
-                    description: description.trim() || null,
-                    options:     cleanOpts,
-                    quorum_pct:  quorum,
-                    closes_at:   closesAt ? new Date(closesAt).toISOString() : null,
+                    title:          title.trim(),
+                    description:    description.trim() || null,
+                    options:        cleanOpts,
+                    quorum_pct:     quorum,
+                    closes_at:      closesAt ? new Date(closesAt).toISOString() : null,
                 }),
             });
             const json = await res.json();
-            if (!res.ok) {
-                setError(json.error ?? "Ошибка сохранения");
-                return;
-            }
+            if (!res.ok) { setError(json.error ?? t('pmPolls.saveError')); return; }
             onCreated();
-        } catch (err) {
-            setError("Произошла ошибка при сохранении");
-        } finally {
-            setSaving(false);
-        }
+        } catch { setError(t('pmPolls.saveError')); }
+        finally { setSaving(false); }
     }
 
     return (
-        <div className="rounded-2xl p-6 space-y-4" style={{ backgroundColor: 'var(--card)', border: "1px solid rgba(16,185,129,0.25)" }}>
-            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Новое голосование ОСС</h3>
+        <div className="card card-pad" style={{ marginBottom: 18, borderColor: 'color-mix(in srgb, var(--brand) 30%, transparent)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                <h3 style={{ fontWeight: 700, fontSize: 14, color: 'var(--text-1)' }}>{t('pmPolls.newPoll')}</h3>
+                <button className="drawer-close" onClick={onCancel}><X className="ic" /></button>
+            </div>
 
-            <div className="space-y-3">
-                <input
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Тема голосования (например: Установка видеонаблюдения)"
-                    className="w-full rounded-xl px-4 py-2.5 text-xs text-slate-800 outline-none placeholder:text-slate-400"
-                    style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
-                />
-                <textarea
-                    value={description}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <input className="input" value={title} onChange={(e) => setTitle(e.target.value)}
+                    placeholder={t('pmPolls.titlePlaceholder')} />
+                <textarea className="input" rows={3} value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Подробное описание вопроса для собственников..."
-                    rows={3}
-                    className="w-full rounded-xl px-4 py-2.5 text-xs text-slate-800 outline-none resize-none placeholder:text-slate-400"
-                    style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
-                />
-            </div>
+                    placeholder={t('pmPolls.descriptionPlaceholder')}
+                    style={{ resize: 'none' }} />
 
-            <div>
-                <p className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold mb-2">Варианты ответа</p>
-                <div className="space-y-2">
-                    {options.map((o, i) => (
-                        <div key={i} className="flex items-center gap-2">
-                            <input
-                                value={o}
-                                onChange={(e) => setOpt(i, e.target.value)}
-                                placeholder={`Вариант ${i + 1}`}
-                                className="flex-1 rounded-xl px-3 py-2 text-xs text-slate-800 outline-none"
-                                style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
-                            />
-                            <button
-                                type="button"
-                                onClick={() => removeOpt(i)}
-                                disabled={options.length <= 2}
-                                className="p-2 rounded-lg transition-colors hover:bg-red-500/10 text-slate-500 hover:text-red-400 disabled:opacity-30 disabled:hover:bg-transparent"
-                            >
-                                <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                        </div>
-                    ))}
-                </div>
-                <button type="button" onClick={addOpt} className="mt-2 text-xs flex items-center gap-1 font-semibold text-emerald-400 hover:text-emerald-300">
-                    <Plus className="w-3.5 h-3.5" /> Добавить вариант
-                </button>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Options */}
                 <div>
-                    <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold block mb-1.5">Кворум, %</span>
-                    <input
-                        type="number"
-                        min={0} max={100}
-                        value={quorum}
-                        onChange={(e) => setQuorum(Math.max(0, Math.min(100, Number(e.target.value))))}
-                        className="w-full rounded-xl px-3.5 py-2 text-xs text-slate-800 outline-none"
-                        style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
-                    />
+                    <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>{t('pmPolls.options')}</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        {options.map((o, i) => (
+                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <input className="input" value={o} onChange={(e) => setOpt(i, e.target.value)}
+                                    placeholder={`${t('pmPolls.option')} ${i + 1}`} style={{ flex: 1 }} />
+                                <button className="icon-act" onClick={() => removeOpt(i)} disabled={options.length <= 2}
+                                    style={{ color: 'var(--danger)', opacity: options.length <= 2 ? 0.3 : 1 }}>
+                                    <Trash2 className="ic" />
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                    <button onClick={addOpt} style={{ marginTop: 8, fontSize: 12, fontWeight: 600, color: 'var(--brand)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <Plus className="ic" /> {t('pmPolls.addOption')}
+                    </button>
                 </div>
-                <div>
-                    <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold block mb-1.5">Закрыть до</span>
-                    <input
-                        type="datetime-local"
-                        value={closesAt}
-                        onChange={(e) => setClosesAt(e.target.value)}
-                        className="w-full rounded-xl px-3.5 py-2 text-xs text-slate-800 outline-none cursor-pointer"
-                        style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
-                    />
+
+                {/* Quorum + date */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                    <Field label={t('pmPolls.quorum')}>
+                        <input className="input" type="number" min={0} max={100} value={quorum}
+                            onChange={(e) => setQuorum(Math.max(0, Math.min(100, Number(e.target.value))))} />
+                    </Field>
+                    <Field label={t('pmPolls.closesAt')}>
+                        <input className="input" type="datetime-local" value={closesAt}
+                            onChange={(e) => setClosesAt(e.target.value)} />
+                    </Field>
                 </div>
-            </div>
 
-            {error && <p className="text-xs text-red-400 font-medium">{error}</p>}
+                {error && <p style={{ fontSize: 12, color: 'var(--danger)', fontWeight: 600 }}>{error}</p>}
 
-            <div className="flex justify-end gap-3 pt-2">
-                <button
-                    type="button"
-                    onClick={onCancel}
-                    className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 border border-slate-700 hover:bg-slate-100 transition-all"
-                >
-                    Отмена
-                </button>
-                <button
-                    type="button"
-                    onClick={save}
-                    disabled={saving}
-                    className="px-4 py-2.5 rounded-xl text-xs font-bold text-white flex items-center gap-2 disabled:opacity-50 transition-all"
-                    style={{ background: "linear-gradient(135deg, #10b981 0%, #14b8a6 100%)" }}
-                >
-                    {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                    Запустить голосование
-                </button>
+                <div style={{ display: 'flex', gap: 10 }}>
+                    <Btn variant="ghost" block type="button" onClick={onCancel}>{t('pmPolls.cancel')}</Btn>
+                    <Btn variant="primary" block type="button" disabled={saving} icon={saving ? Loader2 : undefined} onClick={save}>
+                        {t('pmPolls.launch')}
+                    </Btn>
+                </div>
             </div>
         </div>
     );
 }
 
-// ── Poll Card ────────────────────────────────────────────────────────────────
+// ── Poll Card ─────────────────────────────────────────────────────────────────
 
 interface PollCardProps {
-    poll: PollRow;
-    aptCount: number;
+    poll:           PollRow;
+    aptCount:       number;
     onStatusChange: (id: string, s: PollStatus) => void;
-    onDelete: (id: string) => void;
+    onDelete:       (id: string) => void;
 }
 
 function PollCard({ poll, aptCount, onStatusChange, onDelete }: PollCardProps) {
     const { t } = useTranslation();
-    const meta = STATUS_META[poll.status] || STATUS_META.open;
     const quorumThreshold = Math.ceil(aptCount * poll.quorum_pct / 100);
     const quorumPct = aptCount > 0 ? Math.min(100, (poll.total_votes / aptCount) * 100) : 0;
     const quorumMet = poll.total_votes >= quorumThreshold && quorumThreshold > 0;
 
     return (
-        <div className="rounded-2xl p-5 relative overflow-hidden" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-            <div className="flex items-start justify-between gap-3 mb-4">
-                <div className="min-w-0 flex-1">
-                    <h3 className="text-sm font-bold text-slate-800">{poll.title}</h3>
+        <div className="card card-pad">
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text-1)' }}>{poll.title}</div>
                     {poll.description && (
-                        <p className="text-xs mt-1.5 leading-relaxed" style={{ color: "var(--muted)" }}>{poll.description}</p>
+                        <p style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 6, lineHeight: 1.5 }}>{poll.description}</p>
                     )}
                     {poll.closes_at && (
-                        <div className="flex items-center gap-1 mt-2.5 text-[10px]" style={{ color: "var(--muted)" }}>
-                            <CalendarClock className="w-3.5 h-3.5 text-slate-500" />
-                            <span>Активно до: {new Date(poll.closes_at).toLocaleString("ru-RU", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 8, fontSize: 11, color: 'var(--text-3)' }}>
+                            <CalendarClock className="ic" style={{ width: 12, height: 12 }} />
+                            {t('pmPolls.activeUntil')}: {new Date(poll.closes_at).toLocaleString("ru-RU", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
                         </div>
                     )}
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: meta.bg, color: meta.fg, border: `1px solid ${meta.border}` }}>
-                        {t(meta.labelKey)}
-                    </span>
-                    <button
-                        onClick={() => onDelete(poll.id)}
-                        className="p-1 rounded hover:bg-red-500/10 text-slate-500 hover:text-red-400 transition-colors"
-                        title="Удалить"
-                    >
-                        <Trash2 className="w-3.5 h-3.5" />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                    <Badge tone={STATUS_TONE[poll.status]}>{t(`pmPolls.status${poll.status.charAt(0).toUpperCase() + poll.status.slice(1)}`)}</Badge>
+                    <button className="icon-act" onClick={() => onDelete(poll.id)} style={{ color: 'var(--danger)' }}>
+                        <Trash2 className="ic" />
                     </button>
                 </div>
             </div>
 
             {/* Quorum bar */}
-            <div className="mb-5 p-3.5 rounded-xl" style={{ backgroundColor: 'var(--bg)', border: "1px solid var(--border)" }}>
-                <div className="flex items-center justify-between text-[11px] font-semibold mb-2" style={{ color: "var(--muted)" }}>
-                    <span>Кворум {poll.quorum_pct}%</span>
+            <div style={{ padding: '12px 14px', borderRadius: 10, backgroundColor: 'var(--bg)', border: '1px solid var(--border)', marginBottom: 14 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11, fontWeight: 600, color: 'var(--text-3)', marginBottom: 8 }}>
+                    <span>{t('pmPolls.quorum')} {poll.quorum_pct}%</span>
                     <span>
-                        {poll.total_votes} из {aptCount} квартир
-                        {quorumMet ? (
-                            <span style={{ color: "#34d399" }}> · кворум собран</span>
-                        ) : (
-                            <span style={{ color: "#fbbf24" }}> · сбор голосов</span>
-                        )}
+                        {poll.total_votes} / {aptCount} {t('pmPolls.apartments')}
+                        {quorumMet
+                            ? <span style={{ color: 'var(--ok)' }}> · {t('pmPolls.quorumMet')}</span>
+                            : <span style={{ color: 'var(--warn)' }}> · {t('pmPolls.collecting')}</span>
+                        }
                     </span>
                 </div>
-                <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: "var(--border)" }}>
-                    <div
-                        className="h-full transition-all duration-500"
-                        style={{
-                            width: `${quorumPct}%`,
-                            background: quorumMet
-                                ? "linear-gradient(90deg, #10b981 0%, #14b8a6 100%)"
-                                : "linear-gradient(90deg, #fbbf24 0%, #f97316 100%)",
-                        }}
-                    />
+                <div style={{ height: 8, borderRadius: 99, overflow: 'hidden', backgroundColor: 'var(--border)' }}>
+                    <div style={{
+                        height: '100%', width: `${quorumPct}%`, transition: 'width 0.4s',
+                        background: quorumMet
+                            ? 'linear-gradient(90deg, var(--ok) 0%, var(--brand) 100%)'
+                            : 'linear-gradient(90deg, var(--warn) 0%, #f97316 100%)',
+                    }} />
                 </div>
             </div>
 
-            {/* Options list */}
-            <div className="space-y-2">
+            {/* Vote options */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 }}>
                 {poll.options.map((o) => {
                     const count = poll.vote_counts[o.id] ?? 0;
                     const pct   = poll.total_votes > 0 ? (count / poll.total_votes) * 100 : 0;
                     return (
-                        <div key={o.id} className="rounded-xl p-3 relative overflow-hidden transition-all" style={{ backgroundColor: "var(--border)", border: "1px solid var(--border)" }}>
-                            <div
-                                className="absolute inset-y-0 left-0 transition-all duration-500"
-                                style={{
-                                    width: `${pct}%`,
-                                    background: "linear-gradient(90deg, rgba(16,185,129,0.1) 0%, rgba(20,184,166,0.03) 100%)",
-                                }}
-                            />
-                            <div className="relative flex items-center justify-between">
-                                <span className="text-xs font-semibold text-slate-800">{o.label}</span>
-                                <span className="text-[11px] font-mono" style={{ color: "var(--muted)" }}>
+                        <div key={o.id} style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', backgroundColor: 'var(--bg)', border: '1px solid var(--border)', padding: '10px 14px' }}>
+                            <div style={{
+                                position: 'absolute', inset: '0 auto 0 0', width: `${pct}%`,
+                                background: 'linear-gradient(90deg, var(--brand-tint) 0%, transparent 100%)',
+                                transition: 'width 0.4s',
+                            }} />
+                            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-1)' }}>{o.label}</span>
+                                <span className="tnum" style={{ fontSize: 11, color: 'var(--text-3)' }}>
                                     {count} ({pct.toFixed(0)}%)
                                 </span>
                             </div>
@@ -500,34 +392,28 @@ function PollCard({ poll, aptCount, onStatusChange, onDelete }: PollCardProps) {
                 })}
             </div>
 
-            {/* AI Summary integration */}
+            {/* AI summary */}
             {poll.ai_summary && (
-                <div className="mt-4 p-3 rounded-xl bg-purple-950/20 border border-purple-500/20">
-                    <div className="flex items-center gap-1.5 mb-1 text-purple-300">
-                        <Sparkles className="w-3.5 h-3.5" />
-                        <span className="text-[10px] font-bold uppercase tracking-wider">AI Анализ результатов</span>
+                <div style={{ padding: '12px 14px', borderRadius: 10, backgroundColor: 'color-mix(in srgb, var(--violet) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--violet) 25%, transparent)', marginBottom: 14 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6, color: 'var(--violet)' }}>
+                        <Sparkles className="ic" style={{ width: 13, height: 13 }} />
+                        <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>AI Tahlil</span>
                     </div>
-                    <p className="text-xs text-slate-300 font-mono leading-relaxed">{poll.ai_summary}</p>
+                    <p style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.5 }}>{poll.ai_summary}</p>
                 </div>
             )}
 
+            {/* Actions */}
             {poll.status === "open" && (
-                <div className="flex justify-end gap-2 mt-4 pt-3 border-t" style={{ borderColor: "var(--border)" }}>
-                    <button
-                        onClick={() => onStatusChange(poll.id, "closed")}
-                        className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 text-slate-300 border border-slate-700 hover:bg-slate-100 transition-all"
-                    >
-                        <Lock className="w-3.5 h-3.5" /> Завершить
-                    </button>
-                    <button
-                        onClick={() => onStatusChange(poll.id, "cancelled")}
-                        className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider text-red-400 border border-red-500/20 hover:bg-red-500/10 transition-all"
-                    >
-                        Отменить
-                    </button>
+                <div style={{ display: 'flex', gap: 8, paddingTop: 14, borderTop: '1px solid var(--border)' }}>
+                    <Btn variant="ghost" size="sm" icon={Lock as any} onClick={() => onStatusChange(poll.id, "closed")}>
+                        {t('pmPolls.close')}
+                    </Btn>
+                    <Btn variant="danger-ghost" size="sm" onClick={() => onStatusChange(poll.id, "cancelled")}>
+                        {t('pmPolls.cancel')}
+                    </Btn>
                 </div>
             )}
         </div>
     );
 }
-
