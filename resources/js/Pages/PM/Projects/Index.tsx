@@ -1,210 +1,178 @@
 import { useState } from 'react';
-import { router, usePage, Link } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
-import { FolderKanban, Plus, Pencil, Trash2, Building2, Home, MapPin, X, Loader2 } from 'lucide-react';
 import AppShell from '@/Components/AppShell';
+import {
+  PageHead, Btn, Badge, EmptyState, Field, TextInput, PmSelect,
+  FolderKanban, Plus, Building2, Home, MapPin, Edit2, Trash2, X, Loader2,
+} from '@/Components/pm/ui';
+import type { BadgeTone } from '@/Components/pm/ui';
+import { Pencil } from 'lucide-react';
 
 interface Project {
-    id: string;
-    name: string;
-    location: string | null;
-    status: string;
-    buildings_count: number;
-    apartments_count: number;
-    created_at: string;
+  id:               string;
+  name:             string;
+  location:         string | null;
+  status:           string;
+  buildings_count:  number;
+  apartments_count: number;
+  created_at:       string;
 }
 
-interface Props {
-    projects: Project[];
-}
+interface Props { projects: Project[]; }
 
-const STATUS_COLORS: Record<string, { bg: string; text: string; labelKey: string }> = {
-    active:    { bg: 'rgba(16,185,129,0.12)',  text: '#34d399', labelKey: 'pmProjects.statusActive'    },
-    paused:    { bg: 'rgba(245,158,11,0.12)',  text: '#fbbf24', labelKey: 'pmProjects.statusPaused'    },
-    completed: { bg: 'rgba(20,184,166,0.12)',  text: '#2dd4bf', labelKey: 'pmProjects.statusCompleted' },
+const STATUS_TONE: Record<string, BadgeTone> = {
+  active:    'ok',
+  paused:    'warn',
+  completed: 'info',
 };
 
 const emptyForm = { name: '', location: '', status: 'active' };
 
 export default function PMProjectsIndex({ projects }: Props) {
-    const { t } = useTranslation();
-    const { auth } = usePage<any>().props;
-    const canEdit = ['super_admin', 'company_admin', 'property_manager'].includes(auth.user?.role) ||
-                    auth.user?.pm_role === 'property_manager';
+  const { t } = useTranslation();
+  const { auth } = usePage<any>().props;
+  const canEdit = ['super_admin', 'company_admin', 'property_manager'].includes(auth.user?.role) ||
+                  auth.user?.pm_role === 'property_manager';
 
-    const [showModal, setShowModal] = useState(false);
-    const [editing,   setEditing]   = useState<Project | null>(null);
-    const [form,      setForm]      = useState({ ...emptyForm });
-    const [loading,   setLoading]   = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [editing,   setEditing]   = useState<Project | null>(null);
+  const [form,      setForm]      = useState({ ...emptyForm });
+  const [loading,   setLoading]   = useState(false);
 
-    function openCreate() { setEditing(null); setForm({ ...emptyForm }); setShowModal(true); }
-    function openEdit(p: Project) {
-        setEditing(p);
-        setForm({ name: p.name, location: p.location ?? '', status: p.status });
-        setShowModal(true);
+  function openCreate() { setEditing(null); setForm({ ...emptyForm }); setShowModal(true); }
+  function openEdit(p: Project) {
+    setEditing(p);
+    setForm({ name: p.name, location: p.location ?? '', status: p.status });
+    setShowModal(true);
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    if (editing) {
+      router.put(`/pm/projects/${editing.id}`, form, { onFinish: () => { setLoading(false); setShowModal(false); } });
+    } else {
+      router.post('/pm/projects', form, { onFinish: () => { setLoading(false); setShowModal(false); } });
     }
+  }
 
-    function handleSubmit(e: React.FormEvent) {
-        e.preventDefault();
-        setLoading(true);
-        if (editing) {
-            router.put(`/pm/projects/${editing.id}`, form, { onFinish: () => { setLoading(false); setShowModal(false); } });
-        } else {
-            router.post('/pm/projects', form, { onFinish: () => { setLoading(false); setShowModal(false); } });
-        }
-    }
+  function handleDelete(p: Project) {
+    if (!confirm(`"${p.name}" loyihasini o'chirasizmi?`)) return;
+    router.delete(`/pm/projects/${p.id}`);
+  }
 
-    function handleDelete(p: Project) {
-        if (!confirm(`"${p.name}" loyihasini o'chirasizmi?`)) return;
-        router.delete(`/pm/projects/${p.id}`);
-    }
+  return (
+    <AppShell>
+      <div className="page">
+        <PageHead
+          eyebrow={t('common.propertyMgmt')}
+          title={t('pmProjects.title')}
+          sub={`${projects.length} ${t('pmProjects.title').toLowerCase()}`}
+          actions={canEdit ? <Btn variant="primary" icon={Plus} onClick={openCreate}>{t('pmProjects.newProject')}</Btn> : undefined}
+        />
 
-    return (
-        <AppShell>
-            <header className="sticky top-0 z-20 flex items-center justify-between px-6 h-14 border-b shrink-0"
-                style={{ backgroundColor: 'var(--card)', borderColor: 'rgba(16,185,129,0.10)' }}>
-                <div className="flex items-center gap-2">
-                    <FolderKanban className="w-4 h-4" style={{ color: '#10b981' }} />
-                    <h1 className="text-sm font-semibold text-slate-800">{t('pmProjects.title')}</h1>
-                    <span className="text-xs px-2 py-0.5 rounded-full ml-1"
-                        style={{ backgroundColor: 'rgba(16,185,129,0.12)', color: '#34d399' }}>
-                        {projects.length}
-                    </span>
+        {projects.length === 0 ? (
+          <EmptyState
+            icon={FolderKanban}
+            title={t('pmProjects.noProjects')}
+            sub={t('pmProjects.noProjectsHint')}
+            action={canEdit ? <Btn variant="primary" icon={Plus} onClick={openCreate}>{t('pmProjects.newProject')}</Btn> : undefined}
+          />
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+            {projects.map(p => (
+              <div
+                key={p.id}
+                className="card card-pad"
+                style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 14, transition: 'border-color .15s' }}
+                onClick={() => router.visit(`/pm/projects/${p.id}`)}
+                onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--brand)')}
+                onMouseLeave={e => (e.currentTarget.style.borderColor = '')}
+              >
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <Badge tone={STATUS_TONE[p.status] ?? 'neutral'}>{t(`pmProjects.status${p.status.charAt(0).toUpperCase() + p.status.slice(1)}`)}</Badge>
+                    <h2 style={{ fontWeight: 700, fontSize: 15, marginTop: 8 }}>{p.name}</h2>
+                    {p.location && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 4, color: 'var(--text-3)', fontSize: 12 }}>
+                        <MapPin className="ic" style={{ flexShrink: 0 }} />
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.location}</span>
+                      </div>
+                    )}
+                  </div>
+                  {canEdit && (
+                    <div style={{ display: 'flex', gap: 4 }} onClick={e => e.stopPropagation()}>
+                      <button className="icon-act" onClick={() => openEdit(p)}><Pencil className="ic" /></button>
+                      <button className="icon-act danger" onClick={() => handleDelete(p)}><Trash2 className="ic" /></button>
+                    </div>
+                  )}
                 </div>
-                {canEdit && (
-                    <button onClick={openCreate}
-                        className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-80"
-                        style={{ backgroundColor: '#10b981' }}>
-                        <Plus className="w-4 h-4" /> {t('pmProjects.newProject')}
-                    </button>
-                )}
-            </header>
 
-            <main className="px-6 py-6">
-                {projects.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20 gap-4">
-                        <div className="w-14 h-14 rounded-2xl flex items-center justify-center"
-                            style={{ backgroundColor: 'rgba(16,185,129,0.10)' }}>
-                            <FolderKanban className="w-6 h-6" style={{ color: '#10b981' }} />
-                        </div>
-                        <p className="text-sm font-medium text-slate-800">{t('pmProjects.noProjects')}</p>
-                        <p className="text-xs" style={{ color: '#475569' }}>{t('pmProjects.noProjectsHint')}</p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <div className="card" style={{ padding: '10px 12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, color: 'var(--brand)', fontSize: 11 }}>
+                      <Building2 className="ic" />{t('pmProjects.buildings')}
                     </div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {projects.map(p => {
-                            const s = STATUS_COLORS[p.status] ?? STATUS_COLORS.active;
-                            return (
-                                <div key={p.id}
-                                    className="rounded-2xl p-5 flex flex-col gap-4 group cursor-pointer transition-all hover:border-emerald-500/30"
-                                    style={{ backgroundColor: 'var(--card)', border: '1px solid rgba(16,185,129,0.08)' }}
-                                    onClick={() => router.visit(`/pm/projects/${p.id}`)}>
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex-1 min-w-0">
-                                            <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full mb-2"
-                                                style={{ backgroundColor: s.bg, color: s.text }}>{t(s.labelKey)}</span>
-                                            <h2 className="text-sm font-semibold text-slate-800 group-hover:text-emerald-300 transition-colors">
-                                                {p.name}
-                                            </h2>
-                                            {p.location && (
-                                                <div className="flex items-center gap-1 mt-1">
-                                                    <MapPin className="w-3 h-3 shrink-0" style={{ color: '#475569' }} />
-                                                    <span className="text-xs truncate" style={{ color: '#475569' }}>{p.location}</span>
-                                                </div>
-                                            )}
-                                        </div>
-                                        {canEdit && (
-                                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2"
-                                                onClick={e => e.stopPropagation()}>
-                                                <button onClick={() => openEdit(p)}
-                                                    className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
-                                                    style={{ color: '#64748b' }}>
-                                                    <Pencil className="w-3.5 h-3.5" />
-                                                </button>
-                                                <button onClick={() => handleDelete(p)}
-                                                    className="p-1.5 rounded-lg hover:bg-red-500/10 transition-colors"
-                                                    style={{ color: '#64748b' }}>
-                                                    <Trash2 className="w-3.5 h-3.5" />
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div className="rounded-xl p-3" style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.08)' }}>
-                                            <div className="flex items-center gap-1.5 mb-1">
-                                                <Building2 className="w-3 h-3" style={{ color: '#10b981' }} />
-                                                <span className="text-[10px] uppercase tracking-wider" style={{ color: '#475569' }}>{t('pmProjects.buildings')}</span>
-                                            </div>
-                                            <p className="text-xl font-bold text-slate-800">{p.buildings_count}</p>
-                                        </div>
-                                        <div className="rounded-xl p-3" style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.08)' }}>
-                                            <div className="flex items-center gap-1.5 mb-1">
-                                                <Home className="w-3 h-3" style={{ color: '#14b8a6' }} />
-                                                <span className="text-[10px] uppercase tracking-wider" style={{ color: '#475569' }}>{t('pmProjects.apartments')}</span>
-                                            </div>
-                                            <p className="text-xl font-bold text-slate-800">{p.apartments_count}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            );
-                        })}
+                    <div style={{ fontWeight: 700, fontSize: 22 }}>{p.buildings_count}</div>
+                  </div>
+                  <div className="card" style={{ padding: '10px 12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, color: 'var(--brand)', fontSize: 11 }}>
+                      <Home className="ic" />{t('pmProjects.apartments')}
                     </div>
-                )}
-            </main>
-
-            {showModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-                    style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}
-                    onClick={e => e.target === e.currentTarget && setShowModal(false)}>
-                    <div className="w-full max-w-md rounded-2xl p-6"
-                        style={{ backgroundColor: 'var(--card)', border: '1px solid rgba(16,185,129,0.12)' }}>
-                        <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-base font-semibold text-slate-800">
-                                {editing ? t('pmProjects.editProject') : t('pmProjects.newProject')}
-                            </h2>
-                            <button onClick={() => setShowModal(false)} style={{ color: '#475569' }}
-                                className="hover:text-white transition-colors">
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            {[
-                                { label: t('pmProjects.projectName') + ' *', key: 'name', required: true },
-                                { label: t('pmProjects.address'),             key: 'location', required: false },
-                            ].map(({ label, key, required }) => (
-                                <div key={key}>
-                                    <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>{label}</label>
-                                    <input type="text" required={required} value={(form as any)[key]}
-                                        onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
-                                        className="w-full rounded-xl px-4 py-2.5 text-sm text-slate-800 outline-none"
-                                        style={{ backgroundColor: 'var(--border)', border: '1px solid rgba(16,185,129,0.15)' }} />
-                                </div>
-                            ))}
-
-                            <div>
-                                <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>{t('pmProjects.statusLabel')}</label>
-                                <select value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
-                                    className="w-full rounded-xl px-4 py-2.5 text-sm text-slate-800 outline-none"
-                                    style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.15)' }}>
-                                    <option value="active">{t('pmProjects.statusActive')}</option>
-                                    <option value="paused">{t('pmProjects.statusPaused')}</option>
-                                    <option value="completed">{t('pmProjects.statusCompleted')}</option>
-                                </select>
-                            </div>
-
-                            <button type="submit" disabled={loading}
-                                className="w-full py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50 flex items-center justify-center gap-2"
-                                style={{ backgroundColor: '#10b981' }}>
-                                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                                {editing ? t('pmProjects.save') : t('pmProjects.create')}
-                            </button>
-                        </form>
-                    </div>
+                    <div style={{ fontWeight: 700, fontSize: 22 }}>{p.apartments_count}</div>
+                  </div>
                 </div>
-            )}
-        </AppShell>
-    );
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Create / Edit Modal */}
+      {showModal && (
+        <div className="scrim show" onClick={() => setShowModal(false)}>
+          <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+            onClick={e => e.stopPropagation()}>
+            <div className="card card-pad" style={{ width: '100%', maxWidth: 420, padding: 24 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+                <h2 style={{ fontWeight: 700, fontSize: 16 }}>
+                  {editing ? t('pmProjects.editProject') : t('pmProjects.newProject')}
+                </h2>
+                <button className="drawer-close" onClick={() => setShowModal(false)}><X className="ic" /></button>
+              </div>
+
+              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <Field label={`${t('pmProjects.projectName')} *`}>
+                  <TextInput
+                    type="text"
+                    required
+                    value={form.name}
+                    onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                  />
+                </Field>
+                <Field label={t('pmProjects.address')}>
+                  <TextInput
+                    type="text"
+                    value={form.location}
+                    onChange={e => setForm(f => ({ ...f, location: e.target.value }))}
+                  />
+                </Field>
+                <Field label={t('pmProjects.statusLabel')}>
+                  <PmSelect value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))}>
+                    <option value="active">{t('pmProjects.statusActive')}</option>
+                    <option value="paused">{t('pmProjects.statusPaused')}</option>
+                    <option value="completed">{t('pmProjects.statusCompleted')}</option>
+                  </PmSelect>
+                </Field>
+                <Btn variant="primary" block type="submit" disabled={loading} icon={loading ? Loader2 : undefined}>
+                  {editing ? t('pmProjects.save') : t('pmProjects.create')}
+                </Btn>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+    </AppShell>
+  );
 }
-

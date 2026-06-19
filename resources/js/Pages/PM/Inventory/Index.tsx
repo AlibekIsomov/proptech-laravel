@@ -3,6 +3,7 @@ import { Head, router } from "@inertiajs/react";
 import { useTranslation } from 'react-i18next';
 import { Plus, Loader2, Boxes, Edit2, X, AlertTriangle, ShieldCheck, Wrench, Trash2, LayoutGrid, Package } from "lucide-react";
 import AppShell from "@/Components/AppShell";
+import { PageHead, Stat, Btn, Field, PmSelect, Seg, Drawer, Badge, EmptyState } from '@/Components/pm/ui';
 
 interface Building {
     id: string;
@@ -292,330 +293,169 @@ export default function InventoryIndex({ projects }: Props) {
 
     return (
         <AppShell>
-            <Head title="Инвентарь & Оборудование - PM Portal" />
+            <Head title={t('pmInventory.title') + ' — PM'} />
+            <div className="page">
+                <PageHead
+                    eyebrow={t('common.propertyMgmt')}
+                    title={t('pmInventory.title')}
+                    sub={t('pmInventory.subtitle')}
+                    actions={
+                        activeTab === 'equipment'
+                            ? <Btn variant="primary" icon={Plus} disabled={!selectedBldg} onClick={openCreate}>{t('pmInventory.addEquipment')}</Btn>
+                            : <Btn variant="primary" icon={Plus} disabled={!selectedBldg} onClick={openCreateSupply}>{t('pmInventory.addMaterial')}</Btn>
+                    }
+                />
 
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b" style={{ borderColor: 'var(--border)' }}>
-                <div>
-                    <p className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: "#34d399" }}>
-                        Property Management
-                    </p>
-                    <h1 className="text-2xl font-bold text-slate-800 mt-1">{t('pmInventory.title')}</h1>
-                    <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>
-                        {t('pmInventory.subtitle')}
-                    </p>
-                </div>
-                <div>
-                    {activeTab === 'equipment' ? (
-                        <button
-                            onClick={openCreate}
-                            disabled={!selectedBldg}
-                            className="rounded-xl px-4 py-2.5 text-xs font-bold text-white flex items-center gap-2 disabled:opacity-50 transition-all hover:opacity-90 animate-fade-in"
-                            style={{ background: "linear-gradient(135deg, #10b981 0%, #14b8a6 100%)" }}
-                        >
-                            <Plus className="w-4 h-4" /> {t('pmInventory.addEquipment')}
-                        </button>
-                    ) : (
-                        <button
-                            onClick={openCreateSupply}
-                            disabled={!selectedBldg}
-                            className="rounded-xl px-4 py-2.5 text-xs font-bold text-white flex items-center gap-2 disabled:opacity-50 transition-all hover:opacity-90 animate-fade-in"
-                            style={{ background: "linear-gradient(135deg, #10b981 0%, #14b8a6 100%)" }}
-                        >
-                            <Plus className="w-4 h-4" /> {t('pmInventory.addMaterial')}
-                        </button>
-                    )}
-                </div>
-            </div>
-
-            {/* Custom Tab Selector */}
-            <div className="flex gap-2 mt-4 border-b border-slate-100 pb-px">
-                <button
-                    onClick={() => setActiveTab('equipment')}
-                    className="flex items-center gap-2 px-4 py-3 text-xs font-semibold tracking-wide border-b-2 transition-all"
-                    style={{
-                        borderColor: activeTab === 'equipment' ? '#10b981' : 'transparent',
-                        color: activeTab === 'equipment' ? '#6ee7b7' : 'var(--muted)'
-                    }}
-                >
-                    <LayoutGrid className="w-4 h-4" />
-                    {t('pmInventory.equipment')}
-                </button>
-                <button
-                    onClick={() => setActiveTab('supplies')}
-                    className="flex items-center gap-2 px-4 py-3 text-xs font-semibold tracking-wide border-b-2 transition-all"
-                    style={{
-                        borderColor: activeTab === 'supplies' ? '#10b981' : 'transparent',
-                        color: activeTab === 'supplies' ? '#6ee7b7' : 'var(--muted)'
-                    }}
-                >
-                    <Package className="w-4 h-4" />
-                    {t('pmInventory.supplies')}
-                </button>
-            </div>
-
-            <div className="mt-6 space-y-6">
-                {/* Selectors */}
-                <div className="flex flex-wrap items-center gap-4 p-4 rounded-2xl animate-fade-in" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-                    <div className="flex flex-col gap-1 min-w-[200px]">
-                        <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">{t('pmInventory.project')}</span>
-                        <select
-                            value={selectedProj}
-                            onChange={(e) => setSelectedProj(e.target.value)}
-                            className="rounded-xl px-3 py-2.5 text-xs text-slate-800 outline-none cursor-pointer"
-                            style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
-                        >
-                            {projects.map((p) => (
-                                <option key={p.id} value={p.id}>{p.name}</option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div className="flex flex-col gap-1 min-w-[200px]">
-                        <span className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">{t('pmInventory.building')}</span>
-                        <select
-                            value={selectedBldg}
-                            onChange={(e) => setSelectedBldg(e.target.value)}
-                            disabled={buildings.length === 0}
-                            className="rounded-xl px-3 py-2.5 text-xs text-slate-800 outline-none cursor-pointer disabled:opacity-50"
-                            style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
-                        >
+                {/* Tab + selectors row */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', gap: 16, marginBottom: 20 }}>
+                    <Seg
+                        value={activeTab}
+                        onChange={v => setActiveTab(v as 'equipment' | 'supplies')}
+                        options={[
+                            { value: 'equipment', label: t('pmInventory.equipment'), icon: LayoutGrid },
+                            { value: 'supplies',  label: t('pmInventory.supplies'),  icon: Package   },
+                        ]}
+                    />
+                    <Field label={t('pmInventory.project')}>
+                        <PmSelect value={selectedProj} onChange={e => setSelectedProj(e.target.value)}>
+                            {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                        </PmSelect>
+                    </Field>
+                    <Field label={t('pmInventory.building')}>
+                        <PmSelect value={selectedBldg} disabled={buildings.length === 0} onChange={e => setSelectedBldg(e.target.value)}>
                             {buildings.length === 0 && <option value="">{t('pmInventory.noBuildings')}</option>}
-                            {buildings.map((b) => (
-                                <option key={b.id} value={b.id}>{b.name}</option>
-                            ))}
-                        </select>
-                    </div>
+                            {buildings.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                        </PmSelect>
+                    </Field>
                 </div>
 
                 {activeTab === 'equipment' ? (
                     <>
-                        {/* Metrics */}
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 animate-fade-in">
-                            <SummaryCard label={t('pmInventory.totalEquipment')} value={stats.total}   accent="var(--muted)" />
-                            <SummaryCard label={t('pmInventory.operational')}    value={stats.ok}      accent="#34d399" />
-                            <SummaryCard label={t('pmInventory.needsService')}   value={stats.dueSoon} accent="#fbbf24" />
-                            <SummaryCard label={t('pmInventory.broken')}         value={stats.broken}  accent="#f87171" />
+                        <div className="stat-grid" style={{ marginBottom: 20 }}>
+                            <Stat label={t('pmInventory.totalEquipment')} value={stats.total}   icon={Boxes}         tone="neutral" />
+                            <Stat label={t('pmInventory.operational')}    value={stats.ok}      icon={ShieldCheck}   tone="ok"      />
+                            <Stat label={t('pmInventory.needsService')}   value={stats.dueSoon} icon={AlertTriangle} tone="warn"    />
+                            <Stat label={t('pmInventory.broken')}         value={stats.broken}  icon={Wrench}        tone="danger"  />
                         </div>
 
                         {showForm && selectedBldg && (
-                            <AssetForm
-                                buildingId={selectedBldg}
-                                asset={editing}
-                                onSaved={() => { setShowForm(false); loadAssets(); }}
-                                onCancel={() => setShowForm(false)}
-                            />
+                            <AssetForm buildingId={selectedBldg} asset={editing} onSaved={() => { setShowForm(false); loadAssets(); }} onCancel={() => setShowForm(false)} />
                         )}
 
                         {loading ? (
-                            <div className="rounded-2xl p-12 flex items-center justify-center" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)', color: "var(--muted)" }}>
-                                <Loader2 className="w-5 h-5 animate-spin" style={{ color: "#34d399" }} />
+                            <div className="card card-pad" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 48 }}>
+                                <Loader2 className="ic" style={{ width: 24, height: 24, animation: 'spin 1s linear infinite', color: 'var(--brand)' }} />
                             </div>
                         ) : assets.length === 0 ? (
-                            <div className="rounded-2xl p-16 text-center border border-dashed animate-fade-in" style={{ backgroundColor: "var(--border)", borderColor: 'var(--border)', color: "var(--muted)" }}>
-                                <Boxes className="w-10 h-10 mx-auto mb-3" style={{ color: "var(--border)" }} />
-                                <p className="text-sm font-medium text-slate-800">{t('pmInventory.noEquipment')}</p>
-                                <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>{t('pmInventory.noEquipmentHint')}</p>
-                            </div>
+                            <EmptyState icon={Boxes} title={t('pmInventory.noEquipment')} sub={t('pmInventory.noEquipmentHint')} />
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
-                                {assets.map((a) => (
-                                    <AssetCard key={a.id} asset={a} onEdit={() => openEdit(a)} onDelete={() => handleDelete(a.id)} onClick={() => setSelectedAsset(a)} />
-                                ))}
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 14 }}>
+                                {assets.map(a => <AssetCard key={a.id} asset={a} onEdit={() => openEdit(a)} onDelete={() => handleDelete(a.id)} onClick={() => setSelectedAsset(a)} />)}
                             </div>
                         )}
                     </>
                 ) : (
                     <>
-                        {/* Consumables Metrics */}
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 animate-fade-in">
-                            <SummaryCard label={t('pmInventory.totalItems')} value={supplyStats.totalItems}   accent="var(--muted)" />
-                            <SummaryCard label={t('pmInventory.lowStock')}   value={supplyStats.lowStockCount} accent="#fbbf24" />
-                            <SummaryCard label={t('pmInventory.totalValue')} value={supplyStats.totalValue}    accent="#34d399" />
+                        <div className="stat-grid" style={{ marginBottom: 20 }}>
+                            <Stat label={t('pmInventory.totalItems')} value={supplyStats.totalItems}    icon={Package}       tone="neutral" />
+                            <Stat label={t('pmInventory.lowStock')}   value={supplyStats.lowStockCount} icon={AlertTriangle} tone="warn"    />
+                            <Stat label={t('pmInventory.totalValue')} value={supplyStats.totalValue}    icon={Boxes}         tone="ok"      />
                         </div>
 
                         {showSupplyForm && selectedBldg && (
-                            <SupplyForm
-                                buildingId={selectedBldg}
-                                supply={editingSupply}
-                                onSaved={() => { setShowSupplyForm(false); loadSupplies(); }}
-                                onCancel={() => setShowSupplyForm(false)}
-                            />
+                            <SupplyForm buildingId={selectedBldg} supply={editingSupply} onSaved={() => { setShowSupplyForm(false); loadSupplies(); }} onCancel={() => setShowSupplyForm(false)} />
                         )}
 
                         {loadingSupplies ? (
-                            <div className="rounded-2xl p-12 flex items-center justify-center" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)', color: "var(--muted)" }}>
-                                <Loader2 className="w-5 h-5 animate-spin" style={{ color: "#34d399" }} />
+                            <div className="card card-pad" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 48 }}>
+                                <Loader2 className="ic" style={{ width: 24, height: 24, animation: 'spin 1s linear infinite', color: 'var(--brand)' }} />
                             </div>
                         ) : supplies.length === 0 ? (
-                            <div className="rounded-2xl p-16 text-center border border-dashed animate-fade-in" style={{ backgroundColor: "var(--border)", borderColor: 'var(--border)', color: "var(--muted)" }}>
-                                <Boxes className="w-10 h-10 mx-auto mb-3" style={{ color: "var(--border)" }} />
-                                <p className="text-sm font-medium text-slate-800">{t('pmInventory.noMaterials')}</p>
-                                <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>{t('pmInventory.noMaterialsHint')}</p>
-                            </div>
+                            <EmptyState icon={Boxes} title={t('pmInventory.noMaterials')} sub={t('pmInventory.noMaterialsHint')} />
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
-                                {supplies.map((s) => (
-                                    <SupplyCard key={s.id} supply={s} onEdit={() => openEditSupply(s)} onDelete={() => handleDeleteSupply(s.id)} />
-                                ))}
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 14 }}>
+                                {supplies.map(s => <SupplyCard key={s.id} supply={s} onEdit={() => openEditSupply(s)} onDelete={() => handleDeleteSupply(s.id)} />)}
                             </div>
                         )}
                     </>
                 )}
             </div>
-        {/* Asset Status Side Panel */}
-        {selectedAsset && (
-            <>
-                {/* Backdrop */}
-                <div
-                    className="fixed inset-0 z-40"
-                    style={{ backgroundColor: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(3px)' }}
-                    onClick={() => setSelectedAsset(null)}
-                />
-                {/* Slide-in Panel */}
-                <aside
-                    className="fixed top-0 right-0 z-50 h-screen overflow-y-auto"
-                    style={{
-                        width: 'min(420px, 95vw)',
-                        backgroundColor: 'var(--card)',
-                        borderLeft: '1px solid var(--border)',
-                        boxShadow: '-16px 0 60px rgba(0,0,0,0.5)',
-                        animation: 'slideInRight 0.28s cubic-bezier(0.32,0.72,0,1)',
-                    }}
-                >
-                    <style>{`
-                        @keyframes slideInRight {
-                            from { transform: translateX(100%); opacity: 0; }
-                            to   { transform: translateX(0);    opacity: 1; }
-                        }
-                        .status-option-btn {
-                            transition: all 0.18s ease;
-                        }
-                        .status-option-btn:hover {
-                            transform: translateX(4px);
-                        }
-                    `}</style>
 
-                    {/* Header */}
-                    <div className="flex items-center justify-between p-6 border-b" style={{ borderColor: 'var(--border)' }}>
-                        <div>
-                            <p className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: '#34d399' }}>Omborxona</p>
-                            <h2 className="text-base font-bold text-slate-800 mt-0.5">{selectedAsset.name}</h2>
-                        </div>
-                        <button
-                            onClick={() => setSelectedAsset(null)}
-                            className="p-1.5 rounded-lg transition-colors"
-                            style={{ color: 'var(--muted)' }}
-                        >
-                            <X className="w-5 h-5" />
-                        </button>
+            {/* Asset detail drawer */}
+            <Drawer
+                open={!!selectedAsset}
+                onClose={() => setSelectedAsset(null)}
+                title={selectedAsset?.name ?? ''}
+                sub={t('pmInventory.equipment')}
+                width={420}
+                footer={selectedAsset ? (
+                    <div style={{ display: 'flex', gap: 10 }}>
+                        <Btn variant="ghost" block onClick={() => { setSelectedAsset(null); openEdit(selectedAsset); }}><Edit2 className="ic" /> Tahrirlash</Btn>
+                        <Btn variant="danger-ghost" block onClick={() => { setSelectedAsset(null); handleDelete(selectedAsset.id); }}><Trash2 className="ic" /> O'chirish</Btn>
                     </div>
-
-                    <div className="p-6 space-y-6">
-                        {/* Current Status */}
-                        <div className="rounded-xl p-4" style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}>
-                            <p className="text-[9px] uppercase tracking-widest text-slate-500 font-semibold mb-2">Joriy holat</p>
-                            <span
-                                className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-bold"
-                                style={{
-                                    backgroundColor: STATUS_META[selectedAsset.status]?.bg,
-                                    color:           STATUS_META[selectedAsset.status]?.fg,
-                                    border:          `1px solid ${STATUS_META[selectedAsset.status]?.border}`,
-                                }}
-                            >
+                ) : undefined}
+            >
+                {selectedAsset && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                        {/* Current status */}
+                        <div className="card" style={{ padding: '12px 14px' }}>
+                            <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-3)', marginBottom: 8 }}>Joriy holat</div>
+                            <span className="badge" style={{ backgroundColor: STATUS_META[selectedAsset.status]?.bg, color: STATUS_META[selectedAsset.status]?.fg, border: `1px solid ${STATUS_META[selectedAsset.status]?.border}` }}>
                                 {t(STATUS_META[selectedAsset.status]?.labelKey)}
                             </span>
                         </div>
 
-                        {/* Asset info */}
-                        <div className="space-y-2">
-                            <p className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">Jihozlar haqida</p>
-                            <div className="grid grid-cols-2 gap-3">
-                                {selectedAsset.category && (
-                                    <div className="rounded-xl p-3" style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}>
-                                        <p className="text-[9px] text-slate-500 uppercase tracking-wider font-semibold mb-1">Kategoriya</p>
-                                        <p className="text-xs font-bold text-slate-800">{t(CAT_KEYS[selectedAsset.category] || 'pmInventory.catOther')}</p>
-                                    </div>
-                                )}
-                                {selectedAsset.location && (
-                                    <div className="rounded-xl p-3" style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}>
-                                        <p className="text-[9px] text-slate-500 uppercase tracking-wider font-semibold mb-1">Joylashuv</p>
-                                        <p className="text-xs font-bold text-slate-800">{selectedAsset.location}</p>
-                                    </div>
-                                )}
-                                {selectedAsset.manufacturer && (
-                                    <div className="rounded-xl p-3" style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}>
-                                        <p className="text-[9px] text-slate-500 uppercase tracking-wider font-semibold mb-1">Ishlab chiqaruvchi</p>
-                                        <p className="text-xs font-bold text-slate-800">{selectedAsset.manufacturer}</p>
-                                    </div>
-                                )}
-                                {selectedAsset.serial_number && (
-                                    <div className="rounded-xl p-3" style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}>
-                                        <p className="text-[9px] text-slate-500 uppercase tracking-wider font-semibold mb-1">Seriya №</p>
-                                        <p className="text-xs font-bold text-slate-800 font-mono">{selectedAsset.serial_number}</p>
-                                    </div>
-                                )}
-                            </div>
+                        {/* Asset info grid */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                            {selectedAsset.category && (
+                                <div className="card" style={{ padding: '10px 12px' }}>
+                                    <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-3)', marginBottom: 4 }}>Kategoriya</div>
+                                    <div style={{ fontWeight: 700, fontSize: 12 }}>{t(CAT_KEYS[selectedAsset.category] || 'pmInventory.catOther')}</div>
+                                </div>
+                            )}
+                            {selectedAsset.location && (
+                                <div className="card" style={{ padding: '10px 12px' }}>
+                                    <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-3)', marginBottom: 4 }}>Joylashuv</div>
+                                    <div style={{ fontWeight: 700, fontSize: 12 }}>{selectedAsset.location}</div>
+                                </div>
+                            )}
+                            {selectedAsset.manufacturer && (
+                                <div className="card" style={{ padding: '10px 12px' }}>
+                                    <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-3)', marginBottom: 4 }}>Ishlab chiqaruvchi</div>
+                                    <div style={{ fontWeight: 700, fontSize: 12 }}>{selectedAsset.manufacturer}</div>
+                                </div>
+                            )}
+                            {selectedAsset.serial_number && (
+                                <div className="card" style={{ padding: '10px 12px' }}>
+                                    <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--text-3)', marginBottom: 4 }}>Seriya №</div>
+                                    <div style={{ fontWeight: 700, fontSize: 12, fontFamily: 'var(--font-mono)' }}>{selectedAsset.serial_number}</div>
+                                </div>
+                            )}
                         </div>
 
                         {/* Status change */}
-                        <div className="space-y-3">
-                            <p className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">Statusni o'zgartirish</p>
-                            <div className="space-y-2">
-                                {(['operational', 'needs_service', 'broken', 'retired'] as AssetStatus[]).map((st) => {
+                        <div>
+                            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-3)', marginBottom: 10 }}>Statusni o'zgartirish</div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                {(['operational', 'needs_service', 'broken', 'retired'] as AssetStatus[]).map(st => {
                                     const meta = STATUS_META[st];
                                     const isActive = selectedAsset.status === st;
                                     return (
-                                        <button
-                                            key={st}
-                                            disabled={isActive || statusUpdating}
+                                        <button key={st} disabled={isActive || statusUpdating}
                                             onClick={() => handleStatusUpdate(selectedAsset, st)}
-                                            className="status-option-btn w-full flex items-center justify-between px-4 py-3 rounded-xl text-left"
-                                            style={{
-                                                backgroundColor: isActive ? meta.bg : 'var(--bg)',
-                                                border: isActive ? `2px solid ${meta.border}` : '1px solid var(--border)',
-                                                opacity: isActive ? 1 : 0.8,
-                                                cursor: isActive ? 'default' : 'pointer',
-                                            }}
+                                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: 12, background: isActive ? meta.bg : 'var(--bg)', border: isActive ? `2px solid ${meta.border}` : '1px solid var(--border)', cursor: isActive ? 'default' : 'pointer', transition: 'all .15s' }}
                                         >
-                                            <span className="text-xs font-semibold" style={{ color: meta.fg }}>
-                                                {t(meta.labelKey)}
-                                            </span>
-                                            {isActive && (
-                                                <span className="text-[9px] uppercase tracking-widest font-bold px-2 py-0.5 rounded"
-                                                    style={{ backgroundColor: meta.border, color: meta.fg }}>
-                                                    Joriy
-                                                </span>
-                                            )}
-                                            {!isActive && statusUpdating && (
-                                                <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color: 'var(--muted)' }} />
-                                            )}
+                                            <span style={{ fontSize: 12, fontWeight: 600, color: meta.fg }}>{t(meta.labelKey)}</span>
+                                            {isActive && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 6, background: meta.border, color: meta.fg }}>Joriy</span>}
+                                            {!isActive && statusUpdating && <Loader2 className="ic" style={{ width: 14, height: 14, color: 'var(--text-3)', animation: 'spin 1s linear infinite' }} />}
                                         </button>
                                     );
                                 })}
                             </div>
                         </div>
-
-                        {/* Edit + Delete actions */}
-                        <div className="flex gap-3 pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
-                            <button
-                                onClick={() => { setSelectedAsset(null); openEdit(selectedAsset); }}
-                                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold transition-all"
-                                style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--muted)' }}
-                            >
-                                <Edit2 className="w-3.5 h-3.5" /> Tahrirlash
-                            </button>
-                            <button
-                                onClick={() => { setSelectedAsset(null); handleDelete(selectedAsset.id); }}
-                                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold transition-all"
-                                style={{ backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', color: '#f87171' }}
-                            >
-                                <Trash2 className="w-3.5 h-3.5" /> O'chirish
-                            </button>
-                        </div>
                     </div>
-                </aside>
-            </>
-        )}
+                )}
+            </Drawer>
         </AppShell>
     );
 }
@@ -1248,16 +1088,4 @@ function fs() {
     return { backgroundColor: 'var(--card)', border: '1px solid var(--border)' };
 }
 
-// ── Summary Card ─────────────────────────────────────────────────────────────
-
-function SummaryCard({ label, value, accent }: { label: string; value: number | string; accent: string }) {
-    return (
-        <div className="rounded-2xl p-5" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-            <p className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: accent }}>{label}</p>
-            <p className="text-2xl text-slate-800 mt-2 font-bold font-mono" style={{ fontFamily: "var(--font-display)" }}>
-                {value}
-            </p>
-        </div>
-    );
-}
 

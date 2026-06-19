@@ -2,12 +2,12 @@ import { useState, useMemo } from 'react';
 import { router, usePage } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import {
-    ArrowLeft, Plus, Building2, MapPin, ChevronRight,
-    ChevronDown, ChevronUp, Zap, X, Loader2, Home,
-    Edit, Trash2, Calculator,
+    ArrowLeft, Plus, Building2, ChevronDown, ChevronUp,
+    Zap, X, Loader2, Home, Calculator,
 } from 'lucide-react';
 import AppShell from '@/Components/AppShell';
 import FloorPlan from '@/Components/FloorPlan';
+import { PageHead, Btn, Field, TextInput, PmSelect } from '@/Components/pm/ui';
 
 interface Project {
     id: string;
@@ -187,139 +187,84 @@ export default function PMProjectShow({ project, buildings, aptStats }: Props) {
 
     return (
         <AppShell>
-            {/* Top bar */}
-            <header className="sticky top-0 z-20 flex items-center gap-3 px-6 h-14 border-b shrink-0"
-                style={{ backgroundColor: 'var(--card)', borderColor: 'rgba(16,185,129,0.10)' }}>
-                <button onClick={() => router.visit('/pm/projects')}
-                    className="p-1.5 rounded-lg transition-colors hover:bg-slate-100" style={{ color: '#64748b' }}>
-                    <ArrowLeft className="w-4 h-4" />
-                </button>
-                <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-xs" style={{ color: '#475569' }}>Loyihalar</span>
-                    <ChevronRight className="w-3 h-3 shrink-0" style={{ color: '#334155' }} />
-                    <span className="text-sm font-semibold text-slate-800 truncate">{project.name}</span>
-                </div>
-            </header>
-
-            <main className="px-6 py-6 space-y-6">
-                {/* Project info */}
-                <div className="rounded-2xl border p-5 flex items-center gap-4"
-                    style={{ backgroundColor: 'var(--card)', borderColor: 'rgba(16,185,129,0.10)' }}>
-                    <div className="flex items-center justify-center w-12 h-12 rounded-xl shrink-0"
-                        style={{ backgroundColor: 'rgba(16,185,129,0.12)' }}>
-                        <Building2 className="w-6 h-6" style={{ color: '#10b981' }} />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                        <h1 className="text-lg font-bold text-slate-800">{project.name}</h1>
-                        {project.location && (
-                            <div className="flex items-center gap-1.5 mt-0.5">
-                                <MapPin className="w-3 h-3 shrink-0" style={{ color: '#475569' }} />
-                                <span className="text-xs" style={{ color: '#64748b' }}>{project.location}</span>
-                            </div>
-                        )}
-                    </div>
-                    <div className="flex gap-6 text-center shrink-0">
-                        <div>
-                            <p className="text-xl font-bold text-slate-800">{buildings.length}</p>
-                            <p className="text-xs mt-0.5" style={{ color: '#475569' }}>Binolar</p>
-                        </div>
-                        <div>
-                            <p className="text-xl font-bold text-slate-800">
-                                {Object.values(aptStats).reduce((s, v) => s + v.total, 0)}
-                            </p>
-                            <p className="text-xs mt-0.5" style={{ color: '#475569' }}>Kvartiralar</p>
-                        </div>
-                    </div>
-                </div>
+            <div className="page">
+                <PageHead
+                    eyebrow={t('pmProjects.title')}
+                    title={project.name}
+                    sub={project.location ?? undefined}
+                    actions={
+                        <Btn variant="ghost" icon={ArrowLeft} onClick={() => router.visit('/pm/projects')}>
+                            Loyihalar
+                        </Btn>
+                    }
+                />
 
                 {/* Buildings section */}
-                <div>
-                    <div className="flex items-center justify-between mb-3">
-                        <h2 className="text-sm font-semibold text-slate-800">Binolar</h2>
+                <div style={{ marginBottom: 24 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                        <h2 style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-1)' }}>Binolar</h2>
                         {canEdit && (
-                            <button onClick={() => { setBuildingName(''); setShowAddBuilding(true); }}
-                                className="flex items-center gap-1.5 text-xs font-semibold text-white px-3.5 py-2 rounded-xl transition-all hover:opacity-90"
-                                style={{ backgroundColor: '#10b981' }}>
-                                <Plus className="w-3.5 h-3.5" /> Bino qo'shish
-                            </button>
+                            <Btn variant="primary" icon={Plus} onClick={() => { setBuildingName(''); setShowAddBuilding(true); }}>
+                                Bino qo'shish
+                            </Btn>
                         )}
                     </div>
 
                     {buildings.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-14 gap-3 rounded-2xl border border-dashed"
-                            style={{ borderColor: 'rgba(16,185,129,0.15)', backgroundColor: 'rgba(16,185,129,0.02)' }}>
-                            <Building2 className="w-8 h-8" style={{ color: 'var(--border)' }} />
-                            <p className="text-xs" style={{ color: '#475569' }}>Hech qanday bino yo'q. Birinchi binoni qo'shing.</p>
+                        <div className="empty">
+                            <div className="e-ic"><Building2 className="ic" /></div>
+                            <h3>Binolar yo'q</h3>
+                            <p>Birinchi binoni qo'shing</p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 16 }}>
                             {buildings.map(b => {
                                 const active = selectedBuilding?.id === b.id;
                                 const stats  = aptStats[b.id] ?? { total: 0, available: 0, sold: 0, reserved: 0 };
-                                const soldPct = stats.total > 0 ? Math.round((stats.sold / stats.total) * 100) : 0;
 
                                 return (
-                                    <div key={b.id} className="rounded-2xl border overflow-hidden transition-all duration-200"
-                                        style={{
-                                            borderColor:     active ? '#10b981' : 'rgba(16,185,129,0.08)',
-                                            backgroundColor: active ? 'rgba(16,185,129,0.04)' : 'var(--card)',
-                                        }}>
-                                        {/* Building header — click to toggle */}
+                                    <div key={b.id} className="card" style={{
+                                        borderColor: active ? 'var(--brand)' : undefined,
+                                        overflow: 'hidden',
+                                        transition: 'border-color 0.15s',
+                                    }}>
+                                        {/* Building toggle header */}
                                         <button onClick={() => setSelectedBuilding(active ? null : b)}
-                                            className="w-full p-4 text-left flex items-center justify-between gap-2 hover:bg-slate-50 transition-colors">
-                                            <div className="flex items-center gap-2.5 min-w-0">
-                                                <div className="flex items-center justify-center w-8 h-8 rounded-lg shrink-0"
-                                                    style={{ backgroundColor: active ? '#10b981' : 'rgba(16,185,129,0.12)' }}>
-                                                    <Building2 className="w-4 h-4 text-slate-800" />
-                                                </div>
-                                                <div className="min-w-0">
-                                                    <p className="text-xs font-bold text-slate-800 truncate">{b.name}</p>
-                                                    <p className="text-[10px] mt-0.5 font-semibold" style={{ color: '#475569' }}>
-                                                        {stats.total} kvartira
-                                                    </p>
-                                                </div>
+                                            style={{ width: '100%', padding: '14px 16px', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', cursor: 'pointer' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: 8, flexShrink: 0, backgroundColor: active ? 'var(--brand)' : 'var(--brand-tint)' }}>
+                                                <Building2 className="ic" style={{ color: active ? '#fff' : 'var(--brand)' }} />
+                                            </div>
+                                            <div style={{ minWidth: 0, flex: 1 }}>
+                                                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.name}</div>
+                                                <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 2 }}>{stats.total} kvartira</div>
                                             </div>
                                             {active
-                                                ? <ChevronUp   className="w-4 h-4 shrink-0" style={{ color: '#10b981' }} />
-                                                : <ChevronDown className="w-4 h-4 shrink-0" style={{ color: 'var(--border)' }} />}
+                                                ? <ChevronUp   className="ic" style={{ color: 'var(--brand)', flexShrink: 0 }} />
+                                                : <ChevronDown className="ic" style={{ color: 'var(--text-3)', flexShrink: 0 }} />}
                                         </button>
 
                                         {/* Stats mini-bar */}
                                         {stats.total > 0 && (
-                                            <div className="px-4 pb-3 -mt-1">
-                                                <div className="w-full h-1.5 rounded-full overflow-hidden mb-2"
-                                                    style={{ backgroundColor: 'var(--border)' }}>
-                                                    <div className="h-full flex">
-                                                        <div style={{ width: `${(stats.sold      / stats.total) * 100}%`, backgroundColor: '#2dd4bf' }} />
-                                                        <div style={{ width: `${(stats.reserved  / stats.total) * 100}%`, backgroundColor: '#f59e0b' }} />
+                                            <div style={{ padding: '0 16px 14px' }}>
+                                                <div style={{ width: '100%', height: 5, borderRadius: 99, overflow: 'hidden', backgroundColor: 'var(--border)', marginBottom: 8 }}>
+                                                    <div style={{ height: '100%', display: 'flex' }}>
+                                                        <div style={{ width: `${(stats.sold / stats.total) * 100}%`, backgroundColor: 'var(--ok)' }} />
+                                                        <div style={{ width: `${(stats.reserved / stats.total) * 100}%`, backgroundColor: 'var(--warn)' }} />
                                                     </div>
                                                 </div>
-                                                <div className="flex justify-between text-[10px]" style={{ color: '#475569' }}>
-                                                    <span style={{ color: '#34d399' }}>{stats.available} {t('projectShow.available')}</span>
-                                                    <span style={{ color: '#fbbf24' }}>{stats.reserved} {t('projectShow.reserved')}</span>
-                                                    <span style={{ color: '#2dd4bf' }}>{stats.sold} {t('projectShow.sold')}</span>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10 }}>
+                                                    <span style={{ color: 'var(--ok)' }}>{stats.available} {t('projectShow.available')}</span>
+                                                    <span style={{ color: 'var(--warn)' }}>{stats.reserved} {t('projectShow.reserved')}</span>
+                                                    <span style={{ color: 'var(--info)' }}>{stats.sold} {t('projectShow.sold')}</span>
                                                 </div>
                                             </div>
                                         )}
 
                                         {/* Action buttons when expanded */}
                                         {active && canEdit && (
-                                            <div className="px-3 pb-3 border-t space-y-2"
-                                                style={{ borderColor: 'rgba(16,185,129,0.08)' }}>
-                                                <div className="mt-3 grid grid-cols-2 gap-2">
-                                                    <button onClick={() => openBulkGen(b)}
-                                                        className="flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors border hover:border-emerald-500/40"
-                                                        style={{ borderColor: 'rgba(16,185,129,0.15)', color: '#34d399', backgroundColor: 'rgba(16,185,129,0.05)' }}>
-                                                        <Zap className="w-3.5 h-3.5" />
-                                                        Bulk yaratish
-                                                    </button>
-                                                    <button onClick={() => openAddApt(b)}
-                                                        className="flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors border hover:border-emerald-500/40"
-                                                        style={{ borderColor: 'rgba(16,185,129,0.15)', color: '#2dd4bf', backgroundColor: 'rgba(20,184,166,0.05)' }}>
-                                                        <Plus className="w-3.5 h-3.5" />
-                                                        Kvartira
-                                                    </button>
-                                                </div>
+                                            <div style={{ padding: '12px 16px 14px', borderTop: '1px solid var(--border)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                                                <Btn variant="soft" size="sm" icon={Zap as any} onClick={() => openBulkGen(b)}>Bulk</Btn>
+                                                <Btn variant="ghost" size="sm" icon={Plus} onClick={() => openAddApt(b)}>Kvartira</Btn>
                                             </div>
                                         )}
                                     </div>
@@ -332,9 +277,9 @@ export default function PMProjectShow({ project, buildings, aptStats }: Props) {
                 {/* Floor plan */}
                 {selectedBuilding && (
                     <div>
-                        <div className="flex items-center gap-2 mb-4">
-                            <div className="w-1 h-4 rounded-full" style={{ backgroundColor: '#10b981' }} />
-                            <h2 className="text-sm font-semibold text-slate-800">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                            <div style={{ width: 3, height: 18, borderRadius: 99, backgroundColor: 'var(--brand)', flexShrink: 0 }} />
+                            <h2 style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-1)' }}>
                                 Shaxmatka — {selectedBuilding.name}
                             </h2>
                         </div>
@@ -346,287 +291,177 @@ export default function PMProjectShow({ project, buildings, aptStats }: Props) {
                         />
                     </div>
                 )}
-            </main>
+            </div>
 
             {/* ── Add building modal ── */}
             {showAddBuilding && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-                    style={{ backgroundColor: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}
-                    onClick={e => e.target === e.currentTarget && setShowAddBuilding(false)}>
-                    <div className="w-full max-w-sm rounded-2xl p-6"
-                        style={{ backgroundColor: 'var(--card)', border: '1px solid rgba(16,185,129,0.15)' }}>
-                        <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-base font-semibold text-slate-800">Bino qo'shish</h2>
-                            <button onClick={() => setShowAddBuilding(false)} style={{ color: '#475569' }}
-                                className="hover:text-white transition-colors">
-                                <X className="w-5 h-5" />
-                            </button>
+                <div className="scrim show" onClick={() => setShowAddBuilding(false)}>
+                    <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+                        onClick={e => e.stopPropagation()}>
+                        <div className="card card-pad" style={{ width: '100%', maxWidth: 380 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+                                <h2 style={{ fontWeight: 700, fontSize: 15, color: 'var(--text-1)' }}>Bino qo'shish</h2>
+                                <button className="drawer-close" onClick={() => setShowAddBuilding(false)}><X className="ic" /></button>
+                            </div>
+                            <form onSubmit={handleAddBuilding} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                                <Field label="Bino nomi">
+                                    <TextInput type="text" required placeholder="masalan: A korpus"
+                                        value={buildingName} onChange={e => setBuildingName(e.target.value)} />
+                                </Field>
+                                <Field label="Oylik to'lov (m² uchun), $">
+                                    <TextInput type="number" step="0.01" min="0" placeholder="masalan: 1.50"
+                                        value={monthlyFee} onChange={e => setMonthlyFee(e.target.value)} />
+                                </Field>
+                                <Btn variant="primary" block type="submit" disabled={addingBuilding} icon={addingBuilding ? Loader2 : undefined}>
+                                    Qo'shish
+                                </Btn>
+                            </form>
                         </div>
-                        <form onSubmit={handleAddBuilding} className="space-y-4">
-                            <div>
-                                <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--muted)' }}>Bino nomi</label>
-                                <input type="text" required placeholder="masalan: A korpus" value={buildingName}
-                                    onChange={e => setBuildingName(e.target.value)}
-                                    className="w-full rounded-xl px-4 py-2.5 text-sm text-slate-800 outline-none"
-                                    style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.15)' }} />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--muted)' }}>Oylik to'lov (m² uchun), $</label>
-                                <input type="number" step="0.01" min="0" placeholder="masalan: 1.50" value={monthlyFee}
-                                    onChange={e => setMonthlyFee(e.target.value)}
-                                    className="w-full rounded-xl px-4 py-2.5 text-sm text-slate-800 outline-none"
-                                    style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.15)' }} />
-                            </div>
-                            <button type="submit" disabled={addingBuilding}
-                                className="w-full py-2.5 rounded-xl text-sm font-bold text-white disabled:opacity-50 flex items-center justify-center gap-2"
-                                style={{ backgroundColor: '#10b981' }}>
-                                {addingBuilding && <Loader2 className="w-4 h-4 animate-spin" />}
-                                Qo'shish
-                            </button>
-                        </form>
                     </div>
                 </div>
             )}
 
             {/* ── Bulk generate modal ── */}
             {showBulkGen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-                    style={{ backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)' }}
-                    onClick={e => e.target === e.currentTarget && setShowBulkGen(false)}>
-                    <div className="w-full max-w-lg rounded-2xl p-6 max-h-[90vh] overflow-y-auto"
-                        style={{ backgroundColor: 'var(--card)', border: '1px solid rgba(16,185,129,0.15)' }}>
-
-                        {/* Header */}
-                        <div className="flex items-center justify-between mb-5">
-                            <div className="flex items-center gap-2">
-                                <Zap className="w-4 h-4" style={{ color: '#10b981' }} />
-                                <h2 className="text-sm font-bold text-slate-800">Massovoe sozdanie kvartir</h2>
-                            </div>
-                            <button onClick={() => setShowBulkGen(false)} style={{ color: '#475569' }}
-                                className="hover:text-white transition-colors">
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-
-                        <form onSubmit={handleBulkGenerate} className="space-y-5">
-                            {/* Etajlar soni */}
-                            <div>
-                                <label className="block text-xs font-semibold mb-2" style={{ color: 'var(--muted)' }}>Qavatlar soni</label>
-                                <input
-                                    type="number" min={1} max={100} required
-                                    value={bulkFloors}
-                                    onChange={e => setBulkFloors(e.target.value)}
-                                    className="w-full rounded-xl px-4 py-2.5 text-sm text-slate-800 outline-none font-semibold"
-                                    style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.2)' }}
-                                />
-                            </div>
-
-                            {/* Xona turlari jadvali */}
-                            <div>
-                                <div className="flex items-center justify-between mb-2">
-                                    <label className="text-xs font-semibold" style={{ color: 'var(--muted)' }}>Kvartira turlari</label>
+                <div className="scrim show" onClick={() => setShowBulkGen(false)}>
+                    <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+                        onClick={e => e.stopPropagation()}>
+                        <div className="card card-pad" style={{ width: '100%', maxWidth: 520, maxHeight: '90vh', overflowY: 'auto' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <Zap className="ic" style={{ color: 'var(--brand)' }} />
+                                    <h2 style={{ fontWeight: 700, fontSize: 15, color: 'var(--text-1)' }}>Kvartiralarni bulk yaratish</h2>
                                 </div>
+                                <button className="drawer-close" onClick={() => setShowBulkGen(false)}><X className="ic" /></button>
+                            </div>
 
-                                <div className="rounded-xl overflow-hidden"
-                                    style={{ border: '1px solid rgba(16,185,129,0.12)', backgroundColor: '#f8fcfb' }}>
-                                    <div className="grid text-[10px] font-bold uppercase tracking-wider px-3 py-2 border-b"
-                                        style={{ gridTemplateColumns: '44px 1fr 80px 90px', borderColor: 'rgba(16,185,129,0.12)', color: '#64748b' }}>
-                                        <span></span>
-                                        <span>Tur</span>
-                                        <span className="text-center">Har qavatda</span>
-                                        <span className="text-center">Maydon m²</span>
-                                    </div>
+                            <form onSubmit={handleBulkGenerate} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+                                <Field label="Qavatlar soni">
+                                    <TextInput type="number" min={1} max={100} required
+                                        value={bulkFloors} onChange={e => setBulkFloors(e.target.value)} />
+                                </Field>
 
-                                    {aptTypes.map((t, idx) => (
-                                        <div key={t.rooms}
-                                            className="grid items-center px-3 py-2.5"
-                                            style={{
-                                                gridTemplateColumns: '44px 1fr 80px 90px',
-                                                borderBottom: idx < aptTypes.length - 1 ? '1px solid rgba(16,185,129,0.08)' : 'none',
-                                                opacity: t.enabled ? 1 : 0.45,
-                                            }}>
-
-                                            {/* Toggle */}
-                                            <button
-                                                type="button"
-                                                onClick={() => updateType(t.rooms, 'enabled', !t.enabled)}
-                                                className="w-9 h-5 rounded-full transition-all relative flex-shrink-0"
-                                                style={{ backgroundColor: t.enabled ? '#10b981' : '#cbd5e1' }}>
-                                                <span
-                                                    className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all"
-                                                    style={{ left: t.enabled ? '18px' : '2px' }}
-                                                />
-                                            </button>
-
-                                            <span className="text-xs font-semibold text-slate-700">{t.rooms}-xonali</span>
-
-                                            <input
-                                                type="number" min={1} max={20}
-                                                value={t.count}
-                                                disabled={!t.enabled}
-                                                onChange={e => updateType(t.rooms, 'count', e.target.value)}
-                                                className="w-14 text-center rounded-lg px-2 py-1 text-xs text-slate-800 outline-none disabled:cursor-not-allowed mx-auto block"
-                                                style={{ backgroundColor: t.enabled ? 'white' : 'transparent', border: `1px solid ${t.enabled ? 'rgba(16,185,129,0.25)' : 'transparent'}` }}
-                                            />
-
-                                            <input
-                                                type="number" min={1} step="0.1"
-                                                value={t.area}
-                                                disabled={!t.enabled}
-                                                onChange={e => updateType(t.rooms, 'area', e.target.value)}
-                                                className="w-16 text-center rounded-lg px-2 py-1 text-xs text-slate-800 outline-none disabled:cursor-not-allowed mx-auto block"
-                                                style={{ backgroundColor: t.enabled ? 'white' : 'transparent', border: `1px solid ${t.enabled ? 'rgba(16,185,129,0.25)' : 'transparent'}` }}
-                                            />
+                                <div>
+                                    <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-3)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Kvartira turlari</div>
+                                    <div style={{ border: '1px solid var(--border)', borderRadius: 10, overflow: 'hidden', backgroundColor: 'var(--bg)' }}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '44px 1fr 80px 90px', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-3)', padding: '8px 12px', borderBottom: '1px solid var(--border)' }}>
+                                            <span></span><span>Tur</span><span style={{ textAlign: 'center' }}>Har qavatda</span><span style={{ textAlign: 'center' }}>Maydon m²</span>
                                         </div>
-                                    ))}
+                                        {aptTypes.map((t, idx) => (
+                                            <div key={t.rooms} style={{ display: 'grid', gridTemplateColumns: '44px 1fr 80px 90px', alignItems: 'center', padding: '10px 12px', borderBottom: idx < aptTypes.length - 1 ? '1px solid var(--border)' : 'none', opacity: t.enabled ? 1 : 0.4 }}>
+                                                <button type="button" onClick={() => updateType(t.rooms, 'enabled', !t.enabled)}
+                                                    style={{ width: 36, height: 20, borderRadius: 99, position: 'relative', flexShrink: 0, backgroundColor: t.enabled ? 'var(--brand)' : 'var(--border)', border: 'none', cursor: 'pointer' }}>
+                                                    <span style={{ position: 'absolute', top: 2, width: 16, height: 16, borderRadius: 99, backgroundColor: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', transition: 'left 0.15s', left: t.enabled ? 18 : 2 }} />
+                                                </button>
+                                                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-1)' }}>{t.rooms}-xonali</span>
+                                                <input type="number" min={1} max={20} value={t.count} disabled={!t.enabled}
+                                                    onChange={e => updateType(t.rooms, 'count', e.target.value)}
+                                                    style={{ width: 52, textAlign: 'center', borderRadius: 6, padding: '4px 6px', fontSize: 12, color: 'var(--text-1)', backgroundColor: t.enabled ? 'var(--surface)' : 'transparent', border: `1px solid ${t.enabled ? 'var(--border)' : 'transparent'}`, margin: '0 auto', display: 'block', outline: 'none' }} />
+                                                <input type="number" min={1} step="0.1" value={t.area} disabled={!t.enabled}
+                                                    onChange={e => updateType(t.rooms, 'area', e.target.value)}
+                                                    style={{ width: 60, textAlign: 'center', borderRadius: 6, padding: '4px 6px', fontSize: 12, color: 'var(--text-1)', backgroundColor: t.enabled ? 'var(--surface)' : 'transparent', border: `1px solid ${t.enabled ? 'var(--border)' : 'transparent'}`, margin: '0 auto', display: 'block', outline: 'none' }} />
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
 
-                            {/* Summary */}
-                            <div className="flex items-center gap-2.5 rounded-xl px-4 py-3"
-                                style={{ backgroundColor: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.15)' }}>
-                                <Zap className="w-4 h-4 shrink-0" style={{ color: '#10b981' }} />
-                                <span className="text-xs" style={{ color: '#475569' }}>Yaratiladi:</span>
-                                <span className="ml-auto text-xs font-bold" style={{ color: '#10b981' }}>
-                                    {grandTotal > 0
-                                        ? `${totalFloors} qavat × ${totalApts} kvartira = ${grandTotal} ta`
-                                        : '—'}
-                                </span>
-                            </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderRadius: 10, backgroundColor: 'var(--brand-tint)', border: '1px solid color-mix(in srgb, var(--brand) 20%, transparent)' }}>
+                                    <Zap className="ic" style={{ color: 'var(--brand)', flexShrink: 0 }} />
+                                    <span style={{ fontSize: 12, color: 'var(--text-2)' }}>Yaratiladi:</span>
+                                    <span style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 700, color: 'var(--brand)' }}>
+                                        {grandTotal > 0 ? `${totalFloors} qavat × ${totalApts} kvartira = ${grandTotal} ta` : '—'}
+                                    </span>
+                                </div>
 
-                            {genError && <p className="text-xs font-semibold" style={{ color: '#f87171' }}>{genError}</p>}
+                                {genError && <p style={{ fontSize: 12, color: 'var(--danger)', fontWeight: 600 }}>{genError}</p>}
 
-                            <div className="flex gap-3">
-                                <button type="button" onClick={() => setShowBulkGen(false)}
-                                    className="flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all"
-                                    style={{ border: '1px solid rgba(16,185,129,0.12)', color: '#64748b' }}>
-                                    Bekor qilish
-                                </button>
-                                <button type="submit" disabled={generating || grandTotal === 0}
-                                    className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold text-white disabled:opacity-50"
-                                    style={{ backgroundColor: '#10b981' }}>
-                                    {generating && <Loader2 className="w-4 h-4 animate-spin" />}
-                                    <Zap className="w-3.5 h-3.5" />
-                                    Yaratish
-                                </button>
-                            </div>
-                        </form>
+                                <div style={{ display: 'flex', gap: 10 }}>
+                                    <Btn variant="ghost" block type="button" onClick={() => setShowBulkGen(false)}>Bekor qilish</Btn>
+                                    <Btn variant="primary" block type="submit" disabled={generating || grandTotal === 0} icon={generating ? Loader2 : Zap as any}>
+                                        Yaratish
+                                    </Btn>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             )}
 
             {/* ── Add single apartment modal ── */}
             {showAptModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-                    style={{ backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)' }}
-                    onClick={e => e.target === e.currentTarget && setShowAptModal(false)}>
-                    <div className="w-full max-w-md rounded-2xl p-6 max-h-[90vh] overflow-y-auto"
-                        style={{ backgroundColor: 'var(--card)', border: '1px solid rgba(16,185,129,0.15)' }}>
-                        <div className="flex items-center justify-between mb-5">
-                            <div className="flex items-center gap-2">
-                                <Home className="w-4 h-4" style={{ color: '#10b981' }} />
-                                <h2 className="text-sm font-bold text-slate-800">Yangi kvartira</h2>
+                <div className="scrim show" onClick={() => setShowAptModal(false)}>
+                    <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+                        onClick={e => e.stopPropagation()}>
+                        <div className="card card-pad" style={{ width: '100%', maxWidth: 440, maxHeight: '90vh', overflowY: 'auto' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <Home className="ic" style={{ color: 'var(--brand)' }} />
+                                    <h2 style={{ fontWeight: 700, fontSize: 15, color: 'var(--text-1)' }}>Yangi kvartira</h2>
+                                </div>
+                                <button className="drawer-close" onClick={() => setShowAptModal(false)}><X className="ic" /></button>
                             </div>
-                            <button onClick={() => setShowAptModal(false)} style={{ color: '#475569' }}
-                                className="hover:text-white transition-colors">
-                                <X className="w-5 h-5" />
-                            </button>
+
+                            <form onSubmit={handleAptSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                                    <Field label="Qavat *">
+                                        <TextInput type="number" min={1} required placeholder="masalan: 5"
+                                            value={aptForm.floor} onChange={e => setAptForm(f => ({ ...f, floor: e.target.value }))} />
+                                    </Field>
+                                    <Field label="Kvartira raqami *">
+                                        <TextInput type="text" required placeholder="masalan: 501"
+                                            value={aptForm.number} onChange={e => setAptForm(f => ({ ...f, number: e.target.value }))} />
+                                    </Field>
+                                </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                                    <Field label="Xonalar *">
+                                        <TextInput type="number" min={0} required
+                                            value={aptForm.rooms} onChange={e => setAptForm(f => ({ ...f, rooms: e.target.value }))} />
+                                    </Field>
+                                    <Field label="Holat">
+                                        <PmSelect value={aptForm.status} onChange={e => setAptForm(f => ({ ...f, status: e.target.value as any }))}>
+                                            <option value="available">{t('projectShow.statusAvailable')}</option>
+                                            <option value="reserved">{t('projectShow.statusReserved')}</option>
+                                            <option value="sold">{t('projectShow.statusSold')}</option>
+                                        </PmSelect>
+                                    </Field>
+                                </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                                    <Field label="Maydon, m²">
+                                        <TextInput type="number" step="0.01" placeholder="masalan: 65.50"
+                                            value={aptForm.area} onChange={e => setAptForm(f => ({ ...f, area: e.target.value }))} />
+                                    </Field>
+                                    <Field label="Narx, $">
+                                        <TextInput type="number" placeholder="masalan: 85000"
+                                            value={aptForm.price} onChange={e => setAptForm(f => ({ ...f, price: e.target.value }))} />
+                                    </Field>
+                                </div>
+
+                                {/* Price per m² calculator */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', borderRadius: 10, backgroundColor: 'var(--brand-tint)', border: '1px solid color-mix(in srgb, var(--brand) 15%, transparent)' }}>
+                                    <Calculator className="ic" style={{ color: 'var(--text-3)', flexShrink: 0 }} />
+                                    <span style={{ fontSize: 12, color: 'var(--text-3)' }}>Hisoblangan narx m² uchun:</span>
+                                    {pricePerM2 ? (
+                                        <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-1)', marginLeft: 'auto' }}>${pricePerM2.toLocaleString()} / m²</span>
+                                    ) : (
+                                        <span style={{ fontSize: 12, color: 'var(--text-3)', marginLeft: 'auto' }}>maydon va narxni kiriting</span>
+                                    )}
+                                </div>
+
+                                <Field label="Turi">
+                                    <TextInput type="text" placeholder="masalan: Studio, Penthouse"
+                                        value={aptForm.type} onChange={e => setAptForm(f => ({ ...f, type: e.target.value }))} />
+                                </Field>
+
+                                <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+                                    <Btn variant="ghost" block type="button" onClick={() => setShowAptModal(false)}>Bekor qilish</Btn>
+                                    <Btn variant="primary" block type="submit" disabled={aptSubmitting} icon={aptSubmitting ? Loader2 : undefined}>
+                                        Yaratish
+                                    </Btn>
+                                </div>
+                            </form>
                         </div>
-
-                        <form onSubmit={handleAptSubmit} className="space-y-4">
-                            <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--muted)' }}>Qavat *</label>
-                                    <input type="number" min={1} required value={aptForm.floor}
-                                        onChange={e => setAptForm(f => ({ ...f, floor: e.target.value }))}
-                                        placeholder="masalan: 5"
-                                        className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
-                                        style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.12)' }} />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--muted)' }}>Kvartira raqami *</label>
-                                    <input type="text" required value={aptForm.number}
-                                        onChange={e => setAptForm(f => ({ ...f, number: e.target.value }))}
-                                        placeholder="masalan: 501"
-                                        className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
-                                        style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.12)' }} />
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--muted)' }}>Xonalar *</label>
-                                    <input type="number" min={0} required value={aptForm.rooms}
-                                        onChange={e => setAptForm(f => ({ ...f, rooms: e.target.value }))}
-                                        className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
-                                        style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.12)' }} />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--muted)' }}>Holat</label>
-                                    <select value={aptForm.status} onChange={e => setAptForm(f => ({ ...f, status: e.target.value as any }))}
-                                        className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
-                                        style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.12)' }}>
-                                        <option value="available">{t('projectShow.statusAvailable')}</option>
-                                        <option value="reserved">{t('projectShow.statusReserved')}</option>
-                                        <option value="sold">{t('projectShow.statusSold')}</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--muted)' }}>Maydon, m²</label>
-                                    <input type="number" step="0.01" value={aptForm.area}
-                                        onChange={e => setAptForm(f => ({ ...f, area: e.target.value }))}
-                                        placeholder="masalan: 65.50"
-                                        className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
-                                        style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.12)' }} />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--muted)' }}>Narx, $</label>
-                                    <input type="number" value={aptForm.price}
-                                        onChange={e => setAptForm(f => ({ ...f, price: e.target.value }))}
-                                        placeholder="masalan: 85000"
-                                        className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
-                                        style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.12)' }} />
-                                </div>
-                            </div>
-
-                            {/* Price per m² calculator */}
-                            <div className="flex items-center gap-2 rounded-xl px-4 py-2.5"
-                                style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.08)' }}>
-                                <Calculator className="w-3.5 h-3.5 shrink-0" style={{ color: '#475569' }} />
-                                <span className="text-xs" style={{ color: '#475569' }}>Hisoblangan narx m² uchun:</span>
-                                {pricePerM2 ? (
-                                    <span className="text-xs font-bold text-slate-800 ml-auto">${pricePerM2.toLocaleString()} / m²</span>
-                                ) : (
-                                    <span className="text-xs ml-auto" style={{ color: '#334155' }}>maydon va narxni kiriting</span>
-                                )}
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--muted)' }}>Turi</label>
-                                <input type="text" value={aptForm.type}
-                                    onChange={e => setAptForm(f => ({ ...f, type: e.target.value }))}
-                                    placeholder="masalan: Studio, Penthouse"
-                                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
-                                    style={{ backgroundColor: '#f0faf3', border: '1px solid rgba(16,185,129,0.12)' }} />
-                            </div>
-
-                            <div className="flex gap-3 pt-2">
-                                <button type="button" onClick={() => setShowAptModal(false)}
-                                    className="flex-1 py-2.5 rounded-xl text-xs font-semibold hover:bg-slate-100 transition-all"
-                                    style={{ border: '1px solid rgba(16,185,129,0.12)', color: '#64748b' }}>
-                                    Bekor qilish
-                                </button>
-                                <button type="submit" disabled={aptSubmitting}
-                                    className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold text-white disabled:opacity-50"
-                                    style={{ backgroundColor: '#10b981' }}>
-                                    {aptSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                                    Yaratish
-                                </button>
-                            </div>
-                        </form>
                     </div>
                 </div>
             )}

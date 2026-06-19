@@ -1,12 +1,14 @@
 import { useState, useMemo } from 'react';
 import { Head, router } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
-import {
-    Plus, Search, Star, Phone, Mail, MessageCircle, Loader2, HardHat,
-    Edit2, ToggleRight, X, Eye, CheckCircle2, Clock, AlertCircle,
-    DollarSign, Wrench, ChevronRight,
-} from 'lucide-react';
+import { HardHat, ToggleRight } from 'lucide-react';
 import AppShell from '@/Components/AppShell';
+import {
+  PageHead, Stat, Badge, Btn, Drawer, Field, TextInput, PmSelect, Avatar, Seg, EmptyState,
+  priorityTone, ticketStatusTone,
+  Plus, Search, Star, Phone, Mail, MessageCircle, Loader2,
+  Edit2, X, CheckCircle2, Clock, AlertCircle, DollarSign, Wrench, ChevronRight,
+} from '@/Components/pm/ui';
 
 interface Vendor {
   id:                string;
@@ -49,9 +51,7 @@ interface VendorDetail {
   };
 }
 
-interface Props {
-  vendors: Vendor[];
-}
+interface Props { vendors: Vendor[]; }
 
 const SPEC_RU: Record<string, string> = {
   plumbing:   'Plumbing',
@@ -63,30 +63,27 @@ const SPEC_RU: Record<string, string> = {
   structural: 'Structural',
   other:      'Other',
 };
-
 const ALL_SPECS = Object.keys(SPEC_RU);
 
 export default function Index({ vendors }: Props) {
   const { t } = useTranslation();
-  const [search, setSearch] = useState('');
+  const [search, setSearch]       = useState('');
   const [specFilter, setSpecFilter] = useState('all');
   const [showActive, setShowActive] = useState(true);
 
-  // Modals
-  const [showModal, setShowModal] = useState(false);
+  // Form modal
+  const [showModal, setShowModal]       = useState(false);
   const [editingVendor, setEditingVendor] = useState<Vendor | null>(null);
-
-  // Form State
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
+  const [name, setName]                   = useState('');
+  const [phone, setPhone]                 = useState('');
+  const [email, setEmail]                 = useState('');
   const [telegramUsername, setTelegramUsername] = useState('');
-  const [specializations, setSpecializations] = useState<string[]>([]);
-  const [notes, setNotes] = useState('');
-  const [submitting, setSubmitting] = useState(false);
+  const [specializations, setSpecializations]   = useState<string[]>([]);
+  const [notes, setNotes]                 = useState('');
+  const [submitting, setSubmitting]       = useState(false);
 
-  // Detail modal
-  const [detailData,    setDetailData]    = useState<VendorDetail | null>(null);
+  // Detail drawer
+  const [detailData, setDetailData]       = useState<VendorDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
 
   const openDetail = async (v: Vendor) => {
@@ -96,85 +93,52 @@ export default function Index({ vendors }: Props) {
       const res  = await fetch(`/pm/vendors/${v.id}`, { headers: { Accept: 'application/json' } });
       const data = await res.json();
       setDetailData(data);
-    } catch {
-      /* silent */
-    } finally {
-      setDetailLoading(false);
-    }
+    } catch { /* silent */ }
+    finally { setDetailLoading(false); }
   };
 
-  const openCreateModal = () => {
+  function openCreateModal() {
     setEditingVendor(null);
-    setName('');
-    setPhone('');
-    setEmail('');
-    setTelegramUsername('');
-    setSpecializations([]);
-    setNotes('');
+    setName(''); setPhone(''); setEmail(''); setTelegramUsername(''); setSpecializations([]); setNotes('');
     setShowModal(true);
-  };
+  }
 
-  const openEditModal = (v: Vendor) => {
+  function openEditModal(v: Vendor) {
     setEditingVendor(v);
-    setName(v.name);
-    setPhone(v.phone);
-    setEmail(v.email || '');
+    setName(v.name); setPhone(v.phone); setEmail(v.email || '');
     setTelegramUsername(v.telegram_username || '');
-    setSpecializations(v.specializations || []);
-    setNotes(v.notes || '');
+    setSpecializations(v.specializations || []); setNotes(v.notes || '');
     setShowModal(true);
-  };
+  }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
-
-    const payload = {
-      name:              name.trim(),
-      phone:             phone.trim(),
-      email:             email.trim() || null,
-      telegram_username: telegramUsername.trim() || null,
-      specializations:   specializations,
-      notes:             notes.trim() || null,
-    };
-
+    const payload = { name: name.trim(), phone: phone.trim(), email: email.trim() || null, telegram_username: telegramUsername.trim() || null, specializations, notes: notes.trim() || null };
     if (editingVendor) {
       router.put(`/pm/vendors/${editingVendor.id}`, { ...payload, is_active: editingVendor.is_active }, {
-        onSuccess: () => {
-          setShowModal(false);
-          setSubmitting(false);
-        },
-        onError: () => setSubmitting(false),
+        onSuccess: () => { setShowModal(false); setSubmitting(false); },
+        onError:   () => setSubmitting(false),
       });
     } else {
       router.post('/pm/vendors', payload, {
-        onSuccess: () => {
-          setShowModal(false);
-          setSubmitting(false);
-        },
-        onError: () => setSubmitting(false),
+        onSuccess: () => { setShowModal(false); setSubmitting(false); },
+        onError:   () => setSubmitting(false),
       });
     }
-  };
+  }
 
-  const handleToggleActive = (v: Vendor) => {
-    router.put(`/pm/vendors/${v.id}`, {
-      name:              v.name,
-      phone:             v.phone,
-      email:             v.email,
-      telegram_username: v.telegram_username,
-      specializations:   v.specializations,
-      is_active:         !v.is_active,
-      notes:             v.notes,
-    }, {
-      preserveScroll: true,
-    });
-  };
+  function handleToggleActive(v: Vendor) {
+    router.put(`/pm/vendors/${v.id}`, { name: v.name, phone: v.phone, email: v.email, telegram_username: v.telegram_username, specializations: v.specializations, is_active: !v.is_active, notes: v.notes }, { preserveScroll: true });
+  }
 
-  // Filter vendors list
+  function toggleSpec(spec: string, checked: boolean) {
+    setSpecializations(prev => checked ? [...prev, spec] : prev.filter(s => s !== spec));
+  }
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return vendors.filter((v) => {
+    return vendors.filter(v => {
       if (showActive ? !v.is_active : v.is_active) return false;
       if (specFilter !== 'all' && !(v.specializations ?? []).includes(specFilter)) return false;
       if (q && !v.name.toLowerCase().includes(q) && !v.phone.includes(q)) return false;
@@ -183,202 +147,104 @@ export default function Index({ vendors }: Props) {
   }, [vendors, search, specFilter, showActive]);
 
   const stats = useMemo(() => {
-    const active = vendors.filter((v) => v.is_active).length;
+    const active   = vendors.filter(v => v.is_active).length;
     const archived = vendors.length - active;
-    let avgRating = 0;
-    if (active > 0) {
-      avgRating = vendors.filter((v) => v.is_active).reduce((s, v) => s + (Number(v.rating) || 0), 0) / active;
-    }
+    let avgRating  = 0;
+    if (active > 0) avgRating = vendors.filter(v => v.is_active).reduce((s, v) => s + (Number(v.rating) || 0), 0) / active;
     const totalJobs = vendors.reduce((s, v) => s + (v.completed_jobs || 0), 0);
     return { active, archived, avgRating, totalJobs };
   }, [vendors]);
 
-  const handleSpecCheckboxChange = (spec: string, checked: boolean) => {
-    if (checked) {
-      setSpecializations((prev) => [...prev, spec]);
-    } else {
-      setSpecializations((prev) => prev.filter((s) => s !== spec));
-    }
-  };
+  const isDrawerOpen = detailLoading || !!detailData;
 
   return (
     <AppShell>
-      <Head title="Vendors - PM 1Mahalla" />
+      <Head title={t('pmVendors.title') + ' — PM'} />
+      <div className="page">
+        <PageHead
+          eyebrow={t('common.propertyMgmt')}
+          title={t('pmVendors.title')}
+          sub={t('pmVendors.subtitle')}
+          actions={<Btn variant="primary" icon={Plus} onClick={openCreateModal}>{t('pmVendors.addVendor')}</Btn>}
+        />
 
-      {/* Header bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b" style={{ borderColor: 'var(--border)' }}>
-        <div>
-          <p className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: '#34d399' }}>
-            Property Management
-          </p>
-          <h1 className="text-2xl font-bold text-slate-800 mt-1">{t('pmVendors.title')}</h1>
-          <p className="text-xs mt-1" style={{ color: 'var(--muted)' }}>
-            {t('pmVendors.subtitle')}
-          </p>
-        </div>
-        <button
-          onClick={openCreateModal}
-          className="flex items-center gap-1.5 text-xs font-semibold text-white px-4 py-3 rounded-xl transition-all"
-          style={{ background: 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)' }}
-        >
-          <Plus className="w-4 h-4" />
-          {t('pmVendors.addVendor')}
-        </button>
-      </div>
-
-      <div className="mt-6 space-y-6">
-        {/* Summary Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <SummaryCard label={t('pmVendors.active')}    value={String(stats.active)}       accent="#34d399" />
-          <SummaryCard label={t('pmVendors.archived')}  value={String(stats.archived)}     accent="var(--muted)" />
-          <SummaryCard label={t('pmVendors.avgRating')} value={stats.avgRating.toFixed(1)} accent="#fbbf24" />
-          <SummaryCard label={t('pmVendors.totalJobs')} value={String(stats.totalJobs)}    accent="#60a5fa" />
+        {/* Stats */}
+        <div className="stat-grid" style={{ marginBottom: 24 }}>
+          <Stat label={t('pmVendors.active')}    value={stats.active}                icon={HardHat}      tone="ok"      />
+          <Stat label={t('pmVendors.archived')}  value={stats.archived}              icon={AlertCircle}  tone="neutral" />
+          <Stat label={t('pmVendors.avgRating')} value={stats.avgRating.toFixed(1)}  icon={Star as any}  tone="warn"    />
+          <Stat label={t('pmVendors.totalJobs')} value={stats.totalJobs}             icon={Wrench}       tone="info"    />
         </div>
 
-        {/* Tab Filters and Search */}
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
-            <button
-              onClick={() => setShowActive(true)}
-              className="px-4 py-2 text-xs font-semibold transition-all"
-              style={{
-                backgroundColor: showActive ? 'rgba(16,185,129,0.10)' : 'transparent',
-                color:           showActive ? '#6ee7b7' : 'var(--muted)',
-              }}
-            >
-              {t('pmVendors.activeTab')}
-            </button>
-            <button
-              onClick={() => setShowActive(false)}
-              className="px-4 py-2 text-xs font-semibold transition-all"
-              style={{
-                backgroundColor: !showActive ? 'rgba(16,185,129,0.10)' : 'transparent',
-                color:           !showActive ? '#6ee7b7' : 'var(--muted)',
-              }}
-            >
-              {t('pmVendors.archiveTab')}
-            </button>
-          </div>
-
-          <div className="relative flex-1 min-w-[220px] max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder={t('pmVendors.searchPlaceholder')}
-              className="w-full rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-800 outline-none placeholder:text-slate-400"
-              style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
+        {/* Filters */}
+        <div className="card card-pad" style={{ marginBottom: 18 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'flex-end' }}>
+            <Seg
+              value={showActive ? 'active' : 'archived'}
+              onChange={v => setShowActive(v === 'active')}
+              options={[
+                { value: 'active',   label: t('pmVendors.activeTab')  },
+                { value: 'archived', label: t('pmVendors.archiveTab') },
+              ]}
             />
+            <div style={{ flex: '1 1 200px', maxWidth: 340 }}>
+              <Field>
+                <TextInput icon={Search} value={search} onChange={e => setSearch(e.target.value)} placeholder={t('pmVendors.searchPlaceholder')} />
+              </Field>
+            </div>
+            <Field>
+              <PmSelect value={specFilter} onChange={e => setSpecFilter(e.target.value)}>
+                <option value="all">{t('pmVendors.allSpecs')}</option>
+                {ALL_SPECS.map(s => <option key={s} value={s}>{SPEC_RU[s]}</option>)}
+              </PmSelect>
+            </Field>
           </div>
-
-          <select
-            value={specFilter}
-            onChange={(e) => setSpecFilter(e.target.value)}
-            className="rounded-xl px-3 py-2.5 text-xs text-slate-800 outline-none cursor-pointer"
-            style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
-          >
-            <option value="all">{t('pmVendors.allSpecs')}</option>
-            {ALL_SPECS.map((s) => (
-              <option key={s} value={s}>{SPEC_RU[s]}</option>
-            ))}
-          </select>
         </div>
 
-        {/* Vendors Grid */}
+        {/* Vendor cards */}
         {filtered.length === 0 ? (
-          <div className="rounded-2xl p-12 text-center" style={{ border: '1px dashed var(--border)', color: 'var(--muted)' }}>
-            <HardHat className="w-8 h-8 mx-auto mb-3 text-slate-500" />
-            <p className="text-xs">{t('pmVendors.noVendors')}</p>
-          </div>
+          <EmptyState icon={HardHat} title={t('pmVendors.noVendors')} />
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {filtered.map((v) => (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 14 }}>
+            {filtered.map(v => (
               <div
                 key={v.id}
-                className="rounded-2xl p-5 cursor-pointer transition-all hover:shadow-md"
-                style={{
-                  backgroundColor: 'var(--card)',
-                  border:          '1px solid var(--border)',
-                  opacity:         v.is_active ? 1 : 0.55,
-                }}
+                className="card card-pad"
+                style={{ cursor: 'pointer', opacity: v.is_active ? 1 : 0.55, display: 'flex', flexDirection: 'column', gap: 12 }}
                 onClick={() => openDetail(v)}
               >
-                <div className="flex items-start justify-between gap-3 mb-3">
-                  <div className="min-w-0 flex-1">
-                    <h3 className="text-base text-slate-800 font-semibold truncate">{v.name}</h3>
-                    <div className="flex flex-wrap items-center gap-3 mt-1.5 text-[11px]" style={{ color: 'var(--muted)' }}>
-                      <span className="flex items-center gap-1"><Phone className="w-3.5 h-3.5" />{v.phone}</span>
-                      {v.email && <span className="flex items-center gap-1"><Mail className="w-3.5 h-3.5" />{v.email}</span>}
-                      {v.telegram_username && (
-                        <span className="flex items-center gap-1"><MessageCircle className="w-3.5 h-3.5" />@{v.telegram_username}</span>
-                      )}
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
+                    <Avatar name={v.name} color="c2" />
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: 700, fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{v.name}</div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 3, color: 'var(--text-3)', fontSize: 11 }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Phone className="ic" />{v.phone}</span>
+                        {v.email && <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Mail className="ic" />{v.email}</span>}
+                        {v.telegram_username && <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><MessageCircle className="ic" />@{v.telegram_username}</span>}
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0" onClick={e => e.stopPropagation()}>
-                    <button
-                      onClick={() => openDetail(v)}
-                      className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 transition-colors"
-                      title="Ko'rish"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => openEditModal(v)}
-                      className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 transition-colors"
-                      title="Tahrirlash"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleToggleActive(v)}
-                      className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 transition-colors"
-                      title={v.is_active ? 'Arxivlash' : 'Faollashtirish'}
-                    >
-                      <ToggleRight className="w-4 h-4" />
-                    </button>
+                  <div style={{ display: 'flex', gap: 4 }} onClick={e => e.stopPropagation()}>
+                    <button className="icon-act" onClick={() => openEditModal(v)} title="Edit"><Edit2 className="ic" /></button>
+                    <button className="icon-act" onClick={() => handleToggleActive(v)} title={v.is_active ? 'Archive' : 'Activate'}><ToggleRight className="ic" /></button>
                   </div>
                 </div>
 
                 {(v.specializations?.length ?? 0) > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-3">
-                    {(v.specializations ?? []).map((s) => (
-                      <span
-                        key={s}
-                        className="text-[9px] px-2 py-0.5 rounded font-semibold"
-                        style={{
-                          backgroundColor: 'rgba(16,185,129,0.08)',
-                          color:           '#6ee7b7',
-                          border:          '1px solid rgba(16,185,129,0.2)',
-                        }}
-                      >
-                        {SPEC_RU[s] ?? s}
-                      </span>
-                    ))}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                    {(v.specializations ?? []).map(s => <Badge key={s} tone="ok">{SPEC_RU[s] ?? s}</Badge>)}
                   </div>
                 )}
 
-                <div
-                  className="flex items-center justify-between pt-3"
-                  style={{ borderTop: '1px solid var(--border)' }}
-                >
-                  <div className="flex items-center gap-1">
-                    {[1, 2, 3, 4, 5].map((r) => (
-                      <Star
-                        key={r}
-                        className="w-3.5 h-3.5"
-                        style={{
-                          color: r <= Math.round(Number(v.rating)) ? '#fbbf24' : 'var(--border)',
-                          fill:  r <= Math.round(Number(v.rating)) ? '#fbbf24' : 'transparent',
-                        }}
-                      />
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 10, borderTop: '1px solid var(--border)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    {[1, 2, 3, 4, 5].map(r => (
+                      <Star key={r} className="ic" style={{ color: r <= Math.round(Number(v.rating)) ? 'var(--warn)' : 'var(--border)', fill: r <= Math.round(Number(v.rating)) ? 'var(--warn)' : 'transparent', width: 14, height: 14 }} />
                     ))}
-                    <span className="text-xs ml-1" style={{ color: 'var(--muted)' }}>
-                      {Number(v.rating).toFixed(1)}
-                    </span>
+                    <span style={{ fontSize: 11, color: 'var(--text-3)', marginLeft: 4 }}>{Number(v.rating).toFixed(1)}</span>
                   </div>
-                  <div className="text-xs" style={{ color: 'var(--muted)' }}>
-                    {v.completed_jobs} / {v.total_jobs || v.completed_jobs} {t('pmVendors.jobsDone')}
-                  </div>
+                  <span style={{ fontSize: 12, color: 'var(--text-3)' }}>{v.completed_jobs}/{v.total_jobs || v.completed_jobs} {t('pmVendors.jobsDone')}</span>
                 </div>
               </div>
             ))}
@@ -386,335 +252,169 @@ export default function Index({ vendors }: Props) {
         )}
       </div>
 
-      {/* ── Vendor Detail Modal ── */}
-      {(detailLoading || detailData) && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ backgroundColor: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}
-          onClick={() => { setDetailData(null); setDetailLoading(false); }}>
-          <div className="w-full max-w-2xl rounded-2xl border max-h-[90vh] flex flex-col"
-            style={{ backgroundColor: 'var(--card)', borderColor: 'rgba(16,185,129,0.15)' }}
-            onClick={e => e.stopPropagation()}>
-
-            {detailLoading ? (
-              <div className="flex items-center justify-center py-20">
-                <Loader2 className="w-6 h-6 animate-spin" style={{ color: '#10b981' }} />
-              </div>
-            ) : detailData && (
-              <>
-                {/* Header */}
-                <div className="flex items-start justify-between gap-4 px-6 py-5 border-b"
-                  style={{ borderColor: 'rgba(16,185,129,0.10)' }}>
-                  <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-xl flex items-center justify-center font-bold text-lg"
-                      style={{ backgroundColor: 'rgba(16,185,129,0.12)', color: '#10b981' }}>
-                      {detailData.vendor.name.charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                      <h2 className="text-lg font-bold text-slate-800">{detailData.vendor.name}</h2>
-                      <div className="flex flex-wrap items-center gap-3 mt-0.5 text-[11px]" style={{ color: 'var(--muted)' }}>
-                        <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{detailData.vendor.phone}</span>
-                        {detailData.vendor.email && <span className="flex items-center gap-1"><Mail className="w-3 h-3" />{detailData.vendor.email}</span>}
-                        {detailData.vendor.telegram_username && <span className="flex items-center gap-1"><MessageCircle className="w-3 h-3" />@{detailData.vendor.telegram_username}</span>}
-                      </div>
-                    </div>
-                  </div>
-                  <button onClick={() => { setDetailData(null); setDetailLoading(false); }}
-                    className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 shrink-0">
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-
-                <div className="overflow-y-auto flex-1">
-                  {/* Stats */}
-                  <div className="grid grid-cols-4 gap-3 px-6 py-4 border-b"
-                    style={{ borderColor: 'rgba(16,185,129,0.08)' }}>
-                    {[
-                      { label: t('pmVendors.totalWork'),  value: detailData.stats.total,       color: '#6366f1', icon: Wrench       },
-                      { label: t('pmVendors.completed'), value: detailData.stats.completed,   color: '#10b981', icon: CheckCircle2 },
-                      { label: t('pmVendors.inProgress'),value: detailData.stats.in_progress, color: '#f59e0b', icon: Clock        },
-                      { label: t('pmVendors.waiting'),   value: detailData.stats.open,        color: '#94a3b8', icon: AlertCircle  },
-                    ].map(({ label, value, color, icon: Icon }) => (
-                      <div key={label} className="rounded-xl p-3 text-center"
-                        style={{ backgroundColor: `${color}0F`, border: `1px solid ${color}25` }}>
-                        <Icon className="w-4 h-4 mx-auto mb-1" style={{ color }} />
-                        <p className="text-xl font-bold text-slate-800">{value}</p>
-                        <p className="text-[10px] mt-0.5" style={{ color: 'var(--muted)' }}>{label}</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Earnings + Rating + Specializations */}
-                  <div className="flex flex-wrap items-center gap-4 px-6 py-3 border-b"
-                    style={{ borderColor: 'rgba(16,185,129,0.08)' }}>
-                    {detailData.stats.total_earned > 0 && (
-                      <div className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: '#10b981' }}>
-                        <DollarSign className="w-3.5 h-3.5" />
-                        {t('pmVendors.total')}: {detailData.stats.total_earned.toLocaleString()} UZS
-                      </div>
-                    )}
-                    <div className="flex items-center gap-1">
-                      {[1,2,3,4,5].map(r => (
-                        <Star key={r} className="w-3.5 h-3.5"
-                          style={{ color: r <= Math.round(detailData.vendor.rating) ? '#fbbf24' : 'var(--border)', fill: r <= Math.round(detailData.vendor.rating) ? '#fbbf24' : 'transparent' }} />
-                      ))}
-                      <span className="text-xs ml-1 text-slate-500">{Number(detailData.vendor.rating).toFixed(1)}</span>
-                    </div>
-                    <div className="flex flex-wrap gap-1 ml-auto">
-                      {(detailData.vendor.specializations ?? []).map(s => (
-                        <span key={s} className="text-[9px] px-2 py-0.5 rounded font-semibold"
-                          style={{ backgroundColor: 'rgba(16,185,129,0.08)', color: '#6ee7b7', border: '1px solid rgba(16,185,129,0.2)' }}>
-                          {SPEC_RU[s] ?? s}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Notes */}
-                  {detailData.vendor.notes && (
-                    <div className="px-6 py-3 border-b text-xs text-slate-500"
-                      style={{ borderColor: 'rgba(16,185,129,0.08)' }}>
-                      {detailData.vendor.notes}
-                    </div>
-                  )}
-
-                  {/* Request history */}
-                  <div className="px-6 py-4">
-                    <p className="text-[10px] uppercase tracking-widest font-semibold mb-3" style={{ color: '#94a3b8' }}>
-                      {t('pmVendors.history')} ({detailData.requests.length})
-                    </p>
-                    {detailData.requests.length === 0 ? (
-                      <div className="text-center py-8 text-sm text-slate-400">
-                        {t('pmVendors.noHistory')}
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        {detailData.requests.map(req => {
-                          const statusCfg = {
-                            open:        { labelKey: 'pmVendors.jobOpen',       color: '#f59e0b' },
-                            assigned:    { labelKey: 'pmVendors.jobAssigned',   color: '#a78bfa' },
-                            in_progress: { labelKey: 'pmVendors.jobInProgress', color: '#60a5fa' },
-                            completed:   { labelKey: 'pmVendors.jobCompleted',  color: '#10b981' },
-                            cancelled:   { labelKey: 'pmVendors.jobCancelled',  color: '#94a3b8' },
-                          }[req.status] ?? { labelKey: req.status, color: '#94a3b8' };
-
-                          const priorityCfg = {
-                            emergency: { labelKey: 'pmVendors.priorityEmergency', color: '#ef4444' },
-                            high:      { labelKey: 'pmVendors.priorityHigh',      color: '#f97316' },
-                            medium:    { labelKey: 'pmVendors.priorityMedium',    color: '#3b82f6' },
-                            low:       { labelKey: 'pmVendors.priorityLow',       color: '#94a3b8' },
-                          }[req.priority] ?? { labelKey: req.priority, color: '#94a3b8' };
-
-                          return (
-                            <div key={req.id} className="rounded-xl px-4 py-3 flex items-start gap-3"
-                              style={{ backgroundColor: 'var(--bg)', border: '1px solid rgba(16,185,129,0.08)' }}>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs font-semibold text-slate-800 truncate">{req.title}</p>
-                                <div className="flex flex-wrap items-center gap-2 mt-1">
-                                  {req.building && (
-                                    <span className="text-[10px] text-slate-400 flex items-center gap-0.5">
-                                      <ChevronRight className="w-3 h-3" />
-                                      {req.building} {req.apartment && `№${req.apartment}`}
-                                    </span>
-                                  )}
-                                  {req.category && (
-                                    <span className="text-[10px] text-slate-400">{SPEC_RU[req.category] ?? req.category}</span>
-                                  )}
-                                  <span className="text-[10px]" style={{ color: 'var(--muted)' }}>{req.created_at}</span>
-                                  {req.completed_at && (
-                                    <span className="text-[10px]" style={{ color: '#10b981' }}>✓ {req.completed_at}</span>
-                                  )}
-                                </div>
-                                {req.cost_amount && req.cost_amount > 0 && (
-                                  <p className="text-[10px] mt-1 font-semibold" style={{ color: '#10b981' }}>
-                                    {Number(req.cost_amount).toLocaleString()} UZS
-                                  </p>
-                                )}
-                              </div>
-                              <div className="shrink-0 flex flex-col items-end gap-1.5">
-                                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                                  style={{ backgroundColor: `${statusCfg.color}18`, color: statusCfg.color }}>
-                                  {t(statusCfg.labelKey)}
-                                </span>
-                                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                                  style={{ backgroundColor: `${priorityCfg.color}18`, color: priorityCfg.color }}>
-                                  {t(priorityCfg.labelKey)}
-                                </span>
-                                {req.resident_rating && req.resident_rating > 0 && (
-                                  <div className="flex items-center gap-0.5">
-                                    {[1,2,3,4,5].map(r => (
-                                      <Star key={r} className="w-2.5 h-2.5"
-                                        style={{ color: r <= req.resident_rating! ? '#fbbf24' : '#e2e8f0', fill: r <= req.resident_rating! ? '#fbbf24' : 'transparent' }} />
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Footer */}
-                <div className="px-6 py-4 border-t" style={{ borderColor: 'rgba(16,185,129,0.08)' }}>
-                  <button
-                    onClick={() => { openEditModal(detailData.vendor); setDetailData(null); }}
-                    className="w-full py-2.5 rounded-xl text-sm font-semibold transition-all"
-                    style={{ backgroundColor: 'rgba(16,185,129,0.10)', color: '#10b981', border: '1px solid rgba(16,185,129,0.20)' }}>
-                    {t('pmVendors.edit')}
-                  </button>
-                </div>
-              </>
-            )}
+      {/* ── Vendor Detail Drawer ── */}
+      <Drawer
+        open={isDrawerOpen}
+        onClose={() => { setDetailData(null); setDetailLoading(false); }}
+        title={detailData?.vendor.name ?? '…'}
+        sub={t('pmVendors.title')}
+        width={520}
+        footer={detailData ? (
+          <Btn variant="soft" block onClick={() => { openEditModal(detailData.vendor); setDetailData(null); }}>
+            {t('pmVendors.edit')}
+          </Btn>
+        ) : undefined}
+      >
+        {detailLoading && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '60px 0' }}>
+            <Loader2 className="ic" style={{ width: 28, height: 28, animation: 'spin 1s linear infinite', color: 'var(--brand)' }} />
           </div>
-        </div>
-      )}
-
-      {/* Add / Edit Modal */}
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(2px)' }}>
-          <div className="w-full max-w-md rounded-2xl border p-6 max-h-[90vh] overflow-y-auto"
-            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-lg font-bold text-slate-800">
-                {editingVendor ? t('pmVendors.editVendor') : t('pmVendors.newVendor')}
-              </h2>
-              <button
-                onClick={() => setShowModal(false)}
-                className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-white"
-              >
-                <X className="w-5 h-5" />
-              </button>
+        )}
+        {detailData && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            {/* Contact row */}
+            <div style={{ display: 'flex', gap: 12, color: 'var(--text-3)', fontSize: 12, flexWrap: 'wrap' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><Phone className="ic" />{detailData.vendor.phone}</span>
+              {detailData.vendor.email && <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><Mail className="ic" />{detailData.vendor.email}</span>}
+              {detailData.vendor.telegram_username && <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><MessageCircle className="ic" />@{detailData.vendor.telegram_username}</span>}
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Vendor Name */}
-              <div>
-                <label className="block text-xs font-semibold mb-1.5 text-slate-400">{t('pmVendors.vendorName')} *</label>
-                <input
-                  type="text"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Alisher Plumbing Service"
-                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
-                  style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
-                />
-              </div>
-
-              {/* Phone */}
-              <div>
-                <label className="block text-xs font-semibold mb-1.5 text-slate-400">{t('pmVendors.phone')} *</label>
-                <input
-                  type="text"
-                  required
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+998 90..."
-                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
-                  style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                {/* Email */}
-                <div>
-                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">{t('pmVendors.email')}</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="email@example.com"
-                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
-                    style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
-                  />
+            {/* Stats mini-grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+              {[
+                { label: t('pmVendors.totalWork'),   value: detailData.stats.total,        tone: 'violet' as const, Icon: Wrench       },
+                { label: t('pmVendors.completed'),   value: detailData.stats.completed,    tone: 'ok'     as const, Icon: CheckCircle2 },
+                { label: t('pmVendors.inProgress'),  value: detailData.stats.in_progress,  tone: 'warn'   as const, Icon: Clock        },
+                { label: t('pmVendors.waiting'),     value: detailData.stats.open,         tone: 'neutral'as const, Icon: AlertCircle  },
+              ].map(({ label, value, tone, Icon }) => (
+                <div key={label} className="card" style={{ padding: '10px 12px', textAlign: 'center' }}>
+                  <Icon className="ic" style={{ margin: '0 auto 4px', color: `var(--${tone})` }} />
+                  <div style={{ fontWeight: 700, fontSize: 20 }}>{value}</div>
+                  <div style={{ fontSize: 10, color: 'var(--text-3)', marginTop: 2 }}>{label}</div>
                 </div>
+              ))}
+            </div>
 
-                {/* Telegram Username */}
-                <div>
-                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">{t('pmVendors.telegram')}</label>
-                  <input
-                    type="text"
-                    value={telegramUsername}
-                    onChange={(e) => setTelegramUsername(e.target.value)}
-                    placeholder="e.g. user_tg"
-                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
-                    style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
-                  />
-                </div>
+            {/* Earnings + rating + specs */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
+              {detailData.stats.total_earned > 0 && (
+                <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 600, color: 'var(--brand)' }}>
+                  <DollarSign className="ic" />
+                  {detailData.stats.total_earned.toLocaleString()} UZS
+                </span>
+              )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                {[1,2,3,4,5].map(r => (
+                  <Star key={r} className="ic" style={{ width: 14, height: 14, color: r <= Math.round(detailData.vendor.rating) ? 'var(--warn)' : 'var(--border)', fill: r <= Math.round(detailData.vendor.rating) ? 'var(--warn)' : 'transparent' }} />
+                ))}
+                <span style={{ fontSize: 12, color: 'var(--text-3)', marginLeft: 4 }}>{Number(detailData.vendor.rating).toFixed(1)}</span>
               </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginLeft: 'auto' }}>
+                {(detailData.vendor.specializations ?? []).map(s => <Badge key={s} tone="ok">{SPEC_RU[s] ?? s}</Badge>)}
+              </div>
+            </div>
 
-              {/* Specializations checkboxes */}
-              <div>
-                <label className="block text-xs font-semibold mb-2 text-slate-400">{t('pmVendors.specializations')}</label>
-                <div className="grid grid-cols-2 gap-2 p-3 rounded-xl" style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}>
-                  {ALL_SPECS.map((s) => (
-                    <label key={s} className="flex items-center gap-2 text-xs text-slate-800 cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        checked={specializations.includes(s)}
-                        onChange={(e) => handleSpecCheckboxChange(s, e.target.checked)}
-                        className="rounded bg-white border-slate-200 text-emerald-500 focus:ring-emerald-500"
-                      />
-                      <span>{SPEC_RU[s]}</span>
-                    </label>
+            {detailData.vendor.notes && (
+              <div style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.6 }}>{detailData.vendor.notes}</div>
+            )}
+
+            {/* Job history */}
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-3)', marginBottom: 10 }}>
+                {t('pmVendors.history')} ({detailData.requests.length})
+              </div>
+              {detailData.requests.length === 0 ? (
+                <div style={{ textAlign: 'center', color: 'var(--text-3)', padding: '24px 0', fontSize: 13 }}>{t('pmVendors.noHistory')}</div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {detailData.requests.map(req => (
+                    <div key={req.id} className="card" style={{ padding: '12px 14px', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 12, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{req.title}</div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 4, fontSize: 11, color: 'var(--text-3)' }}>
+                          {req.building && <span>{req.building}{req.apartment && ` №${req.apartment}`}</span>}
+                          {req.category && <span>{SPEC_RU[req.category] ?? req.category}</span>}
+                          <span>{req.created_at}</span>
+                          {req.completed_at && <span style={{ color: 'var(--ok)' }}>✓ {req.completed_at}</span>}
+                        </div>
+                        {req.cost_amount && req.cost_amount > 0 && (
+                          <div style={{ fontSize: 11, marginTop: 4, fontWeight: 600, color: 'var(--brand)' }}>{Number(req.cost_amount).toLocaleString()} UZS</div>
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5 }}>
+                        <Badge tone={ticketStatusTone(req.status)}>{req.status}</Badge>
+                        <Badge tone={priorityTone(req.priority)}>{req.priority}</Badge>
+                        {req.resident_rating && req.resident_rating > 0 && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            {[1,2,3,4,5].map(r => (
+                              <Star key={r} className="ic" style={{ width: 11, height: 11, color: r <= req.resident_rating! ? 'var(--warn)' : 'var(--border)', fill: r <= req.resident_rating! ? 'var(--warn)' : 'transparent' }} />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   ))}
                 </div>
+              )}
+            </div>
+          </div>
+        )}
+      </Drawer>
+
+      {/* ── Add / Edit Modal ── */}
+      {showModal && (
+        <div className="scrim show" onClick={() => setShowModal(false)}>
+          <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+            onClick={e => e.stopPropagation()}>
+            <div className="card card-pad" style={{ width: '100%', maxWidth: 460, maxHeight: '90vh', overflow: 'auto', padding: 24 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+                <h2 style={{ fontWeight: 700, fontSize: 16 }}>{editingVendor ? t('pmVendors.editVendor') : t('pmVendors.newVendor')}</h2>
+                <button className="drawer-close" onClick={() => setShowModal(false)}><X className="ic" /></button>
               </div>
 
-              {/* Notes */}
-              <div>
-                <label className="block text-xs font-semibold mb-1.5 text-slate-400">{t('pmVendors.notes')}</label>
-                <textarea
-                  rows={2}
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Reliable team of 3 plumbers, available for night emergencies..."
-                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none resize-none"
-                  style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
-                />
-              </div>
+              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <Field label={`${t('pmVendors.vendorName')} *`}>
+                  <TextInput type="text" required value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Alisher Plumbing Service" />
+                </Field>
+                <Field label={`${t('pmVendors.phone')} *`}>
+                  <TextInput type="text" required value={phone} onChange={e => setPhone(e.target.value)} placeholder="+998 90..." />
+                </Field>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <Field label={t('pmVendors.email')}>
+                    <TextInput type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="email@example.com" />
+                  </Field>
+                  <Field label={t('pmVendors.telegram')}>
+                    <TextInput type="text" value={telegramUsername} onChange={e => setTelegramUsername(e.target.value)} placeholder="user_tg" />
+                  </Field>
+                </div>
 
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="flex-1 py-3 rounded-xl text-xs font-semibold hover:bg-slate-100 transition-all text-slate-400"
-                  style={{ border: '1px solid var(--border)' }}
-                >
-                  {t('pmVendors.cancel')}
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold text-white disabled:opacity-50 transition-all"
-                  style={{ background: 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)' }}
-                >
-                  {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                  {editingVendor ? t('pmVendors.save') : t('pmVendors.create')}
-                </button>
-              </div>
-            </form>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-3)', marginBottom: 8 }}>{t('pmVendors.specializations')}</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, padding: '12px 14px', background: 'var(--bg)', borderRadius: 10, border: '1px solid var(--border)' }}>
+                    {ALL_SPECS.map(s => (
+                      <label key={s} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, cursor: 'pointer' }}>
+                        <input type="checkbox" checked={specializations.includes(s)} onChange={e => toggleSpec(s, e.target.checked)} />
+                        {SPEC_RU[s]}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <Field label={t('pmVendors.notes')}>
+                  <textarea rows={2} value={notes} onChange={e => setNotes(e.target.value)} className="input" style={{ resize: 'none' }} placeholder="Notes about this contractor…" />
+                </Field>
+
+                <div style={{ display: 'flex', gap: 10, marginTop: 6 }}>
+                  <Btn variant="ghost" block type="button" onClick={() => setShowModal(false)}>{t('pmVendors.cancel')}</Btn>
+                  <Btn variant="primary" block type="submit" disabled={submitting} icon={submitting ? Loader2 : undefined}>
+                    {editingVendor ? t('pmVendors.save') : t('pmVendors.create')}
+                  </Btn>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}
     </AppShell>
   );
 }
-
-function SummaryCard({ label, value, accent }: { label: string; value: string; accent: string }) {
-  return (
-    <div
-      className="rounded-2xl p-4"
-      style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
-    >
-      <p className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: accent }}>{label}</p>
-      <p className="text-2xl text-slate-800 mt-1.5 font-bold" style={{ fontFamily: 'var(--font-display)' }}>
-        {value}
-      </p>
-    </div>
-  );
-}
-
