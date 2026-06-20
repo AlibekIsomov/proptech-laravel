@@ -2,6 +2,7 @@ import { FormEvent, useState } from 'react';
 import { router, usePage } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from '@/Components/LanguageSwitcher';
+import { Logo } from '@/Components/pm/ui';
 
 interface Props {
     portal: 'sales' | 'pm';
@@ -33,25 +34,6 @@ const Icons = {
         </svg>
     ),
 };
-
-// 1Mahalla Uzbek arch (pishtoq) SVG logo
-function MahallаLogo({ size = 48 }: { size?: number }) {
-    return (
-        <svg width={size} height={size} viewBox="0 0 48 54" fill="none" xmlns="http://www.w3.org/2000/svg">
-            {/* Outer arch */}
-            <path
-                d="M6 48V22C6 12.059 14.059 4 24 4C33.941 4 42 12.059 42 22V48"
-                stroke="white" strokeWidth="7" strokeLinecap="square" fill="none"
-            />
-            {/* Left leg */}
-            <rect x="6" y="38" width="12" height="10" fill="white" />
-            {/* Right leg */}
-            <rect x="30" y="38" width="12" height="10" fill="white" />
-            {/* Number 1 inside arch */}
-            <text x="18" y="36" fontFamily="'Sora', sans-serif" fontWeight="800" fontSize="16" fill="white">1</text>
-        </svg>
-    );
-}
 
 export default function Login({ portal, errors }: Props) {
     const { t } = useTranslation();
@@ -106,7 +88,7 @@ export default function Login({ portal, errors }: Props) {
                             boxShadow: '0 0 48px rgba(39,162,71,0.25)',
                         }}
                     >
-                        <MahallаLogo size={40} />
+                        <Logo size={36} light="#FFFFFF" accent="#CFEFDE" />
                     </div>
                     <h1 className="text-2xl text-slate-800 font-bold" style={{ fontFamily: 'var(--font-display)', fontWeight: 700 }}>
                         {brand?.name ?? '1Mahalla'}
