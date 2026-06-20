@@ -28,6 +28,14 @@
     box-sizing: border-box;
 }
 
+/* PM portal (.pm-portal { height: 100% }) needs this chain anchored all the
+   way to the viewport, otherwise the app shell shrink-wraps to its content
+   height instead of filling the window — short pages then show a gap of raw
+   background below the last card. */
+html, body, #app {
+    height: 100%;
+}
+
 body {
     background: var(--bg);
     color: var(--text);

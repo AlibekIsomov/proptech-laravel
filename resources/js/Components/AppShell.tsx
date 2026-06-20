@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { usePage } from '@inertiajs/react';
-import Sidebar from '@/Components/Sidebar';
+import SalesSidebar from '@/Components/SalesSidebar';
 import PMSidebar from '@/Components/PMSidebar';
 import PMTopbar from '@/Components/pm/PMTopbar';
 import { Sparkles } from 'lucide-react';
@@ -42,27 +42,23 @@ export default function AppShell({ children, openRequestCount }: Props) {
 
   const isPm = isPmPath(path);
 
-  if (!isPm) {
-    // ── Sales portal (original layout) ─────────────────────────────────────
-    return (
-      <div className="flex min-h-screen" style={{ backgroundColor: 'var(--bg)' }}>
-        <Sidebar />
-        <div className="flex flex-col flex-1" style={{ marginLeft: '14rem' }}>
-          <main className="p-6 md:p-8 flex-1">{children}</main>
-        </div>
-      </div>
-    );
-  }
-
-  // ── PM portal (new 1mahalla design) ────────────────────────────────────────
+  // ── Unified 1mahalla design (Sales CRM + PM portal share the same shell) ────
   return (
     <div className="pm-portal" data-theme={theme}>
-      <PMSidebar
-        collapsed={collapsed}
-        setCollapsed={setCollapsed}
-        mobileOpen={mobileOpen}
-        openRequestCount={openRequestCount}
-      />
+      {isPm ? (
+        <PMSidebar
+          collapsed={collapsed}
+          setCollapsed={setCollapsed}
+          mobileOpen={mobileOpen}
+          openRequestCount={openRequestCount}
+        />
+      ) : (
+        <SalesSidebar
+          collapsed={collapsed}
+          setCollapsed={setCollapsed}
+          mobileOpen={mobileOpen}
+        />
+      )}
 
       <div className="main">
         <PMTopbar

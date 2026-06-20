@@ -156,10 +156,14 @@ export function Seg({ options, value, onChange }: {
 export function LangSeg() {
   const { i18n } = useTranslation();
   const lang = i18n.language?.startsWith('ru') ? 'ru' : 'uz';
+  function switchTo(l: string) {
+    i18n.changeLanguage(l);
+    localStorage.setItem('lang', l);
+  }
   return (
     <div className="lang-seg">
-      <button className={lang === 'uz' ? 'on' : ''} onClick={() => i18n.changeLanguage('uz')}>O'Z</button>
-      <button className={lang === 'ru' ? 'on' : ''} onClick={() => i18n.changeLanguage('ru')}>RU</button>
+      <button className={lang === 'uz' ? 'on' : ''} onClick={() => switchTo('uz')}>O'Z</button>
+      <button className={lang === 'ru' ? 'on' : ''} onClick={() => switchTo('ru')}>RU</button>
     </div>
   );
 }

@@ -14,6 +14,7 @@ const ru = {
     changePortal: "Сменить портал",
     logout: "Выйти",
     propertyMgmt: "Управление имуществом",
+    salesPortal: "Sales CRM",
     // PM nav
     residents: "Жильцы",
     requests: "Заявки",

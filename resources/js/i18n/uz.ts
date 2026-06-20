@@ -14,6 +14,7 @@ const uz = {
     changePortal: "Portalni o'zgartirish",
     logout: "Chiqish",
     propertyMgmt: "Mulk boshqaruvi",
+    salesPortal: "Savdo CRM",
     // PM nav
     residents: "Aholilar",
     requests: "Arizalar",

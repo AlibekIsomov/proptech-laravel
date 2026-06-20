@@ -1,8 +1,13 @@
 import { useState, useMemo } from 'react';
 import { Head, router, usePage } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
-import { Search, Home, ChevronDown, Plus, X, Loader2, Calculator, Edit, Trash2 } from 'lucide-react';
+import { Calculator } from 'lucide-react';
 import AppShell from '@/Components/AppShell';
+import {
+  PageHead, Btn, Badge, Field, TextInput, PmSelect, EmptyState,
+  Plus, Search, Home, Loader2, Edit2, Trash2, X,
+} from '@/Components/pm/ui';
+import type { BadgeTone } from '@/Components/pm/ui';
 
 interface Apartment {
   id:          string;
@@ -36,13 +41,14 @@ interface Props {
   buildings:  Building[];
 }
 
-const STATUS_CONFIG: Record<string, { bg: string; text: string; labelKey: string }> = {
-  available: { bg: '#1e1b4b', text: '#a5b4fc', labelKey: 'apartments.statusAvailable' },
-  reserved:  { bg: '#1c1003', text: '#fbbf24', labelKey: 'apartments.statusReserved'  },
-  sold:      { bg: '#052e16', text: '#34d399', labelKey: 'apartments.statusSold'       },
+const STATUS_TONE: Record<string, BadgeTone> = { available: 'violet', reserved: 'warn', sold: 'ok' };
+const STATUS_LABEL_KEY: Record<string, string> = {
+  available: 'apartments.statusAvailable',
+  reserved:  'apartments.statusReserved',
+  sold:      'apartments.statusSold',
 };
 
-const ALL_STATUSES = ['available', 'reserved', 'sold'];
+const ALL_STATUSES = ['available', 'reserved', 'sold'] as const;
 
 export default function Index({ apartments, projects, buildings }: Props) {
   const { t } = useTranslation();
@@ -77,22 +83,14 @@ export default function Index({ apartments, projects, buildings }: Props) {
     return buildings.filter((b) => !projectId || b.project_id === projectId);
   }, [buildings, projectId]);
 
-  const openCreateModal = () => {
+  function openCreateModal() {
     setEditingApt(null);
-    setProjectId('');
-    setBuildingId('');
-    setFloor('');
-    setNumber('');
-    setRooms('2');
-    setArea('');
-    setPrice('');
-    setStatus('available');
-    setType('');
-    setNotes('');
+    setProjectId(''); setBuildingId(''); setFloor(''); setNumber('');
+    setRooms('2'); setArea(''); setPrice(''); setStatus('available'); setType(''); setNotes('');
     setShowModal(true);
-  };
+  }
 
-  const openEditModal = (apt: Apartment) => {
+  function openEditModal(apt: Apartment) {
     const bld = buildings.find((b) => b.id === apt.building_id);
     setEditingApt(apt);
     setProjectId(bld ? bld.project_id : '');
@@ -106,10 +104,9 @@ export default function Index({ apartments, projects, buildings }: Props) {
     setType(apt.type || '');
     setNotes('');
     setShowModal(true);
-  };
+  }
 
-  // Submit Handler
-  const handleSubmit = (e: React.FormEvent) => {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
 
@@ -127,41 +124,23 @@ export default function Index({ apartments, projects, buildings }: Props) {
 
     if (editingApt) {
       router.put(`/apartments/${editingApt.id}`, payload, {
-        onSuccess: () => {
-          setShowModal(false);
-          setSubmitting(false);
-        },
-        onError: () => setSubmitting(false),
+        onSuccess: () => { setShowModal(false); setSubmitting(false); },
+        onError:   () => setSubmitting(false),
       });
     } else {
       router.post('/apartments', payload, {
-        onSuccess: () => {
-          setShowModal(false);
-          setSubmitting(false);
-        },
-        onError: () => setSubmitting(false),
+        onSuccess: () => { setShowModal(false); setSubmitting(false); },
+        onError:   () => setSubmitting(false),
       });
     }
-  };
+  }
 
-  const handleStatusChange = (id: string, newStatus: any) => {
-    router.put(`/apartments/${id}`, {
-      status: newStatus,
-      // Pass other fields required or let backend handle simple status change
-    }, {
-      preserveScroll: true,
-    });
-  };
-
-  const handleDelete = (id: string) => {
+  function handleDelete(id: string) {
     if (confirm('Are you sure you want to delete this apartment?')) {
-      router.delete(`/apartments/${id}`, {
-        preserveScroll: true,
-      });
+      router.delete(`/apartments/${id}`, { preserveScroll: true });
     }
-  };
+  }
 
-  // Filter apartments
   const filtered = useMemo(() => {
     return apartments.filter((a) => {
       const matchSearch =
@@ -169,9 +148,7 @@ export default function Index({ apartments, projects, buildings }: Props) {
         a.number.toLowerCase().includes(search.toLowerCase()) ||
         a.building.toLowerCase().includes(search.toLowerCase()) ||
         a.project.toLowerCase().includes(search.toLowerCase());
-      
       const matchStatus = statusFilter === 'all' || a.status === statusFilter;
-
       return matchSearch && matchStatus;
     });
   }, [apartments, search, statusFilter]);
@@ -183,7 +160,6 @@ export default function Index({ apartments, projects, buildings }: Props) {
     }, {});
   }, [apartments]);
 
-  // Area price calculator helper
   const pricePerM2 = useMemo(() => {
     const p = parseFloat(price);
     const s = parseFloat(area);
@@ -193,176 +169,97 @@ export default function Index({ apartments, projects, buildings }: Props) {
 
   return (
     <AppShell>
-      <Head title="Apartments - 1Mahalla" />
+      <Head title={t('apartments.title') + ' — 1Mahalla'} />
+      <div className="page">
+        <PageHead
+          title={t('apartments.title')}
+          sub={`${filtered.length} / ${apartments.length}`}
+          actions={<Btn variant="primary" icon={Plus} onClick={openCreateModal}>{t('apartments.newApartment')}</Btn>}
+        />
 
-      {/* Header bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b" style={{ borderColor: 'var(--border)' }}>
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800">{t('apartments.title')}</h1>
-          <p className="text-xs mt-1" style={{ color: 'var(--muted)' }}>
-            {filtered.length} / {apartments.length}
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          {/* Search */}
-          <div className="flex items-center gap-2 rounded-xl px-3.5 py-2.5"
-            style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-            <Search className="w-4 h-4" style={{ color: 'var(--muted)' }} />
-            <input
-              type="text"
-              placeholder={t('apartments.searchPlaceholder')}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="bg-transparent text-xs text-slate-800 outline-none placeholder:text-slate-400 w-44 md:w-56"
-            />
+        {/* Filters */}
+        <div className="card card-pad" style={{ marginBottom: 18 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'flex-end' }}>
+            <div style={{ flex: '1 1 220px', maxWidth: 320 }}>
+              <Field><TextInput icon={Search} value={search} onChange={e => setSearch(e.target.value)} placeholder={t('apartments.searchPlaceholder')} /></Field>
+            </div>
+            <Field label={t('apartments.project')}>
+              <PmSelect value={searchProjectId} onChange={e => {
+                setSearchProjectId(e.target.value);
+                setSearchBuildingId('');
+                router.get('/apartments', { project_id: e.target.value, building_id: '' }, { preserveState: true });
+              }}>
+                <option value="">{t('apartments.allProjects')}</option>
+                {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+              </PmSelect>
+            </Field>
+            <Field label={t('apartments.building')}>
+              <PmSelect value={searchBuildingId} disabled={!searchProjectId} onChange={e => {
+                setSearchBuildingId(e.target.value);
+                router.get('/apartments', { project_id: searchProjectId, building_id: e.target.value }, { preserveState: true });
+              }}>
+                <option value="">{t('apartments.allBuildings')}</option>
+                {buildings.filter(b => b.project_id === searchProjectId).map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+              </PmSelect>
+            </Field>
           </div>
-          <button
-            onClick={openCreateModal}
-            className="flex items-center gap-1.5 text-xs font-semibold text-white px-4 py-3 rounded-xl transition-all"
-            style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' }}
-          >
-            <Plus className="w-4 h-4" />
-            {t('apartments.newApartment')}
-          </button>
         </div>
-      </div>
 
-      <div className="mt-6 flex flex-wrap gap-4 p-4 rounded-2xl" style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-        <label className="flex flex-col gap-1.5 min-w-[200px]">
-          <span className="text-[10px] uppercase tracking-widest font-semibold text-slate-400">
-            {t('apartments.project')}
-          </span>
-          <select
-            value={searchProjectId}
-            onChange={(e) => {
-              setSearchProjectId(e.target.value);
-              setSearchBuildingId('');
-              router.get('/apartments', { project_id: e.target.value, building_id: '' }, { preserveState: true });
-            }}
-            className="rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none transition-all cursor-pointer bg-white"
-            style={{ border: '1px solid var(--border)' }}
-          >
-            <option value="">{t('apartments.allProjects')}</option>
-            {projects.map((p) => (
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
-          </select>
-        </label>
-
-        <label className="flex flex-col gap-1.5 min-w-[200px]">
-          <span className="text-[10px] uppercase tracking-widest font-semibold text-slate-400">
-            {t('apartments.building')}
-          </span>
-          <select
-            value={searchBuildingId}
-            onChange={(e) => {
-              setSearchBuildingId(e.target.value);
-              router.get('/apartments', { project_id: searchProjectId, building_id: e.target.value }, { preserveState: true });
-            }}
-            disabled={!searchProjectId}
-            className="rounded-xl px-3 py-2.5 text-sm text-slate-800 outline-none transition-all cursor-pointer disabled:opacity-50 bg-white"
-            style={{ border: '1px solid var(--border)' }}
-          >
-            <option value="">{t('apartments.allBuildings')}</option>
-            {buildings.filter(b => b.project_id === searchProjectId).map((b) => (
-              <option key={b.id} value={b.id}>{b.name}</option>
-            ))}
-          </select>
-        </label>
-      </div>
-
-      <div className="mt-6 space-y-6">
-        {/* Status filter pills */}
-        <div className="flex items-center gap-2.5 flex-wrap">
-          {(['all', 'available', 'reserved', 'sold'] as const).map((s) => {
-            const active = statusFilter === s;
+        {/* Status filter chips */}
+        <div className="chip-row" style={{ marginBottom: 18 }}>
+          {(['all', ...ALL_STATUSES] as const).map(s => {
             const count = s === 'all' ? apartments.length : (counts[s] ?? 0);
+            const label = s === 'all' ? t('apartments.allStatuses') : t(STATUS_LABEL_KEY[s]);
             return (
-              <button
-                key={s}
-                onClick={() => setStatusFilter(s)}
-                className="flex items-center gap-2 text-xs px-4 py-2 rounded-full border transition-all"
-                style={{
-                  backgroundColor: active ? 'rgba(99,102,241,0.12)' : 'transparent',
-                  borderColor:     active ? '#6366f1' : 'var(--border)',
-                  color:           active ? '#a5b4fc' : 'var(--muted)',
-                }}
-              >
-                <span className="capitalize">{s === 'all' ? t('apartments.allStatuses') : t(STATUS_CONFIG[s]?.labelKey ?? 'apartments.statusAvailable')}</span>
-                <span className="inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold"
-                  style={{ backgroundColor: active ? '#6366f1' : 'var(--border)', color: 'white' }}>
-                  {count}
-                </span>
+              <button key={s} className={`chip ${statusFilter === s ? 'on' : ''}`} onClick={() => setStatusFilter(s)}>
+                {label}<span className="cnt">{count}</span>
               </button>
             );
           })}
         </div>
 
-        {/* Table representation */}
-        <div className="rounded-2xl border overflow-hidden"
-          style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
+        {/* Table */}
+        <div className="table-card">
           {filtered.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-3">
-              <Home className="w-10 h-10" style={{ color: 'var(--border)' }} />
-              <p className="text-sm" style={{ color: 'var(--muted)' }}>{t('apartments.noApartments')}</p>
-            </div>
+            <EmptyState icon={Home} title={t('apartments.noApartments')} />
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
+            <div className="tbl-wrap">
+              <table className="tbl">
                 <thead>
-                  <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                    {[t('apartments.colNum'), t('apartments.colBuilding') + '/' + t('apartments.colProject'), t('apartments.colFloor'), t('apartments.colRooms'), t('apartments.colArea'), t('apartments.colPrice'), '$/m²', t('apartments.colStatus'), t('apartments.colActions')].map((h) => (
-                      <th key={h} className="px-6 py-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--muted)' }}>
-                        {h}
-                      </th>
-                    ))}
+                  <tr>
+                    <th>{t('apartments.colNum')}</th>
+                    <th>{t('apartments.colBuilding')}/{t('apartments.colProject')}</th>
+                    <th>{t('apartments.colFloor')}</th>
+                    <th>{t('apartments.colRooms')}</th>
+                    <th>{t('apartments.colArea')}</th>
+                    <th>{t('apartments.colPrice')}</th>
+                    <th>$/m²</th>
+                    <th>{t('apartments.colStatus')}</th>
+                    <th>{t('apartments.colActions')}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/[0.04]">
-                  {filtered.map((apt) => {
-                    const cfg = STATUS_CONFIG[apt.status] || STATUS_CONFIG.available;
+                <tbody>
+                  {filtered.map(apt => {
                     const ppm2 = apt.area && Number(apt.area) > 0 && apt.price
                       ? Math.round(Number(apt.price) / Number(apt.area)).toLocaleString()
                       : '—';
-                    const monthlyFee = apt.area && apt.monthly_fee_per_sqm
-                      ? (Number(apt.area) * Number(apt.monthly_fee_per_sqm)).toFixed(2)
-                      : '—';
                     return (
-                      <tr key={apt.id} className="transition-all hover:bg-slate-50">
-                        <td className="px-6 py-4 text-sm font-semibold text-slate-800 font-mono">#{apt.number}</td>
-                        <td className="px-6 py-4 text-xs">
-                          <p className="text-slate-800 font-medium">{apt.building}</p>
-                          <p style={{ color: 'var(--muted)' }}>{apt.project}</p>
+                      <tr key={apt.id}>
+                        <td className="mono cell-strong">#{apt.number}</td>
+                        <td>
+                          <div className="cell-strong" style={{ fontSize: 13 }}>{apt.building}</div>
+                          <div className="cell-sub">{apt.project}</div>
                         </td>
-                        <td className="px-6 py-4 text-xs text-slate-800">{t('apartments.floorLabel')} {apt.floor}</td>
-                        <td className="px-6 py-4 text-xs text-slate-800">{apt.rooms}</td>
-                        <td className="px-6 py-4 text-xs text-slate-800">{apt.area || '—'} m²</td>
-                        <td className="px-6 py-4 text-xs font-semibold text-slate-800">
-                          {apt.price ? `$${Number(apt.price).toLocaleString()}` : '—'}
-                        </td>
-                        <td className="px-6 py-4 text-xs font-mono" style={{ color: 'var(--muted)' }}>
-                          {ppm2 !== '—' ? `$${ppm2}` : ppm2}
-                        </td>
-                        <td className="px-6 py-4 text-xs">
-                          <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold"
-                            style={{ backgroundColor: cfg.bg, color: cfg.text }}>
-                            {t(cfg.labelKey)}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <button
-                              onClick={() => openEditModal(apt)}
-                              className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-white transition-colors"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(apt.id)}
-                              className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-red-400 transition-colors"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                        <td>{t('apartments.floorLabel')} {apt.floor}</td>
+                        <td>{apt.rooms}</td>
+                        <td>{apt.area || '—'} m²</td>
+                        <td className="cell-strong">{apt.price ? `$${Number(apt.price).toLocaleString()}` : '—'}</td>
+                        <td className="mono cell-sub">{ppm2 !== '—' ? `$${ppm2}` : ppm2}</td>
+                        <td><Badge tone={STATUS_TONE[apt.status] ?? 'neutral'}>{t(STATUS_LABEL_KEY[apt.status] ?? 'apartments.statusAvailable')}</Badge></td>
+                        <td>
+                          <div className="row-actions">
+                            <button className="icon-act" onClick={() => openEditModal(apt)}><Edit2 className="ic" /></button>
+                            <button className="icon-act danger" onClick={() => handleDelete(apt.id)}><Trash2 className="ic" /></button>
                           </div>
                         </td>
                       </tr>
@@ -377,203 +274,85 @@ export default function Index({ apartments, projects, buildings }: Props) {
 
       {/* Create / Edit Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(2px)' }}>
-          <div className="w-full max-w-lg rounded-2xl border p-6 max-h-[90vh] overflow-y-auto"
-            style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-lg font-bold text-slate-800">
-                {editingApt ? 'Edit Apartment' : 'New Apartment'}
-              </h2>
-              <button
-                onClick={() => setShowModal(false)}
-                className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-white"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Project selector */}
-              {!editingApt && (
-                <div>
-                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">Project</label>
-                  <select
-                    value={projectId}
-                    onChange={(e) => {
-                      setProjectId(e.target.value);
-                      setBuildingId('');
-                    }}
-                    required
-                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
-                    style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
-                  >
-                    <option value="">Select project...</option>
-                    {projects.map((p) => (
-                      <option key={p.id} value={p.id}>{p.name}</option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              {/* Building Selector */}
-              {!editingApt && (
-                <div>
-                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">Building</label>
-                  <select
-                    value={buildingId}
-                    onChange={(e) => setBuildingId(e.target.value)}
-                    required
-                    disabled={!projectId}
-                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none disabled:opacity-50"
-                    style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
-                  >
-                    <option value="">Select building...</option>
-                    {filteredBuildings.map((b) => (
-                      <option key={b.id} value={b.id}>{b.name}</option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-4">
-                {/* Floor number */}
-                <div>
-                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">Floor</label>
-                  <input
-                    type="number"
-                    required
-                    min={1}
-                    value={floor}
-                    onChange={(e) => setFloor(e.target.value)}
-                    placeholder="e.g. 5"
-                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
-                    style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
-                  />
-                </div>
-
-                {/* Unit number */}
-                <div>
-                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">Unit Number</label>
-                  <input
-                    type="text"
-                    required
-                    value={number}
-                    onChange={(e) => setNumber(e.target.value)}
-                    placeholder="e.g. 154"
-                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
-                    style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
-                  />
-                </div>
+        <div className="scrim show" onClick={() => setShowModal(false)}>
+          <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+            onClick={e => e.stopPropagation()}>
+            <div className="card card-pad" style={{ width: '100%', maxWidth: 480, maxHeight: '90vh', overflow: 'auto', padding: 24 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+                <h2 style={{ fontWeight: 700, fontSize: 16 }}>{editingApt ? 'Edit Apartment' : 'New Apartment'}</h2>
+                <button className="drawer-close" onClick={() => setShowModal(false)}><X className="ic" /></button>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                {/* Rooms count */}
-                <div>
-                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">Rooms</label>
-                  <input
-                    type="number"
-                    required
-                    min={0}
-                    value={rooms}
-                    onChange={(e) => setRooms(e.target.value)}
-                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
-                    style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
-                  />
-                </div>
-
-                {/* Status selector */}
-                <div>
-                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">Status</label>
-                  <select
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value as any)}
-                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
-                    style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
-                  >
-                    {ALL_STATUSES.map((s) => (
-                      <option key={s} value={s}>{t(STATUS_CONFIG[s].labelKey)}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                {/* Size */}
-                <div>
-                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">Size (m²)</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={area}
-                    onChange={(e) => setArea(e.target.value)}
-                    placeholder="e.g. 74.20"
-                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
-                    style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
-                  />
-                </div>
-
-                {/* Price */}
-                <div>
-                  <label className="block text-xs font-semibold mb-1.5 text-slate-400">Price (USD)</label>
-                  <input
-                    type="number"
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                    placeholder="e.g. 85000"
-                    className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
-                    style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
-                  />
-                </div>
-              </div>
-
-              {/* Price per m2 calculator */}
-              <div
-                className="flex items-center gap-2.5 rounded-xl px-4 py-3"
-                style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
-              >
-                <Calculator className="w-4 h-4 shrink-0 text-slate-400" />
-                <span className="text-xs text-slate-400">Calculated price per m²:</span>
-                {pricePerM2 ? (
-                  <span className="text-xs font-bold text-slate-800 ml-auto">${pricePerM2.toLocaleString()} / m²</span>
-                ) : (
-                  <span className="text-xs text-slate-600 ml-auto">Fill size & price</span>
+              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {!editingApt && (
+                  <Field label="Project">
+                    <PmSelect value={projectId} onChange={e => { setProjectId(e.target.value); setBuildingId(''); }} required>
+                      <option value="">Select project...</option>
+                      {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                    </PmSelect>
+                  </Field>
                 )}
-              </div>
 
-              {/* Apartment Type */}
-              <div>
-                <label className="block text-xs font-semibold mb-1.5 text-slate-400">Apartment Type</label>
-                <input
-                  type="text"
-                  value={type}
-                  onChange={(e) => setType(e.target.value)}
-                  placeholder="e.g. Studio, Penthouse"
-                  className="w-full rounded-xl px-3.5 py-2.5 text-sm text-slate-800 outline-none"
-                  style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}
-                />
-              </div>
+                {!editingApt && (
+                  <Field label="Building">
+                    <PmSelect value={buildingId} onChange={e => setBuildingId(e.target.value)} required disabled={!projectId}>
+                      <option value="">Select building...</option>
+                      {filteredBuildings.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                    </PmSelect>
+                  </Field>
+                )}
 
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="flex-1 py-3 rounded-xl text-xs font-semibold hover:bg-slate-100 transition-all text-slate-400"
-                  style={{ border: '1px solid var(--border)' }}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold text-white disabled:opacity-50 transition-all"
-                  style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' }}
-                >
-                  {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                  {editingApt ? 'Save Changes' : 'Create Unit'}
-                </button>
-              </div>
-            </form>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <Field label="Floor">
+                    <TextInput type="number" required min={1} value={floor} onChange={e => setFloor(e.target.value)} placeholder="e.g. 5" />
+                  </Field>
+                  <Field label="Unit Number">
+                    <TextInput type="text" required value={number} onChange={e => setNumber(e.target.value)} placeholder="e.g. 154" />
+                  </Field>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <Field label="Rooms">
+                    <TextInput type="number" required min={0} value={rooms} onChange={e => setRooms(e.target.value)} />
+                  </Field>
+                  <Field label="Status">
+                    <PmSelect value={status} onChange={e => setStatus(e.target.value as any)}>
+                      {ALL_STATUSES.map(s => <option key={s} value={s}>{t(STATUS_LABEL_KEY[s])}</option>)}
+                    </PmSelect>
+                  </Field>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <Field label="Size (m²)">
+                    <TextInput type="number" step="0.01" value={area} onChange={e => setArea(e.target.value)} placeholder="e.g. 74.20" />
+                  </Field>
+                  <Field label="Price (USD)">
+                    <TextInput type="number" value={price} onChange={e => setPrice(e.target.value)} placeholder="e.g. 85000" />
+                  </Field>
+                </div>
+
+                <div className="hint info">
+                  <Calculator className="ic" />
+                  <span>Calculated price per m²:</span>
+                  {pricePerM2 ? (
+                    <strong style={{ marginLeft: 'auto' }}>${pricePerM2.toLocaleString()} / m²</strong>
+                  ) : (
+                    <span style={{ marginLeft: 'auto' }}>Fill size & price</span>
+                  )}
+                </div>
+
+                <Field label="Apartment Type">
+                  <TextInput type="text" value={type} onChange={e => setType(e.target.value)} placeholder="e.g. Studio, Penthouse" />
+                </Field>
+
+                <div style={{ display: 'flex', gap: 10, marginTop: 6 }}>
+                  <Btn variant="ghost" block type="button" onClick={() => setShowModal(false)}>Cancel</Btn>
+                  <Btn variant="primary" block type="submit" disabled={submitting} icon={submitting ? Loader2 : undefined}>
+                    {editingApt ? 'Save Changes' : 'Create Unit'}
+                  </Btn>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}

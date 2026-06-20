@@ -1,8 +1,12 @@
 import { useState } from 'react';
-import { router, usePage, Link } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { useTranslation } from 'react-i18next';
-import { FolderKanban, Plus, Pencil, Trash2, Building2, Home, MapPin, X, Loader2 } from 'lucide-react';
 import AppShell from '@/Components/AppShell';
+import {
+  PageHead, Btn, Badge, EmptyState, Field, TextInput, PmSelect,
+  FolderKanban, Plus, Building2, Home, MapPin, Edit2, Trash2, X, Loader2,
+} from '@/Components/pm/ui';
+import type { BadgeTone } from '@/Components/pm/ui';
 
 interface Project {
     id: string | number;
@@ -18,10 +22,10 @@ interface Props {
     projects: Project[];
 }
 
-const STATUS_COLORS: Record<string, { bg: string; text: string; labelKey: string }> = {
-    active:    { bg: 'rgba(16,185,129,0.12)',  text: '#34d399', labelKey: 'projects.statusActive'    },
-    paused:    { bg: 'rgba(245,158,11,0.12)',  text: '#fbbf24', labelKey: 'projects.statusPaused'    },
-    completed: { bg: 'rgba(99,102,241,0.12)',  text: '#a5b4fc', labelKey: 'projects.statusCompleted' },
+const STATUS_TONE: Record<string, BadgeTone> = {
+    active:    'ok',
+    paused:    'warn',
+    completed: 'info',
 };
 
 const emptyForm = { name: '', location: '', status: 'active', description: '', total_area: '', total_floors: '' };
@@ -46,9 +50,11 @@ export default function ProjectsIndex({ projects }: Props) {
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         setLoading(true);
-        const action = editing
-            ? router.put(`/projects/${editing.id}`, form, { onFinish: () => { setLoading(false); setShowModal(false); } })
-            : router.post('/projects', form, { onFinish: () => { setLoading(false); setShowModal(false); } });
+        if (editing) {
+            router.put(`/projects/${editing.id}`, form, { onFinish: () => { setLoading(false); setShowModal(false); } });
+        } else {
+            router.post('/projects', form, { onFinish: () => { setLoading(false); setShowModal(false); } });
+        }
     }
 
     function handleDelete(p: Project) {
@@ -58,88 +64,69 @@ export default function ProjectsIndex({ projects }: Props) {
 
     return (
         <AppShell>
-            <header className="sticky top-0 z-20 flex items-center justify-between px-6 h-14 border-b shrink-0"
-                style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}>
-                <div className="flex items-center gap-2">
-                    <FolderKanban className="w-4 h-4" style={{ color: '#6366f1' }} />
-                    <h1 className="text-sm font-semibold text-slate-800">{t('projects.title')}</h1>
-                    <span className="text-xs px-2 py-0.5 rounded-full ml-1"
-                        style={{ backgroundColor: 'rgba(99,102,241,0.12)', color: '#a5b4fc' }}>
-                        {projects.length}
-                    </span>
-                </div>
-                {canEdit && (
-                    <button id="create-project-btn" onClick={openCreate}
-                        className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-medium text-white transition-opacity hover:opacity-80"
-                        style={{ backgroundColor: '#6366f1' }}>
-                        <Plus className="w-4 h-4" /> {t('projects.newProject')}
-                    </button>
-                )}
-            </header>
+            <Head title={t('projects.title') + ' — 1Mahalla'} />
+            <div className="page">
+                <PageHead
+                    title={t('projects.title')}
+                    sub={`${projects.length} ${t('projects.title').toLowerCase()}`}
+                    actions={canEdit ? <Btn variant="primary" icon={Plus} onClick={openCreate}>{t('projects.newProject')}</Btn> : undefined}
+                />
 
-            <main className="px-6 py-6">
                 {projects.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20 gap-4">
-                        <div className="w-14 h-14 rounded-2xl flex items-center justify-center"
-                            style={{ backgroundColor: 'rgba(99,102,241,0.12)' }}>
-                            <FolderKanban className="w-6 h-6" style={{ color: '#6366f1' }} />
-                        </div>
-                        <p className="text-sm font-medium text-slate-800">{t('projects.noProjects')}</p>
-                        <p className="text-xs" style={{ color: '#475569' }}>{t('projects.noProjectsHint')}</p>
-                    </div>
+                    <EmptyState
+                        icon={FolderKanban}
+                        title={t('projects.noProjects')}
+                        sub={t('projects.noProjectsHint')}
+                        action={canEdit ? <Btn variant="primary" icon={Plus} onClick={openCreate}>{t('projects.newProject')}</Btn> : undefined}
+                    />
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
                         {projects.map(p => {
-                            const s = STATUS_COLORS[p.status] ?? STATUS_COLORS.active;
+                            const tone = STATUS_TONE[p.status] ?? 'neutral';
+                            const statusLabel =
+                                p.status === 'active'    ? t('projects.statusActive') :
+                                p.status === 'paused'    ? t('projects.statusPaused') :
+                                p.status === 'completed' ? t('projects.statusCompleted') : p.status;
                             return (
-                                <div key={p.id} className="rounded-2xl p-5 flex flex-col gap-4 group"
-                                    style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-                                    <div className="flex items-start justify-between">
-                                        <div>
-                                            <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full mb-2"
-                                                style={{ backgroundColor: s.bg, color: s.text }}>{t(s.labelKey)}</span>
-                                            <h2 className="text-sm font-semibold text-slate-800">
-                                                <Link href={`/projects/${p.id}`} className="hover:text-indigo-400 transition-colors">
-                                                    {p.name}
-                                                </Link>
-                                            </h2>
+                                <div
+                                    key={p.id}
+                                    className="card card-pad"
+                                    style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 14, transition: 'border-color .15s' }}
+                                    onClick={() => router.visit(`/projects/${p.id}`)}
+                                    onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--brand)')}
+                                    onMouseLeave={e => (e.currentTarget.style.borderColor = '')}
+                                >
+                                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            <Badge tone={tone}>{statusLabel}</Badge>
+                                            <h2 style={{ fontWeight: 700, fontSize: 15, marginTop: 8 }}>{p.name}</h2>
                                             {p.location && (
-                                                <div className="flex items-center gap-1 mt-1">
-                                                    <MapPin className="w-3 h-3" style={{ color: '#475569' }} />
-                                                    <span className="text-xs" style={{ color: '#475569' }}>{p.location}</span>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 4, color: 'var(--text-faint)', fontSize: 12 }}>
+                                                    <MapPin className="ic" style={{ flexShrink: 0 }} />
+                                                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.location}</span>
                                                 </div>
                                             )}
                                         </div>
                                         {canEdit && (
-                                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button onClick={() => openEdit(p)}
-                                                    className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
-                                                    style={{ color: '#64748b' }}>
-                                                    <Pencil className="w-3.5 h-3.5" />
-                                                </button>
-                                                <button onClick={() => handleDelete(p)}
-                                                    className="p-1.5 rounded-lg hover:bg-red-500/10 transition-colors"
-                                                    style={{ color: '#64748b' }}>
-                                                    <Trash2 className="w-3.5 h-3.5" />
-                                                </button>
+                                            <div style={{ display: 'flex', gap: 4 }} onClick={e => e.stopPropagation()}>
+                                                <button className="icon-act" onClick={() => openEdit(p)}><Edit2 className="ic" /></button>
+                                                <button className="icon-act danger" onClick={() => handleDelete(p)}><Trash2 className="ic" /></button>
                                             </div>
                                         )}
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div className="rounded-xl p-3" style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}>
-                                            <div className="flex items-center gap-1.5 mb-1">
-                                                <Building2 className="w-3 h-3" style={{ color: '#6366f1' }} />
-                                                <span className="text-[10px] uppercase tracking-wider" style={{ color: '#475569' }}>{t('projects.buildings')}</span>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                                        <div className="card" style={{ padding: '10px 12px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, color: 'var(--brand)', fontSize: 11 }}>
+                                                <Building2 className="ic" />{t('projects.buildings')}
                                             </div>
-                                            <p className="text-xl font-bold text-slate-800">{p.buildings_count}</p>
+                                            <div style={{ fontWeight: 700, fontSize: 22 }}>{p.buildings_count}</div>
                                         </div>
-                                        <div className="rounded-xl p-3" style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}>
-                                            <div className="flex items-center gap-1.5 mb-1">
-                                                <Home className="w-3 h-3" style={{ color: '#10b981' }} />
-                                                <span className="text-[10px] uppercase tracking-wider" style={{ color: '#475569' }}>{t('projects.apartments')}</span>
+                                        <div className="card" style={{ padding: '10px 12px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, color: 'var(--brand)', fontSize: 11 }}>
+                                                <Home className="ic" />{t('projects.apartments')}
                                             </div>
-                                            <p className="text-xl font-bold text-slate-800">{p.apartments_count}</p>
+                                            <div style={{ fontWeight: 700, fontSize: 22 }}>{p.apartments_count}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -147,57 +134,39 @@ export default function ProjectsIndex({ projects }: Props) {
                         })}
                     </div>
                 )}
-            </main>
+            </div>
 
-            {/* Modal */}
             {showModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-                    style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}
-                    onClick={e => e.target === e.currentTarget && setShowModal(false)}>
-                    <div className="w-full max-w-md rounded-2xl p-6"
-                        style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}>
-                        <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-base font-semibold text-slate-800">
-                                {editing ? t('projects.editProject') : t('projects.newProject')}
-                            </h2>
-                            <button onClick={() => setShowModal(false)} style={{ color: '#475569' }}
-                                className="hover:text-white transition-colors">
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            {[
-                                { label: t('projects.projectName') + ' *', key: 'name', required: true },
-                                { label: t('projects.address'), key: 'location', required: false },
-                            ].map(({ label, key, required }) => (
-                                <div key={key}>
-                                    <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>{label}</label>
-                                    <input type="text" required={required} value={(form as any)[key]}
-                                        onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
-                                        className="w-full rounded-xl px-4 py-2.5 text-sm text-slate-800 outline-none"
-                                        style={{ backgroundColor: 'var(--border)', border: '1px solid var(--border)' }} />
-                                </div>
-                            ))}
-
-                            <div>
-                                <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--muted)' }}>{t('projects.statusLabel')}</label>
-                                <select value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
-                                    className="w-full rounded-xl px-4 py-2.5 text-sm text-slate-800 outline-none"
-                                    style={{ backgroundColor: 'var(--bg)', border: '1px solid var(--border)' }}>
-                                    <option value="active">{t('projects.statusActive')}</option>
-                                    <option value="paused">{t('projects.statusPaused')}</option>
-                                    <option value="completed">{t('projects.statusCompleted')}</option>
-                                </select>
+                <div className="scrim show" onClick={() => setShowModal(false)}>
+                    <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+                        onClick={e => e.stopPropagation()}>
+                        <div className="card card-pad" style={{ width: '100%', maxWidth: 420, padding: 24 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+                                <h2 style={{ fontWeight: 700, fontSize: 16 }}>
+                                    {editing ? t('projects.editProject') : t('projects.newProject')}
+                                </h2>
+                                <button className="drawer-close" onClick={() => setShowModal(false)}><X className="ic" /></button>
                             </div>
 
-                            <button type="submit" disabled={loading}
-                                className="w-full py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50 flex items-center justify-center gap-2"
-                                style={{ backgroundColor: '#6366f1' }}>
-                                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                                {editing ? t('projects.save') : t('projects.create')}
-                            </button>
-                        </form>
+                            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                                <Field label={`${t('projects.projectName')} *`}>
+                                    <TextInput type="text" required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
+                                </Field>
+                                <Field label={t('projects.address')}>
+                                    <TextInput type="text" value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} />
+                                </Field>
+                                <Field label={t('projects.statusLabel')}>
+                                    <PmSelect value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))}>
+                                        <option value="active">{t('projects.statusActive')}</option>
+                                        <option value="paused">{t('projects.statusPaused')}</option>
+                                        <option value="completed">{t('projects.statusCompleted')}</option>
+                                    </PmSelect>
+                                </Field>
+                                <Btn variant="primary" block type="submit" disabled={loading} icon={loading ? Loader2 : undefined}>
+                                    {editing ? t('projects.save') : t('projects.create')}
+                                </Btn>
+                            </form>
+                        </div>
                     </div>
                 </div>
             )}
