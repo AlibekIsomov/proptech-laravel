@@ -74,6 +74,7 @@ export default function SalesSidebar({ collapsed, setCollapsed, mobileOpen }: Pr
     user?.pm_role === 'dispatcher'       ? '/dispatcher/dashboard' :
     user?.pm_role === 'vendor'           ? '/vendor/dashboard' :
     user?.pm_role === 'resident'         ? '/resident/dashboard' :
+    ['super_admin', 'company_admin'].includes(user?.role ?? '') ? '/pm/dashboard' :
     null;
 
   function handleLogout() { router.post('/logout'); }
