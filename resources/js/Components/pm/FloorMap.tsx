@@ -4,8 +4,8 @@
  */
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Grid, List } from 'lucide-react';
-import { Seg } from '@/Components/pm/ui';
+import { Grid, List, Building2 } from 'lucide-react';
+import { Seg, EmptyState } from '@/Components/pm/ui';
 
 export interface FloorUnit {
   id:           string;
@@ -60,6 +60,10 @@ function SchemaMap({ units, overlay, onPick }: { units: FloorUnit[]; overlay: Ov
   const floors = [...new Set(units.map(u => u.floor))].sort((a, b) => b - a);
   const sections = [...new Set(units.map(u => u.section))].sort();
 
+  if (floors.length === 0) {
+    return <div className="map-stage map-stage-empty"><EmptyState icon={Building2} title={t('pmDash.noUnits')} /></div>;
+  }
+
   return (
     <div className="map-stage">
       <div className="fm-schema">
@@ -105,6 +109,10 @@ function SchemaMap({ units, overlay, onPick }: { units: FloorUnit[]; overlay: Ov
 function ListMap({ units, overlay, onPick }: { units: FloorUnit[]; overlay: Overlay; onPick: (u: FloorUnit) => void }) {
   const { t } = useTranslation();
   const floors = [...new Set(units.map(u => u.floor))].sort((a, b) => b - a);
+
+  if (floors.length === 0) {
+    return <div className="map-stage map-stage-empty"><EmptyState icon={Building2} title={t('pmDash.noUnits')} /></div>;
+  }
 
   return (
     <div className="fm-list">

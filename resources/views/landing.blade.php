@@ -10,6 +10,9 @@
 <meta property="og:title" content="1mahalla — Mahallangizni bitta ilovada boshqaring">
 <meta property="og:description" content="Mulk boshqaruvi, arizalar, hisob-kitoblar va aholi bilan aloqani bitta ilovada birlashtiruvchi platforma.">
 <meta property="og:url" content="{{ url('/') }}">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <style>/* cyrillic-ext */
 @font-face {
   font-family: 'Hanken Grotesk';
@@ -403,12 +406,14 @@ img,svg{display:block;}
 .mock-float{position:absolute; background:var(--white); border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow); padding:13px 15px; display:flex; gap:11px; align-items:center;}
 .mock-float .fi{width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex:none;}
 .mock-float .fi .ic{width:20px; height:20px;}
-.float-ai{right:-26px; top:54px; max-width:230px;}
+.float-ai{right:-26px; top:54px; max-width:230px; animation:floatY 5.5s ease-in-out infinite;}
+.float-pay{left:-30px; bottom:48px; animation:floatY 5.5s ease-in-out infinite; animation-delay:-2.75s;}
 .float-ai .fi{background:var(--ink); color:var(--clay);}
-.float-pay{left:-30px; bottom:48px;}
 .float-pay .fi{background:var(--green); color:var(--cream);}
 .mf-t{font-size:13.5px; font-weight:700; letter-spacing:-0.01em;}
 .mf-s{font-size:11.5px; color:var(--ink-soft); line-height:1.3;}
+@keyframes floatY{0%,100%{transform:translateY(0);} 50%{transform:translateY(-9px);}}
+@media (prefers-reduced-motion: reduce){.float-ai,.float-pay{animation:none;}}
 
 /* ===== tickets dashboard panel (hero) ===== */
 .tk-panel{padding:20px 22px 22px; background:var(--cream);}
@@ -629,8 +634,8 @@ img,svg{display:block;}
       <a href="#qadamlar">Qanday ishlaydi</a>
     </nav>
     <div class="nav-cta">
-      <a class="nav-login" href="#">Kirish</a>
-      <a class="btn btn-primary" href="#demo">Bepul boshlash</a>
+      <a class="nav-login" href="{{ $loginUrl }}">Kirish</a>
+      <a class="btn btn-primary" href="{{ $loginUrl }}">Bepul boshlash</a>
     </div>
     <button class="nav-burger" aria-label="Menyu"><svg class="ic" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"></path></svg></button>
   </div>
@@ -645,7 +650,7 @@ img,svg{display:block;}
       <h1>Mahallangizni <span class="hl">bitta ilovada</span> boshqaring</h1>
       <p class="lead">Kvartirani sotishdan butun binoni keyinchalik boshqarishgacha — turar-joy majmualari va mahallalar uchun to'liq raqamli platforma. Savdo, hisob-kitob, nosozlik arizalari va aholi — hammasi bir joyda.</p>
       <div class="hero-cta">
-        <a class="btn btn-primary btn-lg" href="#demo">Bepul boshlash<svg class="ic" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
+        <a class="btn btn-primary btn-lg" href="{{ $loginUrl }}">Bepul boshlash<svg class="ic" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
         <a class="btn btn-ghost btn-lg" href="#demo"><svg class="ic" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg>Demo ko'rish</a>
       </div>
       <div class="hero-trust">
@@ -915,7 +920,7 @@ img,svg{display:block;}
       <h2>Mahallangizni bugun raqamlashtiring</h2>
       <p>Bir bino bilan boshlang, butun majmuangizgacha kengaytiring. O'rnatish bepul, demo 15 daqiqada.</p>
       <div class="cta-actions">
-        <a class="btn btn-light btn-lg" href="#">Bepul boshlash<svg class="ic" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
+        <a class="btn btn-light btn-lg" href="{{ $loginUrl }}">Bepul boshlash<svg class="ic" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
         <a class="btn btn-lg" href="#" style="background:rgba(251,247,239,0.14); color:var(--cream); border-color:rgba(251,247,239,0.3)"><svg class="ic" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg>Demo ko'rish</a>
       </div>
     </div>
@@ -1005,6 +1010,34 @@ const reveals = document.querySelectorAll('.reveal');
 reveals.forEach(el=>io.observe(el));
 // failsafe: never leave anything hidden if the observer can't fire
 setTimeout(()=>{ document.querySelectorAll('.reveal:not(.in)').forEach(el=>el.classList.add('in')); }, 2200);
+
+// ---- stats count-up on scroll ----
+function animateCount(el){
+  const raw = el.textContent.trim();
+  const match = raw.match(/^([\d\s]+)(.*)$/);
+  if(!match) return;
+  const target = parseInt(match[1].replace(/\s/g,''), 10);
+  if(isNaN(target)) return;
+  const grouped = match[1].includes(' ');
+  const suffix = match[2];
+  const duration = 1200, start = performance.now();
+  function tick(now){
+    const p = Math.min((now - start) / duration, 1);
+    const val = Math.round(target * (1 - Math.pow(1 - p, 3)));
+    el.textContent = (grouped ? val.toLocaleString('ru-RU') : val) + suffix;
+    if(p < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+const statsGrid = document.querySelector('.stats-grid');
+if(statsGrid){
+  const statsIo = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){ statsGrid.querySelectorAll('.num').forEach(animateCount); statsIo.disconnect(); }
+    });
+  },{threshold:0.3});
+  statsIo.observe(statsGrid);
+}
 </script>
 
 

@@ -200,7 +200,7 @@ export default function PMProjectShow({ project, buildings, aptStats }: Props) {
                 />
 
                 {/* Buildings section */}
-                <div style={{ marginBottom: 24 }}>
+                <div style={{ marginBottom: 24, flex: 'none' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
                         <h2 style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-1)' }}>Binolar</h2>
                         {canEdit && (

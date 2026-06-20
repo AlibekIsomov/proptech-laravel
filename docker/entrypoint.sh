@@ -12,29 +12,15 @@ mkdir -p /var/www/html/bootstrap/cache
 chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# public_data volume bo'sh bo'lsa (yangi deploy), image dan public/ fayllarni ko'chiramiz
-# Docker named volume image ichidagi fayllarni yashiradi, shu sababli bu qadam kerak.
-if [ ! -f /var/www/html/public/index.php ]; then
-    echo "📦  Populating public/ volume from image..."
-    cp -r /var/www/html/public.bak/. /var/www/html/public/
-    chown -R www-data:www-data /var/www/html/public
-    echo "✅  public/ volume populated."
-fi
-
-# Har deploy da Vite build fayllarini yangilaymiz (JS/CSS o'zgarishlar ko'rinsin)
-echo "🔄  Refreshing public/build from new image..."
-rm -rf /var/www/html/public/build
-cp -r /var/www/html/public.bak/build /var/www/html/public/build
-chown -R www-data:www-data /var/www/html/public/build
-echo "✅  public/build refreshed."
-
-# public/fonts ham image bilan birga keladi (masalan landing page shriftlari) —
-# build/ kabi har deploy da yangilanishi kerak, aks holda eski volume'da qolib ketadi
-echo "🔄  Refreshing public/fonts from new image..."
-rm -rf /var/www/html/public/fonts
-cp -r /var/www/html/public.bak/fonts /var/www/html/public/fonts
-chown -R www-data:www-data /var/www/html/public/fonts
-echo "✅  public/fonts refreshed."
+# Docker named volume (public_data) image ichidagi public/ fayllarini yashiradi.
+# Shu sababli image bilan kelgan fayllarni (build/, fonts/, favicon va h.k.) har
+# deploy'da volume'ga qayta nusxalaymiz — overwrite, lekin volume'dagi boshqa
+# fayllarni o'chirmaydi (masalan storage:link simlinki yoki kelajakdagi runtime
+# fayllar). Shunda yangi statik assetlar volume'da "qolib ketmaydi".
+echo "📦  Syncing public/ from image..."
+cp -rf /var/www/html/public.bak/. /var/www/html/public/
+chown -R www-data:www-data /var/www/html/public
+echo "✅  public/ synced."
 
 # Storage symlink — public/storage → storage/app/public
 # Bu bo'lmasa fayl yuklash va media xizmat 500 xato beradi

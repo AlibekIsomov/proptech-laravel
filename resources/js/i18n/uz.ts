@@ -290,6 +290,7 @@ const uz = {
     chessboard: "Uylar shaxmatkasi",
     noProjects: "Loyihalar mavjud emas",
     noBuildings: "Binolar mavjud emas",
+    noUnits: "Bu binoda kvartiralar mavjud emas",
     aiAnalysis: "AI Kommunal tahlil",
     aiAnalysisHint: "AI modellariga asoslangan aqlli og'ish tahlili",
     aiOptimal: "Barcha kommunal xizmatlar iste'moli ayni vaqtda optimal darajada. Hech qanday og'ishlar aniqlanmadi.",

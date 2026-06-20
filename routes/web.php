@@ -10,7 +10,11 @@ use Inertia\Inertia;
 // va '/' pastdagi standart xatti-harakatini (pm.login'ga redirect) bajaradi.
 if ($landingDomain = env('LANDING_DOMAIN')) {
     Route::domain($landingDomain)->get('/', function () {
-        return view('landing');
+        // Dashboardlar boshqa domenda (masalan app.1mahalla.uz) joylashgani uchun
+        // login havolasini shu nomzod domen asosida qurib beramiz.
+        $dashboardUrl = rtrim(env('APP_DASHBOARD_URL', config('app.url')), '/');
+
+        return view('landing', ['loginUrl' => $dashboardUrl.'/pm/login']);
     })->name('landing');
 }
 
