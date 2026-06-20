@@ -37,7 +37,8 @@
       "Bash(C:/flutter/bin/flutter run *)",
       "Bash(curl -v https://1mahalla.uz/api/resident/login -X POST -H \"Content-Type: application/json\" -d '{\"phone\":\"901234567\"}')",
       "Bash(./node_modules/.bin/tsc --noEmit)",
-      "Bash(node node_modules/typescript/bin/tsc --noEmit)"
+      "Bash(node node_modules/typescript/bin/tsc --noEmit)",
+      "Bash(node -e ' *)"
     ]
   }
 }

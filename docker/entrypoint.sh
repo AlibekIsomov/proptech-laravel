@@ -28,6 +28,14 @@ cp -r /var/www/html/public.bak/build /var/www/html/public/build
 chown -R www-data:www-data /var/www/html/public/build
 echo "✅  public/build refreshed."
 
+# public/fonts ham image bilan birga keladi (masalan landing page shriftlari) —
+# build/ kabi har deploy da yangilanishi kerak, aks holda eski volume'da qolib ketadi
+echo "🔄  Refreshing public/fonts from new image..."
+rm -rf /var/www/html/public/fonts
+cp -r /var/www/html/public.bak/fonts /var/www/html/public/fonts
+chown -R www-data:www-data /var/www/html/public/fonts
+echo "✅  public/fonts refreshed."
+
 # Storage symlink — public/storage → storage/app/public
 # Bu bo'lmasa fayl yuklash va media xizmat 500 xato beradi
 echo "🔗  Creating storage symlink..."

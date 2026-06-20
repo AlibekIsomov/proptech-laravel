@@ -5,6 +5,15 @@ use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+// ── Marketing landing page (asosiy domen, masalan 1mahalla.uz) ───────────────
+// LANDING_DOMAIN bo'sh bo'lsa (lokal dev), bu route umuman ro'yxatga olinmaydi
+// va '/' pastdagi standart xatti-harakatini (pm.login'ga redirect) bajaradi.
+if ($landingDomain = env('LANDING_DOMAIN')) {
+    Route::domain($landingDomain)->get('/', function () {
+        return view('landing');
+    })->name('landing');
+}
+
 Route::get('/', function () {
     return redirect()->route('pm.login');
 });
