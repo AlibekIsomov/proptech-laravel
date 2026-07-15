@@ -21,6 +21,9 @@ class SalesProjectTest extends TestCase
     {
         parent::setUp();
 
+        // Savdo portali o'chirilgan (sales.disabled → 404) — SalesDisabledTest ga qarang
+        $this->markTestSkipped('Sales portal disabled — routes return 404');
+
         $this->company = Company::firstOrCreate(
             ['slug' => 'proptech-uz'],
             ['name' => '1Mahalla HQ', 'is_active' => true]

@@ -350,7 +350,13 @@ img,svg{display:block;}
 .nav-links a:hover{color:var(--ink);}
 .nav-cta{margin-left:auto; display:flex; align-items:center; gap:14px;}
 .nav-login{font-size:15.5px; font-weight:700; color:var(--ink);}
-.nav-burger{display:none; margin-left:auto; background:none; border:1.5px solid var(--line); border-radius:10px; padding:9px; cursor:pointer; color:var(--ink);}
+.nav-burger{display:none; background:none; border:1.5px solid var(--line); border-radius:10px; padding:9px; cursor:pointer; color:var(--ink);}
+
+/* mobile dropdown menu */
+.nav-menu{display:none; flex-direction:column; gap:4px; padding:10px 32px 18px; border-top:1px solid var(--line);}
+.nav-menu a{padding:12px 0; font-size:16.5px; font-weight:600; color:var(--ink); border-bottom:1px solid var(--line-soft);}
+.nav-menu a:last-child{border-bottom:none;}
+.nav.open .nav-menu{display:flex;}
 
 /* ============ HERO ============ */
 .hero{position:relative; overflow:hidden; padding:72px 0 96px;}
@@ -608,13 +614,30 @@ img,svg{display:block;}
   body{font-size:16px;}
   .wrap{padding:0 20px;}
   .section{padding:72px 0;}
+  .sec-head{margin-bottom:40px;}
+  .nav-in{gap:14px; height:64px;}
+  .nav-cta{gap:0;}
+  .nav-cta .btn{padding:10px 14px; font-size:14.5px;}
+  .nav-menu{padding:8px 20px 16px;}
+  .hero{padding:44px 0 72px;}
+  .hero h1{font-size:clamp(33px,9.5vw,44px);}
+  .hero h1 .hl{white-space:normal;}
+  .hero-cta .btn, .cta-actions .btn{flex:1; justify-content:center;}
+  .tk-head{flex-wrap:wrap;}
+  .tk-pills{margin-left:0; flex-wrap:wrap; width:100%;}
+  .tk-status{width:auto;}
+  .logos{margin-top:44px;}
+  .logos-row{gap:14px 26px;}
+  .logos-row span{font-size:16px;}
+  .steps{gap:32px;}
   .ps-grid,.mods,.price-grid{gap:18px;}
   .roles,.stats-grid{grid-template-columns:1fr;}
   .ps-card,.mod,.plan{padding:28px 24px;}
+  .mod h3{font-size:22px;}
   .cta-box{padding:44px 26px;}
-  .hero-cta .btn, .cta-actions .btn{flex:1;}
   .mock-float{display:none;}
   .ai-card{padding:24px;}
+  .foot-bot{justify-content:center; text-align:center;}
 }
 </style>
 </head>
@@ -637,8 +660,15 @@ img,svg{display:block;}
       <a class="nav-login" href="{{ $loginUrl }}">Kirish</a>
       <a class="btn btn-primary" href="{{ $loginUrl }}">Bepul boshlash</a>
     </div>
-    <button class="nav-burger" aria-label="Menyu"><svg class="ic" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"></path></svg></button>
+    <button class="nav-burger" id="navBurger" aria-label="Menyu" aria-expanded="false" aria-controls="navMenu"><svg class="ic" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"></path></svg></button>
   </div>
+  <nav class="nav-menu" id="navMenu">
+    <a href="#modullar">Imkoniyatlar</a>
+    <a href="#ai">Sun'iy intellekt</a>
+    <a href="#rollar">Rollar</a>
+    <a href="#qadamlar">Qanday ishlaydi</a>
+    <a href="{{ $loginUrl }}">Kirish</a>
+  </nav>
 </header>
 
 <main id="top">
@@ -1000,6 +1030,17 @@ document.querySelectorAll('[data-logo]').forEach(el=>{ el.innerHTML = LOGO; });
 const nav = document.getElementById('nav');
 const onScroll = ()=>{ nav.classList.toggle('scrolled', window.scrollY > 8); };
 onScroll(); window.addEventListener('scroll', onScroll, {passive:true});
+
+// ---- mobile burger menu ----
+const burger = document.getElementById('navBurger');
+burger.addEventListener('click', ()=>{
+  const open = nav.classList.toggle('open');
+  burger.setAttribute('aria-expanded', open);
+});
+document.querySelectorAll('#navMenu a').forEach(a=>a.addEventListener('click', ()=>{
+  nav.classList.remove('open');
+  burger.setAttribute('aria-expanded', 'false');
+}));
 
 // ---- reveal on scroll ----
 document.documentElement.classList.add('js');

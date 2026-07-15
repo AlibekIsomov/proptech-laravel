@@ -48,11 +48,7 @@ export default function Login({ portal, errors }: Props) {
     function handleSubmit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
         setLoading(true);
-        router.post(
-            portal === 'pm' ? '/pm/login' : '/login',
-            { email, password },
-            { onFinish: () => setLoading(false) }
-        );
+        router.post('/pm/login', { email, password }, { onFinish: () => setLoading(false) });
     }
 
     return (
@@ -174,21 +170,8 @@ export default function Login({ portal, errors }: Props) {
                     </button>
                 </form>
 
-                {/* Portal switch + Language */}
+                {/* Language */}
                 <div className="mt-6 pt-6 space-y-3" style={{ borderTop: '1px solid rgba(39,162,71,0.08)' }}>
-                    <div className="text-center">
-                        {portal === 'sales' ? (
-                            <a href="/pm/login" className="text-xs font-semibold transition-colors hover:underline"
-                                style={{ color: '#1a7a34' }}>
-                                {t('login.goToPm')}
-                            </a>
-                        ) : (
-                            <a href="/login" className="text-xs font-semibold transition-colors hover:underline"
-                                style={{ color: '#1a7a34' }}>
-                                {t('login.goToSales')}
-                            </a>
-                        )}
-                    </div>
                     <LanguageSwitcher variant="login" />
                 </div>
 

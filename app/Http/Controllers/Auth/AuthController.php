@@ -11,13 +11,6 @@ use Inertia\Response;
 
 class AuthController extends Controller
 {
-    public function showLogin(): Response
-    {
-        return Inertia::render('Auth/Login', [
-            'portal' => 'sales',
-        ]);
-    }
-
     public function showPmLogin(): Response
     {
         return Inertia::render('Auth/Login', [
@@ -50,13 +43,8 @@ class AuthController extends Controller
         if ($pmRole === 'vendor')           return redirect()->route('vendor.dashboard');
         if ($pmRole === 'property_manager') return redirect()->route('pm.dashboard');
 
-        // Qaysi login formidan kelganini route nomi orqali aniqlash
-        if ($request->routeIs('pm.login.post')) {
-            return redirect()->route('pm.dashboard');
-        }
-
-        // /login sahifasidan kirganlar — Savdo dashboardga
-        return redirect()->route('dashboard');
+        // Savdo portali o'chirilgan — qolgan barcha rollar PM dashboardga
+        return redirect()->route('pm.dashboard');
     }
 
     public function logout(Request $request): RedirectResponse

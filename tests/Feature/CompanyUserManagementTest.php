@@ -22,6 +22,9 @@ class CompanyUserManagementTest extends TestCase
     {
         parent::setUp();
 
+        // Users/Companies routelari ham sales.disabled ostida (404) — SalesDisabledTest ga qarang
+        $this->markTestSkipped('Sales portal disabled — routes return 404');
+
         $this->company1 = Company::firstOrCreate(
             ['slug' => 'company-one'],
             ['name' => 'Company One', 'is_active' => true]

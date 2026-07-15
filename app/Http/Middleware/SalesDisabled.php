@@ -10,6 +10,7 @@ class SalesDisabled
 {
     public function handle(Request $request, Closure $next): Response
     {
-        return $next($request);
+        // Savdo (Sales CRM) portali o'chirilgan — faqat PM ishlaydi
+        abort(404);
     }
 }

@@ -48,8 +48,8 @@ Route::prefix('telegram-app/api')
 
 // ── Public routes (autentifikatsiya shart emas) ──────────────────────────────
 Route::middleware('guest')->group(function () {
-    Route::get('login', [AuthController::class, 'showLogin'])->name('login');
-    Route::post('login', [AuthController::class, 'login'])->name('login.post');
+    // Savdo logini o'chirilgan — hamma PM login orqali kiradi ('login' nomi auth redirectlar uchun kerak)
+    Route::get('login', fn () => redirect()->route('pm.login'))->name('login');
 
     Route::get('pm/login', [AuthController::class, 'showPmLogin'])->name('pm.login');
     Route::post('pm/login', [AuthController::class, 'login'])->name('pm.login.post');
@@ -61,10 +61,10 @@ Route::post('logout', [AuthController::class, 'logout'])->name('logout')->middle
 // ── Protected routes ──────────────────────────────────────────────────────────
 Route::middleware('auth')->group(function () {
 
-    // Sales Dashboard
+    // Sales Dashboard — disabled for frontend (PM only)
     Route::get('dashboard', [DashboardController::class, 'index'])
         ->name('dashboard')
-        ->middleware('role:super_admin|company_admin|manager|viewer');
+        ->middleware('sales.disabled', 'role:super_admin|company_admin|manager|viewer');
 
     // ── Companies — disabled for frontend (PM only) ────────────────────────
     Route::resource('companies', \App\Http\Controllers\CompanyController::class)

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import {
   Logo, LangSeg,
   LayoutDashboard, FolderKanban, UserCheck, Wrench,
-  Receipt, DollarSign, Boxes, ArrowLeftRight, LogOut,
+  Receipt, DollarSign, Boxes, LogOut,
   Plus, ChevronLeft,
 } from '@/Components/pm/ui';
 
@@ -57,8 +57,6 @@ export default function PMSidebar({ collapsed, setCollapsed, mobileOpen, onNewRe
   const user = auth?.user;
   const path = useActiveNav();
 
-  const canSwitchToSales = user && ['super_admin', 'company_admin', 'manager', 'viewer'].includes(user.role);
-
   const navWithBadge = PM_NAV.map(item =>
     item.href === '/pm/requests' && openRequestCount
       ? { ...item, badge: openRequestCount }
@@ -97,16 +95,6 @@ export default function PMSidebar({ collapsed, setCollapsed, mobileOpen, onNewRe
         {navWithBadge.map(item => (
           <NavLink key={item.href} item={item} collapsed={collapsed} path={path} />
         ))}
-
-        {canSwitchToSales && (
-          <>
-            <div className="sb-label">{t('nav.changePortal')}</div>
-            <Link href="/dashboard" className="nav-item">
-              <ArrowLeftRight className="ic" />
-              <span className="lbl">{t('nav.switchToSales')}</span>
-            </Link>
-          </>
-        )}
       </div>
 
       {/* Bottom: user + lang + logout */}
