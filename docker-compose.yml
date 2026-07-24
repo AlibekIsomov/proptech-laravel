@@ -117,7 +117,7 @@ services:
     volumes:
       - grafana_data:/var/lib/grafana
     ports:
-      - "127.0.0.1:3000:3000" # faqat localhost — tashqariga host-nginx orqali ochiladi
+      - "127.0.0.1:3001:3000" # 3000-port serverda boshqa (Node.js) loyiha band qilgan — 3001 ishlatamiz
     depends_on:
       - prometheus
     networks:
