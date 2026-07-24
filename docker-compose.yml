@@ -140,6 +140,22 @@ services:
       - '--path.rootfs=/rootfs'
       - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
 
+  # cAdvisor — har bir Docker konteynerning CPU/xotira/tarmoq metrikalari alohida-alohida
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: proptech_cadvisor
+    restart: unless-stopped
+    privileged: true
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    ports:
+      - "127.0.0.1:8081:8080" # faqat localhost
+    networks:
+      - proptech-network
+
   # postgres-exporter — DB metrikalari (connectionlar, sekin query'lar va h.k.)
   postgres-exporter:
     image: prometheuscommunity/postgres-exporter:latest
