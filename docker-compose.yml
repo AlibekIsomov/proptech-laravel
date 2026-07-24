@@ -91,6 +91,68 @@ services:
     networks:
       - proptech-network
 
+  # Prometheus — metrikalarni yig'ib saqlaydi
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: proptech_prometheus
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # node-exporter (host network) ni topish uchun
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "127.0.0.1:9090:9090" # faqat localhost — tashqariga host-nginx orqali ochiladi
+    networks:
+      - proptech-network
+
+  # Grafana — dashboard/vizualizatsiya
+  grafana:
+    image: grafana/grafana:latest
+    container_name: proptech_grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD .env da kerak}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "127.0.0.1:3000:3000" # faqat localhost — tashqariga host-nginx orqali ochiladi
+    depends_on:
+      - prometheus
+    networks:
+      - proptech-network
+
+  # node-exporter — VPS'ning o'zi: CPU/RAM/disk/tarmoq metrikalari
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: proptech_node_exporter
+    restart: unless-stopped
+    pid: host
+    network_mode: host # host resurslarini o'lchash uchun shart; 9100-portni firewall bilan yoping
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/rootfs'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+
+  # postgres-exporter — DB metrikalari (connectionlar, sekin query'lar va h.k.)
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: proptech_postgres_exporter
+    restart: unless-stopped
+    environment:
+      DATA_SOURCE_NAME: "postgresql://${DB_USERNAME}:${DB_PASSWORD}@db:5432/${DB_DATABASE}?sslmode=disable"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - proptech-network
+
 networks:
   proptech-network:
     driver: bridge
@@ -99,3 +161,5 @@ volumes:
   public_data:   # app va nginx o'rtasida umumiy public/ papka
   storage_data:
   db_data:
+  prometheus_data:
+  grafana_data:
