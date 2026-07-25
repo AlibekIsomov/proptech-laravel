@@ -2,11 +2,13 @@
 
 namespace App\Services\Telegram;
 
-use Illuminate\Support\Facades\Log;
-
 /**
  * Telegram Mini App `initData` ni tekshirish (HMAC-SHA256).
  * https://core.telegram.org/bots/webapps#validating-data-received-via-the-mini-app
+ *
+ * Diqqat: HMAC data-check-string `hash`dan tashqari BARCHA maydonlarni o'z ichiga oladi —
+ * shu jumladan yangi klientlardagi `signature` (Ed25519) maydonini ham. Faqat `hash`
+ * chiqariladi; `signature`ni chiqarib tashlash yangi Telegram versiyalarida 401 beradi.
  */
 class WebAppAuth
 {
@@ -29,11 +31,7 @@ class WebAppAuth
         }
 
         $hash = $data['hash'];
-        $hadSignature = isset($data['signature']);
-        // `hash` VA `signature`ni check-string'dan chiqaramiz. `signature` (Ed25519)
-        // yangi Telegram versiyalarida qo'shiladi; HMAC tekshiruvi undan tashqari
-        // barcha maydonlar bo'yicha hisoblanadi — aks holda yangi ilovalarda 401 bo'ladi.
-        unset($data['hash'], $data['signature']);
+        unset($data['hash']);
 
         ksort($data);
 
@@ -47,26 +45,6 @@ class WebAppAuth
         $computedHash = hash_hmac('sha256', $checkString, $secretKey);
 
         if (! hash_equals($computedHash, $hash)) {
-            // DIAGNOSTIKA (vaqtincha) — initData qaysi bot tokeni bilan imzolanganini aniqlash.
-            // Resident/Pudratchi bot tokeni bilan ham tekshiramiz: agar u mos kelsa,
-            // foydalanuvchi Mini App'ni noto'g'ri bot orqali ochgan.
-            $residentToken = (string) config('services.telegram.user_bot_token');
-            $matchesResident = false;
-            if ($residentToken !== '') {
-                $rKey = hash_hmac('sha256', $residentToken, 'WebAppData', true);
-                $matchesResident = hash_equals(hash_hmac('sha256', $checkString, $rKey), $hash);
-            }
-
-            Log::warning('WebApp initData HMAC mismatch', [
-                'fields'          => implode(',', array_keys($data)),
-                'had_signature'   => $hadSignature,
-                'token_tail'      => substr((string) $token, -6),
-                'matches_resident' => $matchesResident,
-                'computed_head'   => substr($computedHash, 0, 10),
-                'received_head'   => substr((string) $hash, 0, 10),
-                'raw'             => $initData,
-            ]);
-
             return null;
         }
 
