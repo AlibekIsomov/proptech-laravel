@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import AppShell from '@/Components/AppShell';
 import { PageHead, Badge, Btn, priorityTone } from '@/Components/pm/ui';
-import { ArrowLeft, MapPin, User } from 'lucide-react';
+import { ArrowLeft, MapPin, User, Maximize2, X } from 'lucide-react';
 import CityReportMap from '@/Components/pm/CityReportMap';
 
 interface Report {
@@ -45,6 +45,7 @@ export default function Show({ report, categoryLabels, priorityLabels, statusLab
   const [status, setStatus] = useState(report.status);
   const [notes, setNotes] = useState(report.resolution_notes ?? '');
   const [saving, setSaving] = useState(false);
+  const [lightbox, setLightbox] = useState(false);
 
   const save = () => {
     setSaving(true);
@@ -80,9 +81,47 @@ export default function Show({ report, categoryLabels, priorityLabels, statusLab
         {/* Chap: foto + AI + izoh */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {report.photo_url && (
-            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-              <img src={report.photo_url} alt="" style={{ width: '100%', display: 'block' }} />
-            </div>
+            <button
+              type="button"
+              onClick={() => setLightbox(true)}
+              className="card"
+              title="Kattalashtirish uchun bosing"
+              style={{
+                padding: 0,
+                overflow: 'hidden',
+                position: 'relative',
+                cursor: 'zoom-in',
+                display: 'block',
+                width: '100%',
+                height: 360,
+                borderRadius: 12,
+                background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+              }}
+            >
+              <img
+                src={report.photo_url}
+                alt=""
+                style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+              />
+              <span
+                style={{
+                  position: 'absolute',
+                  top: 8,
+                  right: 8,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  padding: '4px 8px',
+                  borderRadius: 999,
+                  background: 'rgba(0,0,0,0.55)',
+                  color: '#fff',
+                  fontSize: 11,
+                  fontWeight: 600,
+                }}
+              >
+                <Maximize2 style={{ width: 12, height: 12 }} /> Kattalashtirish
+              </span>
+            </button>
           )}
 
           <div className="card" style={{ padding: 14 }}>
@@ -145,6 +184,58 @@ export default function Show({ report, categoryLabels, priorityLabels, statusLab
           </div>
         </div>
       </div>
+
+      {lightbox && report.photo_url && (
+        <div
+          onClick={() => setLightbox(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 1000,
+            background: 'rgba(0,0,0,0.9)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 24,
+            cursor: 'zoom-out',
+          }}
+        >
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setLightbox(false); }}
+            aria-label="Yopish"
+            style={{
+              position: 'absolute',
+              top: 16,
+              right: 16,
+              width: 40,
+              height: 40,
+              borderRadius: 999,
+              border: 'none',
+              background: 'rgba(255,255,255,0.15)',
+              color: '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+            }}
+          >
+            <X style={{ width: 22, height: 22 }} />
+          </button>
+          <img
+            src={report.photo_url}
+            alt=""
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: '95vw',
+              maxHeight: '92vh',
+              objectFit: 'contain',
+              borderRadius: 8,
+              boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
+            }}
+          />
+        </div>
+      )}
     </AppShell>
   );
 }
