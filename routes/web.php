@@ -46,6 +46,24 @@ Route::prefix('telegram-app/api')
         Route::patch('vendor/requests/{requestModel}/status', [\App\Http\Controllers\Telegram\WebApp\Vendor\RequestController::class, 'updateStatus']);
     });
 
+// ── Mahalla Fix — ALOHIDA sahifa va ALOHIDA bot ──────────────────────────────
+// Fuqarolarning shahar/mahalla infratuzilma muammolari (yo'l, chiroq, suv/gaz).
+Route::get('mahalla-fix', function () {
+    return Inertia::render('MahallaFix/App');
+})->name('mahalla-fix');
+
+// Mahalla Fix boti webhook (o'z sekreti, Aholi/Pudratchi botidan alohida)
+Route::post('mahalla-fix/webhook', [\App\Http\Controllers\Telegram\MahallaFix\WebhookController::class, 'handle'])
+    ->name('mahalla-fix.webhook');
+
+Route::prefix('mahalla-fix/api')
+    ->middleware(\App\Http\Middleware\Telegram\AuthenticateMahallaWebApp::class)
+    ->group(function () {
+        Route::get('reports', [\App\Http\Controllers\Telegram\MahallaFix\CityReportController::class, 'index']);
+        Route::post('reports', [\App\Http\Controllers\Telegram\MahallaFix\CityReportController::class, 'store']);
+        Route::get('reports/{report}', [\App\Http\Controllers\Telegram\MahallaFix\CityReportController::class, 'show']);
+    });
+
 // ── Public routes (autentifikatsiya shart emas) ──────────────────────────────
 Route::middleware('guest')->group(function () {
     // Savdo logini o'chirilgan — hamma PM login orqali kiradi ('login' nomi auth redirectlar uchun kerak)
@@ -156,6 +174,14 @@ Route::middleware('auth')->group(function () {
                 ->name('monthly-fees.generate');
             Route::patch('monthly-fees/{invoice}', [\App\Http\Controllers\PM\MonthlyFeeController::class, 'updateStatus'])
                 ->name('monthly-fees.update');
+
+            // ── Mahalla Fix — kommunal idora paneli (Admin View) ───────────
+            Route::get('city-reports', [\App\Http\Controllers\PM\CityReportController::class, 'index'])
+                ->name('city-reports.index');
+            Route::get('city-reports/{report}', [\App\Http\Controllers\PM\CityReportController::class, 'show'])
+                ->name('city-reports.show');
+            Route::patch('city-reports/{report}/status', [\App\Http\Controllers\PM\CityReportController::class, 'updateStatus'])
+                ->name('city-reports.update-status');
         });
 
     // ── Dispatcher Portal ──────────────────────────────────────────────────

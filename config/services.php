@@ -49,6 +49,15 @@ return [
         'user_bot_username' => env('TELEGRAM_USER_BOT_USERNAME'),
         'webapp_url'        => env('TELEGRAM_WEBAPP_URL'),
         'webhook_secret'    => env('TELEGRAM_WEBHOOK_SECRET'),
+
+        // Mahalla Fix — fuqarolarning shahar muammolari uchun ALOHIDA bot
+        'mahalla' => [
+            'bot_token'        => env('TELEGRAM_MAHALLA_BOT_TOKEN'),
+            'bot_username'     => env('TELEGRAM_MAHALLA_BOT_USERNAME'),
+            'webapp_url'       => env('TELEGRAM_MAHALLA_WEBAPP_URL'),
+            'webhook_secret'   => env('TELEGRAM_MAHALLA_WEBHOOK_SECRET'),
+            'reports_channel'  => env('TELEGRAM_MAHALLA_REPORTS_CHANNEL'),
+        ],
     ],
 
 ];

@@ -9,11 +9,12 @@ namespace App\Services\Telegram;
 class WebAppAuth
 {
     /**
+     * @param  string|null  $token  Tekshiriladigan bot tokeni. null bo'lsa — Aholi/Pudratchi boti.
      * @return array{user: array|null, auth_date: ?string, raw: array}|null
      */
-    public function validate(string $initData): ?array
+    public function validate(string $initData, ?string $token = null): ?array
     {
-        $token = config('services.telegram.user_bot_token');
+        $token ??= config('services.telegram.user_bot_token');
 
         if (! $token || $initData === '') {
             return null;

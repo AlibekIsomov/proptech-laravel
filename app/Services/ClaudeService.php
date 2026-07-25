@@ -89,6 +89,87 @@ PROMPT;
     }
 
     /**
+     * Mahalla Fix — rasmdan shahar infratuzilma muammosini aniqlash (Vision).
+     *
+     * @return array{category:string, priority:string, title:string, summary:string}
+     */
+    public function analyzeImage(string $absoluteImagePath, string $mimeType = 'image/jpeg'): array
+    {
+        $fallback = [
+            'category' => 'other',
+            'priority' => 'medium',
+            'title'    => 'Infratuzilma muammosi',
+            'summary'  => 'Rasm avtomatik tahlil qilinmadi. Iltimos, muammoni qo\'lda tekshiring.',
+        ];
+
+        if (empty($this->apiKey) || ! is_file($absoluteImagePath)) {
+            return $fallback;
+        }
+
+        $prompt = <<<'PROMPT'
+Siz shahar va mahalla infratuzilma muammolarini aniqlaydigan AI assistantsiz. Rasmni tahlil qiling
+va faqat quyidagi JSON formatda javob bering (boshqa hech narsa yozmang):
+{
+  "category": "pothole|street_light|water_leak|gas_leak|garbage|other",
+  "priority": "low|medium|high|emergency",
+  "title": "Qisqa sarlavha (o'zbek tilida, 3-6 so'z)",
+  "summary": "Rasmiy va tushunarli 1-2 jumlalik tavsif (o'zbek tilida)"
+}
+category izohi: pothole=yo'l teshigi/nuqsoni, street_light=buzuq ko'cha chirog'i,
+water_leak=suv sizishi/quvur, gas_leak=gaz sizishi, garbage=chiqindi/axlat, other=boshqa.
+PROMPT;
+
+        try {
+            $base64 = base64_encode((string) file_get_contents($absoluteImagePath));
+
+            $response = Http::withHeaders([
+                'x-api-key'         => $this->apiKey,
+                'anthropic-version' => '2023-06-01',
+                'Content-Type'      => 'application/json',
+            ])->timeout(45)->post('https://api.anthropic.com/v1/messages', [
+                'model'      => $this->model,
+                'max_tokens' => 512,
+                'messages'   => [[
+                    'role'    => 'user',
+                    'content' => [
+                        ['type' => 'image', 'source' => [
+                            'type'       => 'base64',
+                            'media_type' => $mimeType,
+                            'data'       => $base64,
+                        ]],
+                        ['type' => 'text', 'text' => $prompt],
+                    ],
+                ]],
+            ]);
+
+            if ($response->failed()) {
+                Log::error('Claude vision API error', ['status' => $response->status(), 'body' => $response->body()]);
+
+                return $fallback;
+            }
+
+            $text = (string) $response->json('content.0.text', '');
+            preg_match('/\{.*\}/s', $text, $matches);
+            $parsed = json_decode($matches[0] ?? '{}', true);
+
+            if (! is_array($parsed)) {
+                return $fallback;
+            }
+
+            return array_merge($fallback, array_filter([
+                'category' => $parsed['category'] ?? null,
+                'priority' => $parsed['priority'] ?? null,
+                'title'    => $parsed['title'] ?? null,
+                'summary'  => $parsed['summary'] ?? null,
+            ]));
+        } catch (\Throwable $e) {
+            Log::error('Claude vision exception', ['message' => $e->getMessage()]);
+
+            return $fallback;
+        }
+    }
+
+    /**
      * Email matn generatsiyasi.
      */
     public function generateEmail(string $clientName, string $apartmentInfo, string $context): string

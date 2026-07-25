@@ -18,6 +18,7 @@ const uz = {
     // PM nav
     residents: "Aholilar",
     requests: "Arizalar",
+    cityReports: "Mahalla Fix",
     vendors: "Pudratchilar",
     invoices: "Hisoblar",
     monthlyFees: "Oylik to'lovlar",

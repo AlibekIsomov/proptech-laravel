@@ -18,6 +18,7 @@ const ru = {
     // PM nav
     residents: "Жильцы",
     requests: "Заявки",
+    cityReports: "Mahalla Fix",
     vendors: "Подрядчики",
     invoices: "Счета",
     monthlyFees: "Ежемесячные платежи",

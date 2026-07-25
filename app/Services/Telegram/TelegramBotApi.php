@@ -15,10 +15,16 @@ class TelegramBotApi
     protected string $token;
     protected string $baseUrl;
 
-    public function __construct()
+    public function __construct(?string $token = null)
     {
-        $this->token = (string) config('services.telegram.user_bot_token');
+        $this->token = (string) ($token ?? config('services.telegram.user_bot_token'));
         $this->baseUrl = "https://api.telegram.org/bot{$this->token}";
+    }
+
+    /** Mahalla Fix boti uchun client (alohida token). */
+    public static function mahalla(): self
+    {
+        return new self((string) config('services.telegram.mahalla.bot_token'));
     }
 
     public function sendMessage(string|int $chatId, string $text, ?array $replyMarkup = null, string $parseMode = 'HTML'): ?array

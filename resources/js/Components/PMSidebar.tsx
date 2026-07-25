@@ -9,7 +9,7 @@ import {
 } from '@/Components/pm/ui';
 
 // Match existing lucide-react for contractors icon
-import { HardHat } from 'lucide-react';
+import { HardHat, MapPin } from 'lucide-react';
 
 interface NavItem { href: string; labelKey: string; Icon: React.FC<React.SVGProps<SVGSVGElement>>; badge?: number; }
 
@@ -45,6 +45,7 @@ const PM_NAV: NavItem[] = [
   { href: '/pm/projects',     labelKey: 'nav.projects',     Icon: FolderKanban    },
   { href: '/pm/residents',    labelKey: 'nav.residents',    Icon: UserCheck       },
   { href: '/pm/requests',     labelKey: 'nav.requests',     Icon: Wrench          },
+  { href: '/pm/city-reports', labelKey: 'nav.cityReports',  Icon: MapPin          },
   { href: '/pm/vendors',      labelKey: 'nav.vendors',      Icon: HardHat         },
   { href: '/pm/invoices',     labelKey: 'nav.invoices',     Icon: Receipt         },
   { href: '/pm/monthly-fees', labelKey: 'nav.monthlyFees',  Icon: DollarSign      },
