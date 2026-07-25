@@ -37,7 +37,7 @@ return [
 
     'anthropic' => [
         'key'   => env('ANTHROPIC_API_KEY'),
-        'model' => env('CLAUDE_MODEL', 'claude-sonnet-4-0'),
+        'model' => env('CLAUDE_MODEL', 'claude-sonnet-5'),
     ],
 
     'telegram' => [
