@@ -47,13 +47,23 @@ class WebAppAuth
         $computedHash = hash_hmac('sha256', $checkString, $secretKey);
 
         if (! hash_equals($computedHash, $hash)) {
-            // DIAGNOSTIKA (vaqtincha) — nega HMAC mos kelmasligini aniqlash uchun.
+            // DIAGNOSTIKA (vaqtincha) — initData qaysi bot tokeni bilan imzolanganini aniqlash.
+            // Resident/Pudratchi bot tokeni bilan ham tekshiramiz: agar u mos kelsa,
+            // foydalanuvchi Mini App'ni noto'g'ri bot orqali ochgan.
+            $residentToken = (string) config('services.telegram.user_bot_token');
+            $matchesResident = false;
+            if ($residentToken !== '') {
+                $rKey = hash_hmac('sha256', $residentToken, 'WebAppData', true);
+                $matchesResident = hash_equals(hash_hmac('sha256', $checkString, $rKey), $hash);
+            }
+
             Log::warning('WebApp initData HMAC mismatch', [
-                'fields'         => implode(',', array_keys($data)),
-                'had_signature'  => $hadSignature,
-                'token_tail'     => substr((string) $token, -6),
-                'computed_head'  => substr($computedHash, 0, 10),
-                'received_head'  => substr((string) $hash, 0, 10),
+                'fields'          => implode(',', array_keys($data)),
+                'had_signature'   => $hadSignature,
+                'token_tail'      => substr((string) $token, -6),
+                'matches_resident' => $matchesResident,
+                'computed_head'   => substr($computedHash, 0, 10),
+                'received_head'   => substr((string) $hash, 0, 10),
             ]);
 
             return null;
