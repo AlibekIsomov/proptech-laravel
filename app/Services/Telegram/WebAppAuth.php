@@ -64,6 +64,7 @@ class WebAppAuth
                 'matches_resident' => $matchesResident,
                 'computed_head'   => substr($computedHash, 0, 10),
                 'received_head'   => substr((string) $hash, 0, 10),
+                'raw'             => $initData,
             ]);
 
             return null;
