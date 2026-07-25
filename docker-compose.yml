@@ -38,6 +38,9 @@ services:
     volumes:
       # Nginx assetlarni o'qishi uchun public papkasini ulash
       - public_data:/var/www/html/public:ro  # read-only: nginx faqat o'qiydi
+      # storage_data — yuklangan fayllar (public/storage symlink shu yerga ishora qiladi).
+      # Busiz nginx symlinkni yechа olmaydi va /storage/* rasmlar 404 beradi.
+      - storage_data:/var/www/html/storage:ro
       - ./docker/nginx.prod.conf:/etc/nginx/nginx.conf:ro # Production nginx config
     depends_on:
       - app
