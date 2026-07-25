@@ -27,7 +27,10 @@ class WebAppAuth
         }
 
         $hash = $data['hash'];
-        unset($data['hash']);
+        // `hash` VA `signature`ni check-string'dan chiqaramiz. `signature` (Ed25519)
+        // yangi Telegram versiyalarida qo'shiladi; HMAC tekshiruvi undan tashqari
+        // barcha maydonlar bo'yicha hisoblanadi — aks holda yangi ilovalarda 401 bo'ladi.
+        unset($data['hash'], $data['signature']);
 
         ksort($data);
 
