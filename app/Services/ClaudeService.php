@@ -120,7 +120,10 @@ water_leak=suv sizishi/quvur, gas_leak=gaz sizishi, garbage=chiqindi/axlat, othe
 PROMPT;
 
         try {
-            $base64 = base64_encode((string) file_get_contents($absoluteImagePath));
+            // Rasmni Claude limitlariga moslash: kichraytirish + JPEG'ga normallashtirish.
+            // Bu telefon fotolaridagi katta hajm / HEIC-ga o'xshash format / media_type
+            // mos emasligi sabab bo'ladigan 400 xatolarni oldini oladi.
+            [$base64, $mediaType] = $this->prepareImageForVision($absoluteImagePath, $mimeType);
 
             $response = Http::withHeaders([
                 'x-api-key'         => $this->apiKey,
@@ -134,7 +137,7 @@ PROMPT;
                     'content' => [
                         ['type' => 'image', 'source' => [
                             'type'       => 'base64',
-                            'media_type' => $mimeType,
+                            'media_type' => $mediaType,
                             'data'       => $base64,
                         ]],
                         ['type' => 'text', 'text' => $prompt],
@@ -166,6 +169,57 @@ PROMPT;
             Log::error('Claude vision exception', ['message' => $e->getMessage()]);
 
             return $fallback;
+        }
+    }
+
+    /**
+     * Rasmni Vision API uchun tayyorlash: uzun tomonini 1568px gacha kichraytirib,
+     * JPEG'ga qayta kodlaydi. GD o'qiy olmasa — asl baytlarni qaytaradi.
+     *
+     * @return array{0: string, 1: string} [base64, media_type]
+     */
+    protected function prepareImageForVision(string $path, string $fallbackMime): array
+    {
+        $raw = (string) file_get_contents($path);
+
+        if (! function_exists('imagecreatefromstring')) {
+            return [base64_encode($raw), $fallbackMime];
+        }
+
+        try {
+            $img = @imagecreatefromstring($raw);
+
+            if ($img === false) {
+                return [base64_encode($raw), $fallbackMime];
+            }
+
+            $width = imagesx($img);
+            $height = imagesy($img);
+            $max = 1568;
+
+            if (max($width, $height) > $max) {
+                $scaled = imagescale($img, (int) round($width * ($max / max($width, $height))));
+
+                if ($scaled !== false) {
+                    imagedestroy($img);
+                    $img = $scaled;
+                }
+            }
+
+            ob_start();
+            $ok = imagejpeg($img, null, 82);
+            $jpeg = (string) ob_get_clean();
+            imagedestroy($img);
+
+            if (! $ok || $jpeg === '') {
+                return [base64_encode($raw), $fallbackMime];
+            }
+
+            return [base64_encode($jpeg), 'image/jpeg'];
+        } catch (\Throwable $e) {
+            Log::warning('Vision image normalize failed', ['message' => $e->getMessage()]);
+
+            return [base64_encode($raw), $fallbackMime];
         }
     }
 
