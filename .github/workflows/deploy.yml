@@ -234,15 +234,19 @@ jobs:
 
             # 2️⃣  public_data volume ni tozalaymiz — entrypoint yangi image dan qayta to'ldiradi
             echo "🗑️  Refreshing public_data volume..."
-            docker compose stop app web 2>/dev/null || true
+            docker compose stop app web queue 2>/dev/null || true
             docker volume rm proptech-laravel_public_data 2>/dev/null || true
 
-            # 3️⃣  App ni yangi image bilan ishga tushiramiz
-            echo "🔄 Starting app with new image..."
-            docker compose up -d --no-deps app
+            # 3️⃣  App/queue/web ni YANGI image bilan MAJBURAN qayta yaratamiz.
+            #     --force-recreate SHART: usiz `up` IMAGE_TAG o'zgarmagan deb hisoblab
+            #     eski (to'xtatilgan) konteynerni qayta ishga tushirishi mumkin — natijada
+            #     yangi kod deploy bo'lmay qoladi. queue ham app image'da ishlaydi, shuning
+            #     uchun uni ham yangilaymiz (aks holda worker eski kodda qoladi).
+            echo "⬇️  Pulling compose service images..."
+            docker compose pull app queue 2>/dev/null || true
 
-            # web ni ham qayta ishga tushiramiz (public_data volume yangilandi)
-            docker compose up -d --no-deps web
+            echo "🔄 Recreating app, queue, web with new image (force)..."
+            docker compose up -d --force-recreate --no-deps app queue web
 
             # 4️⃣  Migration va optimize
             echo "🗄️  Running migrations..."
