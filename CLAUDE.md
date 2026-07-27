@@ -11,6 +11,11 @@ A multi-tenant PropTech platform. One Laravel 12 backend, **two parallel domains
 
 Same real-world concepts (project/building/apartment) exist in both domains with **separate models, tables, and route trees**. Importing one where the other is meant is the most common bug in this repo.
 
+**There is a companion Spring Boot project** — `github.com/AlibekIsomov/proptech-spring` (locally `G:\my-java-projects\proptech-spring`), a learning rebuild of the PM and Mahalla Fix domains as Spring microservices for interview preparation. It does **not** replace this app; this app is its behavioural reference. Two things about it matter here:
+
+- **Its `pm-service` connects to this app's `proptech` database** (strangler fig). Laravel owns the schema — migrations stay here, and its Liquibase only records those tables as a baseline. Bringing the DB up is `docker compose up -d db` in *this* repo (container `proptech_db`, host port 5432).
+- **Its roadmap and stage write-ups live in that repo, not here** — `docs/PLAN.md` (authoritative), `CLAUDE.md`, `docs/STAGEn.md`, `docs/DATABASE.md`. `ai-feature-docs/Spring_Boot_Microservices_Plan.md` here is only a pointer to them; do not copy the plan back into this repo, an earlier copy drifted within a day.
+
 **Model layout gotcha**: only Project/Building/Apartment are namespaced `App\Models\PM\*`. The rest of the PM domain lives in `App\Models` root — `Resident`, `MaintenanceRequest`, `MaintenancePhoto`, `PMInvoice`, `PMAsset`, `Poll`, `PollVote`, `UtilityMeter`, `UtilityRate`, `MeterReading`, `CommunalAsset`, `InventoryItem`, `Vendor`, `TelegramSession`, `CityReport` — alongside the Sales models. Check the namespace, not the name.
 
 Frontends / API surfaces:
