@@ -6,6 +6,7 @@ use App\Models\CityReport;
 use App\Services\ClaudeService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class MahallaReanalyze extends Command
 {
@@ -17,7 +18,11 @@ class MahallaReanalyze extends Command
 
     protected $description = "Mahalla Fix — AI tahlil qilinmay qolgan (yoki --force bilan hammasi) murojaatlarni saqlangan foto bo'yicha qayta tahlil qilish";
 
-    /** analyzeImage() fallback tavsifining boshlanishi — "tahlil qilinmagan" belgisi. */
+    /**
+     * Eski yozuvlarda saqlanib qolgan fallback tavsifi — "tahlil qilinmagan" belgisi.
+     * Hozir analyzeImage() muvaffaqiyatsizlikda hech narsa qaytarmaydi va saqlanmaydi,
+     * lekin bundan oldin yozilgan murojaatlarni ham qamrab olamiz.
+     */
     protected const FALLBACK_SUMMARY_PREFIX = 'Rasm avtomatik tahlil qilinmadi';
 
     public function handle(ClaudeService $ai): int
@@ -63,8 +68,8 @@ class MahallaReanalyze extends Command
             $mime = $this->guessMime($absPath);
             $analysis = $ai->analyzeImage($absPath, $mime);
 
-            // Kalit yo'q bo'lsa yana fallback qaytadi — bunda saqlamaymiz (foydasi yo'q)
-            if (str_starts_with($analysis['summary'] ?? '', self::FALLBACK_SUMMARY_PREFIX)) {
+            // AI javob bermasa bo'sh massiv qaytadi — saqlamaymiz, keyin qayta urinib ko'riladi
+            if (empty($analysis)) {
                 $this->warn("  ⊘ {$report->ticket_code}: AI hali javob bermadi (ANTHROPIC_API_KEY tekshiring).");
                 $skipped++;
 
@@ -74,7 +79,7 @@ class MahallaReanalyze extends Command
             $updates = [
                 'ai_category' => $analysis['category'] ?? null,
                 'ai_priority' => $analysis['priority'] ?? null,
-                'ai_summary'  => $analysis['summary'] ?? null,
+                'ai_summary' => $analysis['summary'] ?? null,
             ];
 
             // Ko'rinadigan maydonlarni faqat fallback qoldiqlari bo'lsa yangilaymiz
@@ -87,7 +92,7 @@ class MahallaReanalyze extends Command
             }
             $updates['priority'] = $analysis['priority'] ?? $report->priority;
 
-            $this->line("  ✓ {$report->ticket_code}: ".($updates['ai_category'] ?? '?').' — '.\Illuminate\Support\Str::limit($updates['ai_summary'] ?? '', 60));
+            $this->line("  ✓ {$report->ticket_code}: ".($updates['ai_category'] ?? '?').' — '.Str::limit($updates['ai_summary'] ?? '', 60));
 
             if (! $dryRun) {
                 $report->update($updates);
@@ -105,11 +110,11 @@ class MahallaReanalyze extends Command
     protected function guessMime(string $path): string
     {
         return match (strtolower(pathinfo($path, PATHINFO_EXTENSION))) {
-            'png'         => 'image/png',
-            'webp'        => 'image/webp',
-            'gif'         => 'image/gif',
+            'png' => 'image/png',
+            'webp' => 'image/webp',
+            'gif' => 'image/gif',
             'jpg', 'jpeg' => 'image/jpeg',
-            default       => 'image/jpeg',
+            default => 'image/jpeg',
         };
     }
 }

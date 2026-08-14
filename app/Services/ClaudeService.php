@@ -96,17 +96,11 @@ PROMPT;
     /**
      * Mahalla Fix — rasmdan shahar infratuzilma muammosini aniqlash (Vision).
      *
-     * @return array{category:string, priority:string, title:string, summary:string}
+     * @return array{category?:string, priority?:string, title?:string, summary?:string}
+     *                                                                                   AI javob bermasa bo'sh massiv — chaqiruvchi o'zi fallback qo'yadi.
      */
     public function analyzeImage(string $absoluteImagePath, string $mimeType = 'image/jpeg'): array
     {
-        $fallback = [
-            'category' => 'other',
-            'priority' => 'medium',
-            'title' => 'Infratuzilma muammosi',
-            'summary' => 'Rasm avtomatik tahlil qilinmadi. Iltimos, muammoni qo\'lda tekshiring.',
-        ];
-
         $prompt = <<<'PROMPT'
 Siz shahar va mahalla infratuzilma muammolarini aniqlaydigan AI assistantsiz. Rasmni tahlil qiling
 va faqat quyidagi JSON formatda javob bering (boshqa hech narsa yozmang):
@@ -120,7 +114,7 @@ category izohi: pothole=yo'l teshigi/nuqsoni, street_light=buzuq ko'cha chirog'i
 water_leak=suv sizishi/quvur, gas_leak=gaz sizishi, garbage=chiqindi/axlat, other=boshqa.
 PROMPT;
 
-        return $this->visionJson($absoluteImagePath, $mimeType, $prompt, $fallback, ['category', 'priority', 'title', 'summary']);
+        return $this->visionJson($absoluteImagePath, $mimeType, $prompt, ['category', 'priority', 'title', 'summary']);
     }
 
     /**
@@ -128,16 +122,11 @@ PROMPT;
      * kerakli ehtiyot qismlar va taxminiy narx. Aholi hech narsa to'ldirmasa ham
      * dispetcher tayyor ma'lumot ko'radi.
      *
-     * @return array{category:string, priority:string, summary:string}
+     * @return array{category?:string, priority?:string, summary?:string}
+     *                                                                    AI javob bermasa bo'sh massiv — ai_* maydonlari tegilmaydi, keyin qayta urinsa bo'ladi.
      */
     public function analyzeMaintenancePhoto(string $absoluteImagePath, string $title, string $description, string $mimeType = 'image/jpeg'): array
     {
-        $fallback = [
-            'category' => 'other',
-            'priority' => 'medium',
-            'summary' => 'Rasm avtomatik tahlil qilinmadi. Arizani qo\'lda ko\'rib chiqing.',
-        ];
-
         $prompt = <<<PROMPT
 Siz turar-joy binolari texnik xizmati AI assistantsiz. Yashovchi nosozlik fotosini yubordi.
 Rasmni tahlil qilib work order (ish topshirig'i) tuzing.
@@ -152,18 +141,22 @@ Faqat quyidagi JSON formatda javob bering (boshqa hech narsa yozmang):
 }
 PROMPT;
 
-        return $this->visionJson($absoluteImagePath, $mimeType, $prompt, $fallback, ['category', 'priority', 'summary']);
+        return $this->visionJson($absoluteImagePath, $mimeType, $prompt, ['category', 'priority', 'summary']);
     }
 
     /**
      * Umumiy Vision so'rovi: rasm + prompt -> JSON maydonlar.
      *
+     * Muvaffaqiyatsizlikda (kalit yo'q, fayl yo'q, API xatosi) bo'sh massiv qaytaradi —
+     * "AI javob bermadi"ni "AI shunday dedi"dan ajratish uchun. Chaqiruvchi bo'sh natijani
+     * saqlamasligi kerak, aks holda keyin qayta tahlil qilish imkoni yo'qoladi.
+     *
      * @param  list<string>  $fields  javobdan olinadigan kalitlar
      */
-    protected function visionJson(string $absoluteImagePath, string $mimeType, string $prompt, array $fallback, array $fields): array
+    protected function visionJson(string $absoluteImagePath, string $mimeType, string $prompt, array $fields): array
     {
         if (empty($this->apiKey) || ! is_file($absoluteImagePath)) {
-            return $fallback;
+            return [];
         }
 
         try {
@@ -195,7 +188,7 @@ PROMPT;
             if ($response->failed()) {
                 Log::error('Claude vision API error', ['status' => $response->status(), 'body' => $response->body()]);
 
-                return $fallback;
+                return [];
             }
 
             $text = (string) $response->json('content.0.text', '');
@@ -203,7 +196,7 @@ PROMPT;
             $parsed = json_decode($matches[0] ?? '{}', true);
 
             if (! is_array($parsed)) {
-                return $fallback;
+                return [];
             }
 
             $result = [];
@@ -211,11 +204,11 @@ PROMPT;
                 $result[$field] = $parsed[$field] ?? null;
             }
 
-            return array_merge($fallback, array_filter($result));
+            return array_filter($result);
         } catch (\Throwable $e) {
             Log::error('Claude vision exception', ['message' => $e->getMessage()]);
 
-            return $fallback;
+            return [];
         }
     }
 

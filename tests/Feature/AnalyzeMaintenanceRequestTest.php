@@ -64,6 +64,41 @@ class AnalyzeMaintenanceRequestTest extends TestCase
         $this->assertStringContainsString('150 000', $fresh->ai_summary);
     }
 
+    /**
+     * AI javob bermasa (kalit yo'q / API xatosi) hech narsa saqlanmasligi kerak —
+     * aks holda ariza "tahlil qilingan" ko'rinib qoladi va qayta urinilmaydi.
+     */
+    public function test_failed_analysis_leaves_ai_fields_untouched(): void
+    {
+        $this->mock(ClaudeService::class, function ($mock) {
+            $mock->shouldReceive('categorizeRequest')->once()->andReturn([]);
+        });
+
+        app()->call([new AnalyzeMaintenanceRequest($this->request->id), 'handle']);
+
+        $fresh = $this->request->fresh();
+        $this->assertNull($fresh->ai_summary);
+        $this->assertNull($fresh->ai_category_suggested);
+        $this->assertNull($fresh->ai_priority_suggested);
+    }
+
+    public function test_force_reanalyzes_an_already_analyzed_request(): void
+    {
+        $this->request->updateQuietly(['ai_summary' => 'Eski tahlil.']);
+
+        $this->mock(ClaudeService::class, function ($mock) {
+            $mock->shouldReceive('categorizeRequest')->once()->andReturn([
+                'category' => 'plumbing',
+                'priority' => 'emergency',
+                'summary' => 'Yangi tahlil.',
+            ]);
+        });
+
+        app()->call([new AnalyzeMaintenanceRequest($this->request->id, force: true), 'handle']);
+
+        $this->assertSame('Yangi tahlil.', $this->request->fresh()->ai_summary);
+    }
+
     public function test_job_skips_already_analyzed_request(): void
     {
         $this->request->updateQuietly(['ai_summary' => 'Allaqachon tahlil qilingan.']);

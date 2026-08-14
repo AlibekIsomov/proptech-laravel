@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\PM;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\AnalyzeMaintenanceRequest;
 use App\Models\MaintenanceRequest;
 use App\Models\PM\Apartment;
 use App\Models\PM\Project;
 use App\Models\Resident;
 use App\Models\Vendor;
-use App\Services\ClaudeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -151,20 +151,20 @@ class MaintenanceRequestController extends Controller
 
     /**
      * POST /pm/requests/{request}/ai-categorize
-     * AI orqali kategoriya va prioritet aniqlash
+     * AI tahlilini qo'lda qayta ishga tushirish. Ariza yaratilganda bu avtomatik
+     * bajariladi — bu yo'l AI javob bermay qolgan arizalar uchun. Foto bo'lsa
+     * o'sha job Vision orqali work order yozadi, shuning uchun mantiq takrorlanmaydi.
      */
-    public function aiCategorize(MaintenanceRequest $requestModel, ClaudeService $claude): JsonResponse
+    public function aiCategorize(MaintenanceRequest $requestModel): JsonResponse
     {
-        $result = $claude->categorizeRequest($requestModel->title, $requestModel->description);
+        dispatch_sync(new AnalyzeMaintenanceRequest($requestModel->id, force: true));
 
-        if (! empty($result)) {
-            $requestModel->update([
-                'ai_category_suggested' => $result['category'] ?? null,
-                'ai_priority_suggested' => $result['priority'] ?? null,
-                'ai_summary' => $result['summary'] ?? null,
-            ]);
-        }
+        $requestModel->refresh();
 
-        return response()->json($result);
+        return response()->json([
+            'category' => $requestModel->ai_category_suggested,
+            'priority' => $requestModel->ai_priority_suggested,
+            'summary' => $requestModel->ai_summary,
+        ]);
     }
 }

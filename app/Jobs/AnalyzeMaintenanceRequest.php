@@ -20,13 +20,13 @@ class AnalyzeMaintenanceRequest implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public function __construct(public string $requestId) {}
+    public function __construct(public string $requestId, public bool $force = false) {}
 
     public function handle(ClaudeService $ai): void
     {
         $request = MaintenanceRequest::withoutGlobalScopes()->with('photos')->find($this->requestId);
 
-        if (! $request || $request->ai_summary) {
+        if (! $request || (! $this->force && $request->ai_summary)) {
             return;
         }
 
@@ -36,6 +36,8 @@ class AnalyzeMaintenanceRequest implements ShouldQueue
             ? $ai->analyzeMaintenancePhoto($photoPath, $request->title, $request->description)
             : $ai->categorizeRequest($request->title, $request->description);
 
+        // AI javob bermadi (kalit yo'q / API xatosi) — ai_* maydonlariga tegmaymiz,
+        // aks holda "tahlil qilingan" ko'rinib qoladi va boshqa qayta urinilmaydi
         if (empty($result)) {
             return;
         }
