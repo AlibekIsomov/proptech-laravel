@@ -8,52 +8,56 @@ use Illuminate\Support\Facades\Log;
 class ClaudeService
 {
     private string $apiKey;
+
     private string $model;
 
     public function __construct()
     {
         $this->apiKey = (string) config('services.anthropic.key', '');
-        $this->model  = (string) config('services.anthropic.model', 'claude-sonnet-4-0');
+        $this->model = (string) config('services.anthropic.model', 'claude-sonnet-4-0');
     }
 
     public function complete(string $prompt, int $maxTokens = 1024): string
     {
         if (empty($this->apiKey)) {
-            if (str_contains($prompt, "AI tavsifi") || str_contains($prompt, "JSON formatda javob bering")) {
+            if (str_contains($prompt, 'AI tavsifi') || str_contains($prompt, 'JSON formatda javob bering')) {
                 return '{
                   "category": "plumbing",
                   "priority": "medium",
                   "summary": "Suv sizishi aniqlandi. Muammoni bartaraf etish kerak."
                 }';
             }
-            if (str_contains($prompt, "AI konsultantisiz") || str_contains($prompt, "savdo ma'lumotlariga asoslanib")) {
+            if (str_contains($prompt, 'AI konsultantisiz') || str_contains($prompt, "savdo ma'lumotlariga asoslanib")) {
                 return "• Reklama kampaniyalarini kuchaytiring va maqsadli auditoriyani kengaytiring.\n• Mijozlarga qulay va moslashuvchan muddatli to'lov variantlarini taklif qiling.\n• Mavjud kvartiralarni tezroq sotish uchun maxsus aksiyalar e'lon qiling.";
             }
-            if (str_contains($prompt, "professional email yozing")) {
+            if (str_contains($prompt, 'professional email yozing')) {
                 return "Mavzu: Qiziqarli taklif\n\nHurmatli mijoz! Biz siz uchun eng qulay shartlar va ajoyib taklifni tayyorladik.";
             }
+
             return 'AI vaqtincha mock rejimida ishlamoqda.';
         }
 
         try {
             $response = Http::withHeaders([
-                'x-api-key'         => $this->apiKey,
+                'x-api-key' => $this->apiKey,
                 'anthropic-version' => '2023-06-01',
-                'Content-Type'      => 'application/json',
+                'Content-Type' => 'application/json',
             ])->timeout(30)->post('https://api.anthropic.com/v1/messages', [
-                'model'      => $this->model,
+                'model' => $this->model,
                 'max_tokens' => $maxTokens,
-                'messages'   => [['role' => 'user', 'content' => $prompt]],
+                'messages' => [['role' => 'user', 'content' => $prompt]],
             ]);
 
             if ($response->failed()) {
                 Log::error('Claude API error', ['status' => $response->status(), 'body' => $response->body()]);
+
                 return 'AI vaqtincha mavjud emas.';
             }
 
             return $response->json('content.0.text', '');
         } catch (\Throwable $e) {
             Log::error('Claude service exception', ['message' => $e->getMessage()]);
+
             return 'AI vaqtincha mavjud emas.';
         }
     }
@@ -82,6 +86,7 @@ PROMPT;
         try {
             // JSON-ni extract qilamiz
             preg_match('/\{.*\}/s', $json, $matches);
+
             return json_decode($matches[0] ?? '{}', true) ?? [];
         } catch (\Throwable) {
             return [];
@@ -98,13 +103,9 @@ PROMPT;
         $fallback = [
             'category' => 'other',
             'priority' => 'medium',
-            'title'    => 'Infratuzilma muammosi',
-            'summary'  => 'Rasm avtomatik tahlil qilinmadi. Iltimos, muammoni qo\'lda tekshiring.',
+            'title' => 'Infratuzilma muammosi',
+            'summary' => 'Rasm avtomatik tahlil qilinmadi. Iltimos, muammoni qo\'lda tekshiring.',
         ];
-
-        if (empty($this->apiKey) || ! is_file($absoluteImagePath)) {
-            return $fallback;
-        }
 
         $prompt = <<<'PROMPT'
 Siz shahar va mahalla infratuzilma muammolarini aniqlaydigan AI assistantsiz. Rasmni tahlil qiling
@@ -119,6 +120,52 @@ category izohi: pothole=yo'l teshigi/nuqsoni, street_light=buzuq ko'cha chirog'i
 water_leak=suv sizishi/quvur, gas_leak=gaz sizishi, garbage=chiqindi/axlat, other=boshqa.
 PROMPT;
 
+        return $this->visionJson($absoluteImagePath, $mimeType, $prompt, $fallback, ['category', 'priority', 'title', 'summary']);
+    }
+
+    /**
+     * Nosozlik arizasi fotosidan work order yozish: nima buzilgan, muhimlik,
+     * kerakli ehtiyot qismlar va taxminiy narx. Aholi hech narsa to'ldirmasa ham
+     * dispetcher tayyor ma'lumot ko'radi.
+     *
+     * @return array{category:string, priority:string, summary:string}
+     */
+    public function analyzeMaintenancePhoto(string $absoluteImagePath, string $title, string $description, string $mimeType = 'image/jpeg'): array
+    {
+        $fallback = [
+            'category' => 'other',
+            'priority' => 'medium',
+            'summary' => 'Rasm avtomatik tahlil qilinmadi. Arizani qo\'lda ko\'rib chiqing.',
+        ];
+
+        $prompt = <<<PROMPT
+Siz turar-joy binolari texnik xizmati AI assistantsiz. Yashovchi nosozlik fotosini yubordi.
+Rasmni tahlil qilib work order (ish topshirig'i) tuzing.
+
+Yashovchi yozgani — sarlavha: "{$title}", tavsif: "{$description}"
+
+Faqat quyidagi JSON formatda javob bering (boshqa hech narsa yozmang):
+{
+  "category": "plumbing|electrical|heating|cleaning|elevator|appliance|structural|other",
+  "priority": "low|medium|high|emergency",
+  "summary": "Work order (o'zbek tilida, 2-4 jumla): nima buzilgan, kerakli ehtiyot qismlar va taxminiy narx (UZS)"
+}
+PROMPT;
+
+        return $this->visionJson($absoluteImagePath, $mimeType, $prompt, $fallback, ['category', 'priority', 'summary']);
+    }
+
+    /**
+     * Umumiy Vision so'rovi: rasm + prompt -> JSON maydonlar.
+     *
+     * @param  list<string>  $fields  javobdan olinadigan kalitlar
+     */
+    protected function visionJson(string $absoluteImagePath, string $mimeType, string $prompt, array $fallback, array $fields): array
+    {
+        if (empty($this->apiKey) || ! is_file($absoluteImagePath)) {
+            return $fallback;
+        }
+
         try {
             // Rasmni Claude limitlariga moslash: kichraytirish + JPEG'ga normallashtirish.
             // Bu telefon fotolaridagi katta hajm / HEIC-ga o'xshash format / media_type
@@ -126,19 +173,19 @@ PROMPT;
             [$base64, $mediaType] = $this->prepareImageForVision($absoluteImagePath, $mimeType);
 
             $response = Http::withHeaders([
-                'x-api-key'         => $this->apiKey,
+                'x-api-key' => $this->apiKey,
                 'anthropic-version' => '2023-06-01',
-                'Content-Type'      => 'application/json',
+                'Content-Type' => 'application/json',
             ])->timeout(45)->post('https://api.anthropic.com/v1/messages', [
-                'model'      => $this->model,
+                'model' => $this->model,
                 'max_tokens' => 512,
-                'messages'   => [[
-                    'role'    => 'user',
+                'messages' => [[
+                    'role' => 'user',
                     'content' => [
                         ['type' => 'image', 'source' => [
-                            'type'       => 'base64',
+                            'type' => 'base64',
                             'media_type' => $mediaType,
-                            'data'       => $base64,
+                            'data' => $base64,
                         ]],
                         ['type' => 'text', 'text' => $prompt],
                     ],
@@ -159,12 +206,12 @@ PROMPT;
                 return $fallback;
             }
 
-            return array_merge($fallback, array_filter([
-                'category' => $parsed['category'] ?? null,
-                'priority' => $parsed['priority'] ?? null,
-                'title'    => $parsed['title'] ?? null,
-                'summary'  => $parsed['summary'] ?? null,
-            ]));
+            $result = [];
+            foreach ($fields as $field) {
+                $result[$field] = $parsed[$field] ?? null;
+            }
+
+            return array_merge($fallback, array_filter($result));
         } catch (\Throwable $e) {
             Log::error('Claude vision exception', ['message' => $e->getMessage()]);
 

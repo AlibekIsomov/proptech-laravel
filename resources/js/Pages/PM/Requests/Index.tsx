@@ -19,6 +19,7 @@ interface MaintenanceRequest {
   ai_category_suggested: string | null;
   ai_priority_suggested: string | null;
   ai_summary:            string | null;
+  is_repeat:             boolean;
   apartment:             string | null;
   building:              string | null;
   resident:              string | null;
@@ -38,6 +39,7 @@ interface Vendor {
   name:            string;
   specializations: string[];
   rating:          number;
+  completed_jobs:  number;
 }
 
 interface BuildingOption {
@@ -107,6 +109,23 @@ export default function Index({ requests, vendors, projects, apartments, residen
   // Assign vendor modal
   const [assignReq, setAssignReq]         = useState<MaintenanceRequest | null>(null);
   const [selectedVendorId, setSelectedVendorId] = useState('');
+
+  // Tizim tavsiyasi: mos mutaxassislik birinchi, ichida reyting bo'yicha
+  // (backend allaqachon rating desc yuboradi; takror-nosozlik jarimasi reytingda)
+  const vendorsForCategory = (category: string | null) =>
+    [...vendors].sort((a, b) =>
+      Number(!!(category && b.specializations.includes(category))) -
+      Number(!!(category && a.specializations.includes(category))));
+
+  const vendorOption = (v: Vendor, recommended: boolean) =>
+    `${recommended ? '★ ' : ''}${v.name} · ${Number(v.rating).toFixed(1)} (${v.specializations.join(', ') || 'General'})`;
+
+  // Drawer ochilganda eng yaxshi usta oldindan tanlab qo'yiladi
+  useEffect(() => {
+    if (selectedReq && !selectedReq.assigned_vendor_id) {
+      setSelectedVendorId(vendorsForCategory(selectedReq.category)[0]?.id || '');
+    }
+  }, [selectedReq]);
 
   // Create request modal
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -322,7 +341,10 @@ export default function Index({ requests, vendors, projects, apartments, residen
                       <tr key={r.id} onClick={() => setSelectedReq(r)} style={{ cursor: 'pointer' }}>
                         <td><Badge tone={priorityTone(r.priority)}>{t(`pmRequests.priority${r.priority.charAt(0).toUpperCase() + r.priority.slice(1)}`)}</Badge></td>
                         <td>
-                          <div style={{ fontWeight: 600, fontSize: 13 }}>{r.title}</div>
+                          <div style={{ fontWeight: 600, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
+                            {r.title}
+                            {r.is_repeat && <Badge tone="danger">🔁 Takror</Badge>}
+                          </div>
                           <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 2, maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.description}</div>
                         </td>
                         <td>
@@ -342,7 +364,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
                               variant="soft"
                               size="sm"
                               icon={UserPlus}
-                              onClick={() => { setAssignReq(r); setSelectedVendorId(r.assigned_vendor_id || ''); }}
+                              onClick={() => { setAssignReq(r); setSelectedVendorId(r.assigned_vendor_id || vendorsForCategory(r.category)[0]?.id || ''); }}
                             >
                               {t('pmRequests.assign')}
                             </Btn>
@@ -389,6 +411,11 @@ export default function Index({ requests, vendors, projects, apartments, residen
       >
         {selectedReq && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            {selectedReq.is_repeat && (
+              <div style={{ borderRadius: 10, padding: '10px 14px', fontSize: 12, background: 'color-mix(in srgb, var(--danger) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 25%, transparent)', color: 'var(--danger)' }}>
+                🔁 Takroriy nosozlik — oldingi ta'mirdan keyin qaytadan buzilgan. Usta reytingiga jarima qo'llangan.
+              </div>
+            )}
             {/* Status + Priority row */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <div className="card card-pad" style={{ padding: '12px 14px' }}>
@@ -464,8 +491,8 @@ export default function Index({ requests, vendors, projects, apartments, residen
                     style={{ flex: 1 }}
                   >
                     <option value="">{t('pmRequests.selectContractor')}</option>
-                    {vendors.map(v => (
-                      <option key={v.id} value={v.id}>{v.name}</option>
+                    {vendorsForCategory(selectedReq.category).map((v, i) => (
+                      <option key={v.id} value={v.id}>{vendorOption(v, i === 0)}</option>
                     ))}
                   </PmSelect>
                   <Btn
@@ -508,8 +535,8 @@ export default function Index({ requests, vendors, projects, apartments, residen
                 <Field label={t('pmRequests.selectContractor')}>
                   <PmSelect value={selectedVendorId} onChange={e => setSelectedVendorId(e.target.value)} required>
                     <option value="">{t('pmRequests.selectContractor')}</option>
-                    {vendors.map(v => (
-                      <option key={v.id} value={v.id}>{v.name} ({v.specializations.join(', ') || 'General'})</option>
+                    {vendorsForCategory(assignReq.category).map((v, i) => (
+                      <option key={v.id} value={v.id}>{vendorOption(v, i === 0)}</option>
                     ))}
                   </PmSelect>
                 </Field>
@@ -636,7 +663,9 @@ export default function Index({ requests, vendors, projects, apartments, residen
                 <Field label={t('pmRequests.assignContractorOpt')}>
                   <PmSelect value={createVendorId} onChange={e => setCreateVendorId(e.target.value)}>
                     <option value="">{t('pmRequests.assignLater')}</option>
-                    {vendors.map(v => <option key={v.id} value={v.id}>{v.name} ({v.specializations.join(', ') || 'General'})</option>)}
+                    {vendorsForCategory(createCategory || null).map((v, i) => (
+                      <option key={v.id} value={v.id}>{vendorOption(v, i === 0 && !!createCategory)}</option>
+                    ))}
                   </PmSelect>
                 </Field>
 
