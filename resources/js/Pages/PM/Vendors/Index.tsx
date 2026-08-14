@@ -5,7 +5,7 @@ import { HardHat, ToggleRight } from 'lucide-react';
 import AppShell from '@/Components/AppShell';
 import {
   PageHead, Stat, Badge, Btn, Drawer, Field, TextInput, PmSelect, Avatar, Seg, EmptyState,
-  priorityTone, ticketStatusTone,
+  priorityTone, ticketStatusTone, CATEGORY_KEYS, categoryI18nKey,
   Plus, Search, Star, Phone, Mail, MessageCircle, Loader2,
   Edit2, X, CheckCircle2, Clock, AlertCircle, DollarSign, Wrench, ChevronRight,
 } from '@/Components/pm/ui';
@@ -53,17 +53,7 @@ interface VendorDetail {
 
 interface Props { vendors: Vendor[]; }
 
-const SPEC_RU: Record<string, string> = {
-  plumbing:   'Plumbing',
-  electrical: 'Electrical',
-  heating:    'Heating',
-  cleaning:   'Cleaning',
-  elevator:   'Elevator',
-  appliance:  'Appliances',
-  structural: 'Structural',
-  other:      'Other',
-};
-const ALL_SPECS = Object.keys(SPEC_RU);
+const ALL_SPECS = CATEGORY_KEYS;
 
 export default function Index({ vendors }: Props) {
   const { t } = useTranslation();
@@ -195,7 +185,7 @@ export default function Index({ vendors }: Props) {
             <Field>
               <PmSelect value={specFilter} onChange={e => setSpecFilter(e.target.value)}>
                 <option value="all">{t('pmVendors.allSpecs')}</option>
-                {ALL_SPECS.map(s => <option key={s} value={s}>{SPEC_RU[s]}</option>)}
+                {ALL_SPECS.map(s => <option key={s} value={s}>{t(categoryI18nKey(s))}</option>)}
               </PmSelect>
             </Field>
           </div>
@@ -233,7 +223,7 @@ export default function Index({ vendors }: Props) {
 
                 {(v.specializations?.length ?? 0) > 0 && (
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-                    {(v.specializations ?? []).map(s => <Badge key={s} tone="ok">{SPEC_RU[s] ?? s}</Badge>)}
+                    {(v.specializations ?? []).map(s => <Badge key={s} tone="ok">{t(categoryI18nKey(s))}</Badge>)}
                   </div>
                 )}
 
@@ -310,7 +300,7 @@ export default function Index({ vendors }: Props) {
                 <span style={{ fontSize: 12, color: 'var(--text-3)', marginLeft: 4 }}>{Number(detailData.vendor.rating).toFixed(1)}</span>
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginLeft: 'auto' }}>
-                {(detailData.vendor.specializations ?? []).map(s => <Badge key={s} tone="ok">{SPEC_RU[s] ?? s}</Badge>)}
+                {(detailData.vendor.specializations ?? []).map(s => <Badge key={s} tone="ok">{t(categoryI18nKey(s))}</Badge>)}
               </div>
             </div>
 
@@ -333,7 +323,7 @@ export default function Index({ vendors }: Props) {
                         <div style={{ fontSize: 12, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{req.title}</div>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 4, fontSize: 11, color: 'var(--text-3)' }}>
                           {req.building && <span>{req.building}{req.apartment && ` №${req.apartment}`}</span>}
-                          {req.category && <span>{SPEC_RU[req.category] ?? req.category}</span>}
+                          {req.category && <span>{t(categoryI18nKey(req.category))}</span>}
                           <span>{req.created_at}</span>
                           {req.completed_at && <span style={{ color: 'var(--ok)' }}>✓ {req.completed_at}</span>}
                         </div>
@@ -394,7 +384,7 @@ export default function Index({ vendors }: Props) {
                     {ALL_SPECS.map(s => (
                       <label key={s} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, cursor: 'pointer' }}>
                         <input type="checkbox" checked={specializations.includes(s)} onChange={e => toggleSpec(s, e.target.checked)} />
-                        {SPEC_RU[s]}
+                        {t(categoryI18nKey(s))}
                       </label>
                     ))}
                   </div>

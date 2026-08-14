@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { X, User, Wrench, Gauge, Receipt, Phone, Mail, Send, Loader2 } from 'lucide-react';
 
 interface ApartmentSummary {
@@ -74,21 +75,17 @@ const PRIORITY_COLOR: Record<string, { bg: string; text: string; label: string }
   emergency: { bg: 'rgba(239,68,68,0.18)',   text: '#fca5a5', label: 'Emergency' },
 };
 
-const METER_RU: Record<string, string> = {
-  electricity: 'Electricity',
-  gas:         'Gas',
-  water_cold:  'Cold Water',
-  water_hot:   'Hot Water',
-  heating:     'Heating',
+// Hisoblagich turi va hisob holati nomlari i18n'da (pmMeters.* / pmInvoices.status*)
+const METER_I18N: Record<string, string> = {
+  electricity: 'pmMeters.electricity',
+  gas:         'pmMeters.gas',
+  water_cold:  'pmMeters.waterCold',
+  water_hot:   'pmMeters.waterHot',
+  heating:     'pmMeters.heating',
 };
 
-const INVOICE_STATUS_RU: Record<string, string> = {
-  draft:     'Draft',
-  sent:      'Sent',
-  paid:      'Paid',
-  overdue:   'Overdue',
-  cancelled: 'Cancelled',
-};
+const invoiceStatusI18nKey = (status: string) =>
+  `pmInvoices.status${status.charAt(0).toUpperCase()}${status.slice(1)}`;
 
 const INVOICE_STATUS_COLOR: Record<string, { bg: string; text: string }> = {
   draft:     { bg: 'rgba(100,116,139,0.15)', text: '#94a3b8' },
@@ -348,8 +345,10 @@ function RequestsTab({ requests }: { requests: MaintenanceRequestSummary[] }) {
 
 // ── Tab: Meters ──
 function MetersTab({ meters }: { meters: UtilityMeterSummary[] }) {
+  const { t } = useTranslation();
+
   if (meters.length === 0) {
-    return <EmptyHint text="No meters installed" />;
+    return <EmptyHint text={t('pmMeters.noMeters')} />;
   }
   return (
     <div className="space-y-2">
@@ -363,7 +362,7 @@ function MetersTab({ meters }: { meters: UtilityMeterSummary[] }) {
           }}
         >
           <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold text-slate-800">{METER_RU[m.meter_type] ?? m.meter_type}</p>
+            <p className="text-sm font-semibold text-slate-800">{METER_I18N[m.meter_type] ? t(METER_I18N[m.meter_type]) : m.meter_type}</p>
             <span className="text-[10px]" style={{ color: 'var(--muted)' }}>{m.serial_number}</span>
           </div>
           <p className="text-2xl mt-2 text-slate-800 font-bold">
@@ -382,8 +381,10 @@ function MetersTab({ meters }: { meters: UtilityMeterSummary[] }) {
 
 // ── Tab: Invoices ──
 function InvoicesTab({ invoices }: { invoices: PMInvoiceSummary[] }) {
+  const { t } = useTranslation();
+
   if (invoices.length === 0) {
-    return <EmptyHint text="No invoices issued yet" />;
+    return <EmptyHint text={t('pmInvoices.noInvoices')} />;
   }
   return (
     <div className="space-y-2">
@@ -410,7 +411,7 @@ function InvoicesTab({ invoices }: { invoices: PMInvoiceSummary[] }) {
                 className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
                 style={{ backgroundColor: c.bg, color: c.text }}
               >
-                {INVOICE_STATUS_RU[inv.status] || inv.status}
+                {t(invoiceStatusI18nKey(inv.status))}
               </span>
             </div>
             <p className="text-lg mt-2 text-slate-800 font-bold">

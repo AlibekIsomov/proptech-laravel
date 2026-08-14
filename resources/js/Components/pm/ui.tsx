@@ -252,6 +252,20 @@ export function invoiceStatusTone(s: string): InvoiceTone {
   return ({ draft: 'neutral', sent: 'info', paid: 'ok', overdue: 'danger', cancelled: 'neutral' } as Record<string, InvoiceTone>)[s] || 'neutral';
 }
 
+/**
+ * Ta'mirlash kategoriyalari — backend kalitlari. Nomlari i18n'da
+ * (pmRequests.catPlumbing, ...), shuning uchun bu yerda faqat kalitlar turadi.
+ */
+export const CATEGORY_KEYS = [
+  'plumbing', 'electrical', 'heating', 'cleaning',
+  'elevator', 'appliance', 'structural', 'other',
+] as const;
+
+/** Kategoriya kalitidan tarjima kalitini yasaydi: plumbing -> pmRequests.catPlumbing */
+export function categoryI18nKey(category: string): string {
+  return `pmRequests.cat${category.charAt(0).toUpperCase()}${category.slice(1)}`;
+}
+
 export function fmtUZS(n: number) {
   return n.toLocaleString('ru-RU').replace(/,/g, ' ');
 }

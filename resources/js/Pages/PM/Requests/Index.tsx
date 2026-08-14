@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import AppShell from '@/Components/AppShell';
 import {
   PageHead, Stat, Badge, Btn, Drawer, Field, TextInput, PmSelect, Avatar, EmptyState,
-  priorityTone, ticketStatusTone,
+  priorityTone, ticketStatusTone, CATEGORY_KEYS, categoryI18nKey,
   Inbox, Loader2, CheckCircle2, Search, ChevronRight, UserPlus, X, Sparkles,
   Plus, AlertCircle, Wrench, Clock, AlarmClock,
 } from '@/Components/pm/ui';
@@ -76,16 +76,6 @@ interface Props {
 
 const PRIORITY_RANK: Record<string, number> = { emergency: 0, high: 1, medium: 2, low: 3 };
 
-const CATEGORY_LABELS: Record<string, string> = {
-  plumbing:   'Plumbing',
-  electrical: 'Electrical',
-  heating:    'Heating',
-  cleaning:   'Cleaning',
-  elevator:   'Elevator',
-  appliance:  'Appliances',
-  structural: 'Structural',
-  other:      'Other',
-};
 
 export default function Index({ requests, vendors, projects, apartments, residents }: Props) {
   const { t } = useTranslation();
@@ -117,8 +107,11 @@ export default function Index({ requests, vendors, projects, apartments, residen
       Number(!!(category && b.specializations.includes(category))) -
       Number(!!(category && a.specializations.includes(category))));
 
-  const vendorOption = (v: Vendor, recommended: boolean) =>
-    `${recommended ? '★ ' : ''}${v.name} · ${Number(v.rating).toFixed(1)} (${v.specializations.join(', ') || 'General'})`;
+  const vendorOption = (v: Vendor, recommended: boolean) => {
+    const specs = v.specializations.map(s => t(categoryI18nKey(s))).join(', ');
+
+    return `${recommended ? '★ ' : ''}${v.name} · ${Number(v.rating).toFixed(1)} (${specs || t('pmRequests.generalSpec')})`;
+  };
 
   // Drawer ochilganda eng yaxshi usta oldindan tanlab qo'yiladi
   useEffect(() => {
@@ -258,7 +251,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
           sub={t('pmRequests.subtitle')}
           actions={
             <Btn variant="primary" icon={Plus} onClick={() => setShowCreateModal(true)}>
-              {t('nav.newRequest', { defaultValue: 'Yangi ariza' })}
+              {t('pmRequests.newRequest')}
             </Btn>
           }
         />
@@ -343,7 +336,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
                         <td>
                           <div style={{ fontWeight: 600, fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
                             {r.title}
-                            {r.is_repeat && <Badge tone="danger">🔁 Takror</Badge>}
+                            {r.is_repeat && <Badge tone="danger">🔁 {t('pmRequests.repeatBadge')}</Badge>}
                           </div>
                           <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 2, maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.description}</div>
                         </td>
@@ -352,7 +345,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
                           {r.building && <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{r.building}</div>}
                         </td>
                         <td>{r.resident ? <span style={{ fontSize: 13 }}>{r.resident}</span> : <span style={{ color: 'var(--text-3)' }}>—</span>}</td>
-                        <td><span style={{ fontSize: 12, color: 'var(--text-2)', textTransform: 'capitalize' }}>{r.category ? (CATEGORY_LABELS[r.category] ?? r.category) : '—'}</span></td>
+                        <td><span style={{ fontSize: 12, color: 'var(--text-2)' }}>{r.category ? t(categoryI18nKey(r.category)) : '—'}</span></td>
                         <td><Badge tone={ticketStatusTone(r.status)}>{t(`pmRequests.status${r.status.split('_').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join('')}`)}</Badge></td>
                         <td onClick={e => e.stopPropagation()}>
                           {r.vendor ? (
@@ -387,7 +380,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
         open={!!selectedReq}
         onClose={() => setSelectedReq(null)}
         title={selectedReq?.title ?? ''}
-        sub={t('common.maintenanceTicket', { defaultValue: 'Maintenance Ticket' })}
+        sub={t('pmRequests.maintenanceTicket')}
         width={480}
         footer={
           selectedReq && selectedReq.status !== 'completed' && selectedReq.status !== 'cancelled' ? (
@@ -413,7 +406,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             {selectedReq.is_repeat && (
               <div style={{ borderRadius: 10, padding: '10px 14px', fontSize: 12, background: 'color-mix(in srgb, var(--danger) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 25%, transparent)', color: 'var(--danger)' }}>
-                🔁 Takroriy nosozlik — oldingi ta'mirdan keyin qaytadan buzilgan. Usta reytingiga jarima qo'llangan.
+                🔁 {t('pmRequests.repeatWarning')}
               </div>
             )}
             {/* Status + Priority row */}
@@ -442,13 +435,13 @@ export default function Index({ requests, vendors, projects, apartments, residen
                 <div>
                   <p style={{ fontSize: 12, lineHeight: 1.6, color: 'var(--text-2)', fontFamily: 'var(--font-mono)', marginBottom: 10 }}>{selectedReq.ai_summary}</p>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                    {selectedReq.ai_category_suggested && <Badge tone="violet">Category: {selectedReq.ai_category_suggested}</Badge>}
-                    {selectedReq.ai_priority_suggested && <Badge tone="info">Priority: {selectedReq.ai_priority_suggested}</Badge>}
+                    {selectedReq.ai_category_suggested && <Badge tone="violet">{t('pmRequests.aiCategory')}: {t(categoryI18nKey(selectedReq.ai_category_suggested))}</Badge>}
+                    {selectedReq.ai_priority_suggested && <Badge tone="info">{t('pmRequests.aiPriority')}: {t(`pmRequests.priority${selectedReq.ai_priority_suggested.charAt(0).toUpperCase() + selectedReq.ai_priority_suggested.slice(1)}`)}</Badge>}
                   </div>
                 </div>
               ) : (
                 <div>
-                  <p style={{ fontSize: 12, color: 'var(--text-3)', marginBottom: 12 }}>AI can automatically analyze, categorize, and summarize this request.</p>
+                  <p style={{ fontSize: 12, color: 'var(--text-3)', marginBottom: 12 }}>{t('pmRequests.aiHint')}</p>
                   <Btn
                     variant="accent"
                     block
@@ -456,7 +449,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
                     disabled={aiRunning}
                     onClick={() => triggerAiCategorize(selectedReq)}
                   >
-                    Run AI Categorization
+                    {t('pmRequests.runAi')}
                   </Btn>
                 </div>
               )}
@@ -465,16 +458,16 @@ export default function Index({ requests, vendors, projects, apartments, residen
             {/* Details grid */}
             <div>
               <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-3)', marginBottom: 10 }}>
-                Ticket Details
+                {t('pmRequests.ticketDetails')}
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                <DetailRow label="Apartment" value={`№${selectedReq.apartment || '—'}`} />
-                <DetailRow label="Resident"  value={selectedReq.resident || '—'} />
-                <DetailRow label="Created"   value={new Date(selectedReq.created_at).toLocaleDateString()} />
-                <DetailRow label="SLA"       value={selectedReq.sla_deadline ? new Date(selectedReq.sla_deadline).toLocaleString() : '—'} />
+                <DetailRow label={t('pmRequests.apartmentLabel2')} value={`№${selectedReq.apartment || '—'}`} />
+                <DetailRow label={t('pmRequests.residentName')}    value={selectedReq.resident || '—'} />
+                <DetailRow label={t('pmRequests.createdOn')}       value={new Date(selectedReq.created_at).toLocaleDateString()} />
+                <DetailRow label={t('pmRequests.slaDeadline')}     value={selectedReq.sla_deadline ? new Date(selectedReq.sla_deadline).toLocaleString() : '—'} />
               </div>
               <div style={{ marginTop: 10 }}>
-                <DetailRow label="Description" value={selectedReq.description} wide />
+                <DetailRow label={t('pmRequests.description')} value={selectedReq.description} wide />
               </div>
             </div>
 
@@ -572,7 +565,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
                     required
                     value={createTitle}
                     onChange={e => setCreateTitle(e.target.value)}
-                    placeholder="e.g. Faucet leaking in kitchen"
+                    placeholder={t('pmRequests.titlePlaceholder')}
                   />
                 </Field>
 
@@ -581,7 +574,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
                     required
                     value={createDesc}
                     onChange={e => setCreateDesc(e.target.value)}
-                    placeholder="Describe the issue in detail..."
+                    placeholder={t('pmRequests.descPlaceholder')}
                     rows={3}
                     className="input"
                     style={{ resize: 'none' }}
@@ -595,7 +588,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
                       value={createProjId}
                       onChange={e => { setCreateProjId(e.target.value); setCreateBldgId(''); setCreateAptId(''); setCreateResidentId(''); }}
                     >
-                      <option value="">Select…</option>
+                      <option value="">{t('pmRequests.selectPlaceholder')}</option>
                       {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                     </PmSelect>
                   </Field>
@@ -607,7 +600,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
                       disabled={!createProjId}
                       onChange={e => { setCreateBldgId(e.target.value); setCreateAptId(''); setCreateResidentId(''); }}
                     >
-                      <option value="">Select…</option>
+                      <option value="">{t('pmRequests.selectPlaceholder')}</option>
                       {buildingsForSelectedCreateProj.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
                     </PmSelect>
                   </Field>
@@ -619,7 +612,7 @@ export default function Index({ requests, vendors, projects, apartments, residen
                       disabled={!createBldgId}
                       onChange={e => { setCreateAptId(e.target.value); setCreateResidentId(''); }}
                     >
-                      <option value="">Select…</option>
+                      <option value="">{t('pmRequests.selectPlaceholder')}</option>
                       {apartmentsForSelectedCreateBldg.map(a => <option key={a.id} value={a.id}>№{a.number}</option>)}
                     </PmSelect>
                   </Field>
@@ -645,8 +638,8 @@ export default function Index({ requests, vendors, projects, apartments, residen
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                   <Field label={t('pmRequests.category')}>
                     <PmSelect value={createCategory} onChange={e => setCreateCategory(e.target.value)}>
-                      <option value="">Choose…</option>
-                      {Object.entries(CATEGORY_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                      <option value="">{t('pmRequests.choosePlaceholder')}</option>
+                      {CATEGORY_KEYS.map(k => <option key={k} value={k}>{t(categoryI18nKey(k))}</option>)}
                     </PmSelect>
                   </Field>
 

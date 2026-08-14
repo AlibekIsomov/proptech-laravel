@@ -6,6 +6,10 @@
 
 /* ── Design tokens ── */
 .pm-portal {
+  /* Brauzer chizadigan native elementlar (select ro'yxati, scrollbar, date picker)
+     shu xossaga qarab rang tanlaydi — CSS ular ichiga yeta olmaydi */
+  color-scheme: light;
+
   --bg:#F4F6F8;
   --surface:#FFFFFF;
   --surface-2:#FAFBFC;
@@ -495,6 +499,9 @@
    DARK MODE
    ============================================================ */
 .pm-portal[data-theme="dark"] {
+  /* Busiz ochilgan <select> ro'yxati oq fonda chiqadi — variantlar o'qilmaydi */
+  color-scheme: dark;
+
   --bg:#0E141B; --surface:#161F2A; --surface-2:#1B2530; --surface-3:#222E3B;
   --border:#2A3744; --border-strong:#3A4956; --overlay:rgba(0,0,0,0.58);
   --text:#E9EEF3; --text-soft:#9DAAB8; --text-faint:#697787;

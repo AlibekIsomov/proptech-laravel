@@ -417,6 +417,17 @@ const uz = {
     catAppliance: "Texnika",
     catStructural: "Konstruktsiya",
     catOther: "Boshqa",
+    // Takroriy nosozlik
+    repeatBadge: "Takror",
+    repeatWarning: "Takroriy nosozlik — oldingi ta'mirdan keyin qaytadan buzilgan. Usta reytingiga jarima qo'llangan.",
+    // Boshqa matnlar
+    maintenanceTicket: "Ta'mirlash arizasi",
+    aiHint: "AI bu arizani avtomatik tahlil qilib, kategoriya va ustuvorlikni aniqlaydi hamda qisqacha xulosa yozadi.",
+    selectPlaceholder: "Tanlang...",
+    choosePlaceholder: "Tanlang...",
+    titlePlaceholder: "masalan: Oshxonada kran oqayapti",
+    descPlaceholder: "Muammoni batafsil yozing...",
+    generalSpec: "Umumiy",
   },
 
   // PM Invoices
@@ -696,6 +707,7 @@ const uz = {
     searchPlaceholder: "Kvartira, bino yoki seriya raqami...",
     allTypes: "Barcha turlar",
     // Types
+    noMeters: "Hisoblagichlar o'rnatilmagan.",
     electricity: "Elektr energiya",
     gas: "Gaz",
     waterCold: "Sovuq suv",

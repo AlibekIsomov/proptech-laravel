@@ -409,6 +409,17 @@ const ru = {
     catAppliance: "Техника",
     catStructural: "Конструкция",
     catOther: "Прочее",
+    // Повторная неисправность
+    repeatBadge: "Повтор",
+    repeatWarning: "Повторная неисправность — сломалось снова после предыдущего ремонта. К рейтингу подрядчика применён штраф.",
+    // Прочие тексты
+    maintenanceTicket: "Заявка на ремонт",
+    aiHint: "AI автоматически проанализирует заявку, определит категорию и приоритет и напишет краткое резюме.",
+    selectPlaceholder: "Выберите...",
+    choosePlaceholder: "Выберите...",
+    titlePlaceholder: "например: Течёт кран на кухне",
+    descPlaceholder: "Опишите проблему подробнее...",
+    generalSpec: "Общий",
   },
 
   // PM Invoices
@@ -662,6 +673,7 @@ const ru = {
     missing: "Нет показаний",
     searchPlaceholder: "Квартира, корпус или серийный номер...",
     allTypes: "Все типы",
+    noMeters: "Счётчики не установлены.",
     electricity: "Электричество",
     gas: "Газ",
     waterCold: "Вода (хол.)",
