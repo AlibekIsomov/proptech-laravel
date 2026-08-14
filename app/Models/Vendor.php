@@ -47,9 +47,19 @@ class Vendor extends Model
     }
 
     /**
+     * Takror ulushini hisoblashda maxrajga qo'shiladigan vazn.
+     *
+     * Busiz bitta ish qilib bitta takror olgan yangi usta darrov to'liq jarima
+     * oladi va boshqa hech qachon tanlanmaydi — bir marta omadsizlik uchun umrbod
+     * qora ro'yxat. Bu qo'shimcha kam ishli ustaning jarimasini yumshatadi, ish
+     * soni ortgani sari ta'siri yo'qoladi.
+     */
+    private const REPEAT_PRIOR_JOBS = 5;
+
+    /**
      * Reyting va ish hisoblagichlarini tarixdan qayta hisoblaydi.
      *
-     * rating = avg(resident_rating) - 2 × (takror ulushi)
+     * rating = avg(resident_rating) - 2 × takrorlar / (yakunlangan ishlar + 5)
      * Takror = shu usta yakunlagan ta'mirdan keyin o'sha kvartira/kategoriyada
      * qayta ochilgan ariza (maintenance_requests.repeat_of_id orqali).
      * Formula o'z-o'zini tuzatadi: yangi muvaffaqiyatli ishlar reytingni qaytaradi.
@@ -66,7 +76,7 @@ class Vendor extends Model
             ->where('originals.assigned_vendor_id', $this->id)
             ->count();
 
-        $repeatShare = $stats->completed > 0 ? $repeats / $stats->completed : 0;
+        $repeatShare = $repeats / ($stats->completed + self::REPEAT_PRIOR_JOBS);
 
         $this->updateQuietly([
             'total_jobs' => $stats->total,

@@ -54,10 +54,20 @@ class RepeatDetectionTest extends TestCase
         );
     }
 
-    private function makeCompleted(int $daysAgo, int $rating = 5): MaintenanceRequest
+    private function makeApartment(string $number): Apartment
     {
+        return Apartment::firstOrCreate(
+            ['pm_building_id' => $this->apartment->pm_building_id, 'number' => $number],
+            ['floor' => 1, 'rooms' => 2, 'area' => 50],
+        );
+    }
+
+    private function makeCompleted(int $daysAgo, int $rating = 5, ?Apartment $apartment = null): MaintenanceRequest
+    {
+        $apartment ??= $this->apartment;
+
         return MaintenanceRequest::create([
-            'apartment_id' => $this->apartment->id,
+            'apartment_id' => $apartment->id,
             'building_id' => $this->apartment->pm_building_id,
             'company_id' => $this->company->id,
             'resident_id' => $this->resident->id,
@@ -72,10 +82,12 @@ class RepeatDetectionTest extends TestCase
         ]);
     }
 
-    private function makeNew(): MaintenanceRequest
+    private function makeNew(?Apartment $apartment = null): MaintenanceRequest
     {
+        $apartment ??= $this->apartment;
+
         return MaintenanceRequest::create([
-            'apartment_id' => $this->apartment->id,
+            'apartment_id' => $apartment->id,
             'building_id' => $this->apartment->pm_building_id,
             'company_id' => $this->company->id,
             'resident_id' => $this->resident->id,
@@ -96,8 +108,28 @@ class RepeatDetectionTest extends TestCase
         $repeat = $this->makeNew();
 
         $this->assertSame($original->id, $repeat->fresh()->repeat_of_id);
-        // rating = avg(5) - 2 × (1 takror / 1 yakunlangan ish) = 3
-        $this->assertEquals(3.00, (float) $this->vendor->fresh()->rating);
+        // rating = avg(5) - 2 × (1 takror / (1 yakunlangan + 5 vazn)) = 4.67
+        $this->assertEquals(4.67, (float) $this->vendor->fresh()->rating);
+    }
+
+    /**
+     * Bitta omadsiz ish yangi ustani qora ro'yxatga tushirmasligi, lekin takrorlar
+     * to'planganda jarima sezilarli bo'lishi kerak.
+     */
+    public function test_penalty_grows_with_repeated_failures(): void
+    {
+        // Har juftlik alohida kvartirada — aks holda yakunlangan ta'mirlar
+        // bir-birining takroriga aylanib, hisobni buzadi
+        for ($i = 0; $i < 6; $i++) {
+            $apartment = $this->makeApartment("RT-P{$i}");
+            $this->makeCompleted(daysAgo: 21, apartment: $apartment);
+            $this->makeNew($apartment);
+        }
+
+        $rating = (float) $this->vendor->fresh()->rating;
+
+        // 6 takror / (6 yakunlangan + 5 vazn) = 0.545 -> 5 - 1.09 = 3.91
+        $this->assertEqualsWithDelta(3.91, $rating, 0.01);
     }
 
     public function test_old_completion_outside_window_is_not_a_repeat(): void
