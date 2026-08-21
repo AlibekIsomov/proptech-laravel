@@ -67,3 +67,4 @@ Commercial licensing (proprietary / closed-source use) is available — contact
 aisomov.dev@gmail.com
 
 The Laravel framework itself remains [MIT licensed](https://opensource.org/licenses/MIT).
+f

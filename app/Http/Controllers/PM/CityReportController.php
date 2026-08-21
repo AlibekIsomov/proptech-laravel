@@ -29,7 +29,8 @@ class CityReportController extends Controller
                    ->orWhere('ticket_code', 'like', "%{$s}%")
                    ->orWhere('address', 'like', "%{$s}%")
             ))
-            ->orderByRaw("CASE priority WHEN 'emergency' THEN 0 WHEN 'high' THEN 1 WHEN 'medium' THEN 2 ELSE 3 END")
+            // Eng yangisi tepada. Prioritet bo'yicha saralash yangi arizani ro'yxat
+            // oxiriga tushirib yuborardi — admin uni "kelmagan" deb o'ylardi.
             ->latest()
             ->get()
             ->map(fn (CityReport $r) => $this->transform($r));
