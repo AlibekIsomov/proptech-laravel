@@ -38,6 +38,9 @@ export default function AppShell({ children, openRequestCount }: Props) {
 
   useEffect(() => {
     try { localStorage.setItem('1m_theme', theme); } catch {}
+    // Tema ichkaridagi div'da turadi, brauzer esa native elementlarni (select
+    // ro'yxati, scrollbar) hujjat darajasidagi color-scheme bo'yicha chizadi
+    document.documentElement.style.colorScheme = theme;
   }, [theme]);
 
   const isPm = isPmPath(path);

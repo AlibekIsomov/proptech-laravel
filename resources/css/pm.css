@@ -521,6 +521,14 @@
 }
 .pm-portal[data-theme="dark"] .topbar { background: rgba(22,31,42,0.85); }
 .pm-portal[data-theme="dark"] .select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23697787' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); }
+/* Ochilgan ro'yxatni brauzer o'zi chizadi va fonini tizimdan (oq) oladi, matn rangi
+   esa select'dan meros bo'lib deyarli oq bo'ladi — oq ustiga oq. Fonni ham o'zimiz
+   beramiz, aks holda variantlar o'qilmaydi. */
+.pm-portal[data-theme="dark"] select option,
+.pm-portal[data-theme="dark"] select optgroup {
+  background-color: #1B2530;
+  color: #E9EEF3;
+}
 .pm-portal[data-theme="dark"] .btn-dark { background: var(--surface-3); color: var(--text); }
 .pm-portal[data-theme="dark"] .s-sold, .pm-portal[data-theme="dark"] .s-paid,
 .pm-portal[data-theme="dark"] .s-reserved, .pm-portal[data-theme="dark"] .s-open,
